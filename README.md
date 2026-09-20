@@ -1,2 +1,2 @@
-# BSIT_2-1_Learnify
+# BSIT_2-1_BiblioDesk
 BSIT 2-1 Project:
