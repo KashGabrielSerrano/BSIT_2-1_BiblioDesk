@@ -39,27 +39,159 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Account Registration</title>
+    <title>Registration</title>
+    <link rel="stylesheet" href="registration.css">
 </head>
+
 <body>
-    <form action="" method="post">
-        <div class="form-fields">
-            <div class="form-items">
-                <label for="student_id">Enter FEUR Student ID:</label>
-                <input type="text" name="student_id" required placeholder="R20XXXXXXXX">
+
+    <div class="registration-container">
+
+        
+        <div class="page active">
+
+            <h1>REGISTRATION</h1>
+
+            <div class="form-container">
+
+                <div>
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" placeholder="Fernando">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" placeholder="Bautista">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Middle Name (Optional)</label>
+                        <input type="text" placeholder="Reyes">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Suffix (Optional)</label>
+                        <input type="text" placeholder="Jr. / Sr. / III">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label>Birthday (mm/dd/yy)</label>
+                        <input type="text" placeholder="01/01/01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Student ID</label>
+                        <input type="text" placeholder="R2XXXXXXXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label>School Email</label>
+                        <input type="email" placeholder="test.school.email@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Department</label>
+                        <input type="text" placeholder="BSIT">
+                    </div>
+                </div>
+
             </div>
 
-            <div class="form-items">
-                <label for="email">Enter School Email Address:</label>
-                <input type="email" name="email" required placeholder="R20XXXXXXXX@feuroosevelt.edu.ph">
+            <div class="button-container">
+                <button onclick="nextPage()">NEXT</button>
             </div>
 
-            <div class="form-items">
-                <label for="password">Enter Password:</label>
-                <input type="password" name="password" required minlength="6" placeholder="At least 6 characters">
-            </div>
-            <button type="submit" name="btnRegister">Register</button>
         </div>
-    </form>
+
+
+        
+        <div class="page">
+
+            <h1>REGISTRATION</h1>
+
+            <div class="form-container">
+
+                <div>
+                    <div class="form-group">
+                        <label>Personal email</label>
+                        <input type="email" placeholder="test.email@gmail.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" placeholder="09XXXXXXXXX">
+                    </div>
+
+                    <div class="form-group">
+                        <label>House / Unit Number</label>
+                        <input type="text" placeholder="01">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Street</label>
+                        <input type="text" placeholder="Street">
+                    </div>
+                </div>
+
+                <div>
+                    <div class="form-group">
+                        <label>Barangay</label>
+                        <input type="text" placeholder="Brgy">
+                    </div>
+
+                    <div class="form-group">
+                        <label>City / Town</label>
+                        <input type="text" placeholder="Marikina City">
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="button-container">
+                <button class="back-button" onclick="previousPage()">Previous</button>
+                <button onclick="nextPage()">NEXT</button>
+            </div>
+
+        </div>
+
+
+      
+        <div class="page">
+
+            <h1>REGISTRATION</h1>
+
+            <div class="security-form">
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" placeholder="XXXXXXXX">
+                </div>
+
+                <div class="form-group">
+                    <label>Confirm Password</label>
+                    <input type="password" placeholder="XXXXXXXX">
+                </div>
+
+                <div class="form-group">
+                    <label>OTP</label>
+                    <input type="text" placeholder="XXXXXX">
+                </div>
+
+            </div>
+
+            <div class="button-container">
+                <button class="back-button" onclick="previousPage()">BACK</button>
+                <button onclick="register()">REGISTER</button>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="registration.js"></script>
+
 </body>
 </html>
