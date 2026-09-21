@@ -63,14 +63,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiblioDesk LMS - Portal Login</title>
-    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="../frontend/css/login.css">
 </head>
 <body>
 
 
 <div class="login-container">
     <div class="logo-panel">
-        <img src="./assets/Bibliodesk_White.png" class="logo">
+        <img src="../frontend/assets/Bibliodesk_White.png" class="logo">
     </div>
 
     <div class="form-panel">

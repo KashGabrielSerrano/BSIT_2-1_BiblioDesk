@@ -40,7 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration</title>
-    <link rel="stylesheet" href="registration.css">
+    <link rel="stylesheet" href="../frontend/css/registration.css">
 </head>
 
 <body>
@@ -191,7 +191,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
 
     </div>
 
-    <script src="registration.js"></script>
+    <script src="../frontend/js/Registration.js"></script>
 
 </body>
 </html>
