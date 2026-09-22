@@ -36,18 +36,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registration</title>
-    <link rel="stylesheet" href="../frontend/css/registration.css">
+
+    <link rel="stylesheet" href="Registration.css">
 </head>
 
 <body>
 
     <div class="registration-container">
 
-        
+        <!-- PAGE 1 -->
         <div class="page active">
 
             <h1>REGISTRATION</h1>
@@ -55,14 +57,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
             <div class="form-container">
 
                 <div>
+
                     <div class="form-group">
                         <label>First Name</label>
-                        <input type="text" placeholder="Fernando">
+                        <input type="text" placeholder="Fernando" required>
                     </div>
 
                     <div class="form-group">
                         <label>Last Name</label>
-                        <input type="text" placeholder="Bautista">
+                        <input type="text" placeholder="Bautista" required>
                     </div>
 
                     <div class="form-group">
@@ -74,40 +77,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
                         <label>Suffix (Optional)</label>
                         <input type="text" placeholder="Jr. / Sr. / III">
                     </div>
+
                 </div>
 
+
                 <div>
+
                     <div class="form-group">
                         <label>Birthday (mm/dd/yy)</label>
-                        <input type="text" placeholder="01/01/01">
+                        <input type="text" placeholder="01/01/01" required>
                     </div>
 
                     <div class="form-group">
                         <label>Student ID</label>
-                        <input type="text" placeholder="R2XXXXXXXXX">
+                        <input type="text" placeholder="R2XXXXXXXXX" required>
                     </div>
 
                     <div class="form-group">
                         <label>School Email</label>
-                        <input type="email" placeholder="test.school.email@gmail.com">
+                        <input type="email" placeholder="test.school.email@gmail.com" required>
                     </div>
 
                     <div class="form-group">
                         <label>Department</label>
-                        <input type="text" placeholder="BSIT">
+                        <input type="text" placeholder="BSIT" required>
                     </div>
+
                 </div>
 
             </div>
 
+
             <div class="button-container">
-                <button onclick="nextPage()">NEXT</button>
+
+                <button type="button" onclick="nextPage()">NEXT</button>
+
             </div>
 
         </div>
 
 
-        
+        <!-- PAGE 2 -->
         <div class="page">
 
             <h1>REGISTRATION</h1>
@@ -115,50 +125,64 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
             <div class="form-container">
 
                 <div>
+
                     <div class="form-group">
-                        <label>Personal email</label>
-                        <input type="email" placeholder="test.email@gmail.com">
+                        <label>Personal Email</label>
+                        <input type="email" placeholder="test.email@gmail.com" required>
                     </div>
 
                     <div class="form-group">
                         <label>Phone Number</label>
-                        <input type="tel" placeholder="09XXXXXXXXX">
+                        <input type="tel" placeholder="09XXXXXXXXX" required>
                     </div>
 
                     <div class="form-group">
                         <label>House / Unit Number</label>
-                        <input type="text" placeholder="01">
+                        <input type="text" placeholder="01" required>
                     </div>
 
                     <div class="form-group">
                         <label>Street</label>
-                        <input type="text" placeholder="Street">
+                        <input type="text" placeholder="Street" required>
                     </div>
+
                 </div>
 
+
                 <div>
+
                     <div class="form-group">
                         <label>Barangay</label>
-                        <input type="text" placeholder="Brgy">
+                        <input type="text" placeholder="Brgy" required>
                     </div>
 
                     <div class="form-group">
                         <label>City / Town</label>
-                        <input type="text" placeholder="Marikina City">
+                        <input type="text" placeholder="Marikina City" required>
                     </div>
+
                 </div>
 
             </div>
 
+
             <div class="button-container">
-                <button class="back-button" onclick="previousPage()">Previous</button>
-                <button onclick="nextPage()">NEXT</button>
+
+                <button
+                    type="button" class="back-button"
+                    onclick="previousPage()"> PREVIOUS
+                </button>
+
+                <button
+                    type="button" onclick="nextPage()"> NEXT
+                </button>
+
             </div>
 
         </div>
 
 
-      
+        <!-- PAGE 3 -->
         <div class="page">
 
             <h1>REGISTRATION</h1>
@@ -167,31 +191,45 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$stu
 
                 <div class="form-group">
                     <label>Password</label>
-                    <input type="password" placeholder="XXXXXXXX">
+                    <input type="password" id="password" placeholder="XXXXXXXX" required>
                 </div>
 
                 <div class="form-group">
                     <label>Confirm Password</label>
-                    <input type="password" placeholder="XXXXXXXX">
+                    <input
+                        type="password" id="confirmPassword" placeholder="XXXXXXXX" required>
                 </div>
 
                 <div class="form-group">
                     <label>OTP</label>
-                    <input type="text" placeholder="XXXXXX">
+                    <input
+                        type="text" id="otp" placeholder="XXXXXX" required>
                 </div>
 
             </div>
 
+
             <div class="button-container">
-                <button class="back-button" onclick="previousPage()">BACK</button>
-                <button onclick="register()">REGISTER</button>
+
+                <button
+                    type="button"
+                    class="back-button" onclick="previousPage()">BACK
+                </button>
+                    
+                <button
+                    type="button"
+                    onclick="register()">REGISTER
+                </button>
+
             </div>
 
         </div>
 
     </div>
 
-    <script src="../frontend/js/Registration.js"></script>
+
+    <script src="Registration.js"></script>
 
 </body>
+
 </html>
