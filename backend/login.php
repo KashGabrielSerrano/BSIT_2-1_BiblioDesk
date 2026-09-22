@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-include("./connection/config.php");
-include("./helpers/SystemOperators.php");
+include("../connection/config.php");
+include("../helpers/SystemOperators.php");
 
 
 $con = connection();
@@ -14,7 +14,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
         setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
     }
     session_destroy();
-    header("Location: login.php");
+    header("Location: studentdb.php");
     exit;
 }
 
@@ -77,7 +77,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
 
 <div class="login-container">
     <div class="logo-panel">
-        <img src="../frontend/assets/Bibliodesk_White.png" class="logo">
+        <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
     </div>
 
     <div class="form-panel">
