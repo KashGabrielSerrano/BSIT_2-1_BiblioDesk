@@ -1,6 +1,6 @@
 <?php
-include("./connection/config.php");
-include("./helpers/SystemOperators.php");
+include("connection/config.php");
+include("helpers/SystemOperators.php");
 
 $con = connection();$so = new SystemOperators();
 

@@ -1,9 +1,8 @@
 <?php
 session_start();
 
-include("../connection/config.php");
-include("../helpers/SystemOperators.php");
-
+include("connection/config.php");
+include("helpers/SystemOperators.php");
 
 $con = connection();
 $so = new SystemOperators();
@@ -14,7 +13,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
         setcookie(session_name(), '', time() - 42000, $params["path"], $params["domain"], $params["secure"], $params["httponly"]);
     }
     session_destroy();
-    header("Location: studentdb.php");
+    header("Location: login.php");
     exit;
 }
 
