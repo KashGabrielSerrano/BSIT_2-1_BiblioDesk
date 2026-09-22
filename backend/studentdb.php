@@ -45,7 +45,7 @@
             </div>
             
             <div class="log-out-container">
-                <a class="side-act" href="#">
+                <a class="side-act" href="login.php?action=logout">
                     <img src="../frontend/assets/icons/logout.png" alt="log out" class="sidebar-icon">
                     <span class="side-text">Log Out</span>
                 </a>

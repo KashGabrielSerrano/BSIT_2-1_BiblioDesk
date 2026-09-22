@@ -16,7 +16,6 @@ function nextPage() {
 
     for (let input of inputs) {
 
-        // Check required fields
         if (input.hasAttribute("required") && input.value.trim() === "") {
 
             alert("Please fill in all required fields before proceeding.");
@@ -26,7 +25,6 @@ function nextPage() {
             return;
         }
 
-        // Check email
         if (input.type === "email" && input.value.trim() !== "") {
 
             if (!input.checkValidity()) {
@@ -40,7 +38,6 @@ function nextPage() {
         }
     }
 
-    // Go to next page
     if (currentPage < pages.length - 1) {
 
         currentPage++;
@@ -59,15 +56,15 @@ function previousPage() {
     }
 }
 
-function register() {
+function register(event) {
 
     const inputs = pages[currentPage].querySelectorAll("input");
 
-    // Check required fields
     for (let input of inputs) {
 
         if (input.hasAttribute("required") && input.value.trim() === "") {
 
+            event.preventDefault();
             alert("Please fill in all required fields before registering.");
 
             input.focus();
@@ -76,18 +73,17 @@ function register() {
         }
     }
 
-    // Check password and confirm password
-    const password = inputs[0].value;
-    const confirmPassword = inputs[1].value;
+    const password = document.getElementById("password").value;
+    const confirmPassword = document.getElementById("confirmPassword").value;
 
     if (password !== confirmPassword) {
 
+        event.preventDefault();
         alert("Passwords do not match.");
 
-        inputs[1].focus();
+        document.getElementById("confirmPassword").focus();
 
         return;
     }
-
-    alert("Registration submitted!");
+    document.getElementById("registrationForm").submit();
 }

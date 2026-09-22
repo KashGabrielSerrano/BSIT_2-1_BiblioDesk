@@ -20,6 +20,13 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
 
 $is_logged_in = isset($_SESSION['user_id']);$error = '';
 
+if ($is_logged_in) {
+    header("Location: studentdb.php");
+    exit;
+}
+
+$error = '';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_logged_in) {
     $raw_email = trim($_POST['email'] ?? '');
     $passInput =$_POST['password'] ?? '';
@@ -42,7 +49,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                     $_SESSION['email'] = $so->decrypt($row['Email']);
                     $_SESSION['role'] =$row['Role'];
 
-                    header("Location: login.php");
+                    header("Location: studentdb.php");
                     exit;
                 } else {
                     $error = "The system credentials provided do not match our database records.";
@@ -75,20 +82,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
 
     <div class="form-panel">
         <div class="form-wrapper">
-            <?php if ($is_logged_in): ?>
-                <div class="dashboard">
-                    <h2>Welcome Back!</h2>
-                    <p>Student ID: <strong><?= htmlspecialchars($_SESSION['student_id'], ENT_QUOTES, 'UTF-8') ?></strong></p>
-                    <p>Email: <strong><?= htmlspecialchars($_SESSION['email'], ENT_QUOTES, 'UTF-8') ?></strong></p>
-                    <p>Role: <strong><?= htmlspecialchars($_SESSION['role'], ENT_QUOTES, 'UTF-8') ?></strong></p>
-                    <a href="login.php?action=logout">Sign Out of Terminal</a>
-                </div>
 
-            <?php else: ?>
-                <?php if (!empty($error)): ?>
-                    <div class="alert" style="color: red; margin-bottom: 15px;"><?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
-                    </div>
-                <?php endif; ?>
+        <?php if (!empty($error)): ?>
+            <div class="alert" style="color: red; margin-bottom: 15px;"> 
+                <?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>
+            </div>
+        <?php endif; ?>
 
                 <form action="login.php" method="post">
                     <div class="form-fields">
@@ -109,9 +108,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                         <p class="terms">By proceeding, you agree to our Terms of Use and confirm that you have read our Privacy Policy.</p>
                     </div>
                 </form>
-            <?php endif; ?>
         </div>
     </div>
 </div>
+
 </body>
 </html>
