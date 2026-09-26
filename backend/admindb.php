@@ -6,6 +6,14 @@ require_once "helpers/SystemOperators.php";
 $con = connection();
 $so = new SystemOperators();
 
+// Convert Google Drive share links to direct thumbnail URLs
+function getDriveDirectImageUrl(string $url): string {
+    if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        return "https://lh3.googleusercontent.com/d/" . $matches[1];
+    }
+    return $url;
+}
+
 if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
     $action = $_POST['action'];
 
@@ -35,6 +43,32 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $user_id = intval($_POST['user_id']);
         $stmt = $con->prepare("DELETE FROM user_table WHERE User_ID = ?");
         $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $stmt->close();
+    }
+    elseif ($action === 'add_book') {
+        $title            = trim(filter_input(INPUT_POST, 'title', FILTER_SANITIZE_SPECIAL_CHARS));
+        $author           = trim(filter_input(INPUT_POST, 'author', FILTER_SANITIZE_SPECIAL_CHARS));
+        $isbn             = trim(filter_input(INPUT_POST, 'isbn', FILTER_SANITIZE_SPECIAL_CHARS));
+        $category         = trim(filter_input(INPUT_POST, 'category', FILTER_SANITIZE_SPECIAL_CHARS));
+        $description      = trim(filter_input(INPUT_POST, 'description', FILTER_SANITIZE_SPECIAL_CHARS));
+        $cover_drive_raw  = trim(filter_input(INPUT_POST, 'cover_drive_link', FILTER_SANITIZE_URL));
+        $pdf_drive_raw    = trim(filter_input(INPUT_POST, 'pdf_drive_link', FILTER_SANITIZE_URL));
+
+        $cover_image_url = getDriveDirectImageUrl($cover_drive_raw);
+        $pdf_preview_url = preg_replace('/\/view.*/', '/preview', $pdf_drive_raw);
+
+        $is_digital = 'Yes';
+
+        $stmt = $con->prepare("INSERT INTO book_table (Title, Author, ISBN, Category, Description, Cover_Image, Drive_Link, Is_digital) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt->bind_param("ssssssss", $title, $author, $isbn, $category, $description, $cover_image_url, $pdf_preview_url, $is_digital);
+        $stmt->execute();
+        $stmt->close();
+    }
+    elseif ($action === 'remove_book' && isset($_POST['book_id'])) {
+        $book_id = intval($_POST['book_id']);
+        $stmt = $con->prepare("DELETE FROM book_table WHERE Book_ID = ?");
+        $stmt->bind_param("i", $book_id);
         $stmt->execute();
         $stmt->close();
     }
@@ -76,6 +110,11 @@ $unpaid_fines = $unpaid_fines_res->fetch_assoc()['total'] ?? 0.00;
                 <a class="side-act <?php echo $active_tab === 'overview' ? 'active-nav' : ''; ?>" href="admindb.php?tab=overview">
                     <img src="../frontend/assets/icons/overview-default.png" alt="Overview" class="sidebar-icon">
                     <span class="side-text">Overview</span>
+                </a>
+
+                <a class="side-act <?php echo $active_tab === 'books' ? 'active-nav' : ''; ?>" href="admindb.php?tab=books">
+                    <img src="../frontend/assets/icons/overview-default.png" alt="Manage Books" class="sidebar-icon">
+                    <span class="side-text">Manage Books</span>
                 </a>
 
                 <a class="side-act <?php echo $active_tab === 'reservations' ? 'active-nav' : ''; ?>" href="admindb.php?tab=reservations">
@@ -178,6 +217,104 @@ $unpaid_fines = $unpaid_fines_res->fetch_assoc()['total'] ?? 0.00;
                         <span class="stats-label">Active Loans</span>
                     </div>
                 </a>
+            </section>
+
+        <?php elseif ($active_tab === 'books'): ?>
+            <section class="table-section">
+                <h2>Add New Digital Book</h2>
+                <div class="form-container">
+                    <form method="POST" class="add-book-form">
+                        <input type="hidden" name="action" value="add_book">
+                        
+                        <div class="form-group">
+                            <label>Book Title *</label>
+                            <input type="text" name="title" required placeholder="Enter Title">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Author *</label>
+                            <input type="text" name="author" required placeholder="Enter Author">
+                        </div>
+
+                        <div class="form-group">
+                            <label>ISBN</label>
+                            <input type="text" name="isbn" placeholder="e.g. 978-3-16-148410-0">
+                        </div>
+
+                        <div class="form-group">
+                            <label>Category</label>
+                            <input type="text" name="category" placeholder="e.g. BSIT / Research">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <label>Description / Summary *</label>
+                            <textarea name="description" rows="3" required placeholder="Enter book summary..."></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Cover Image Google Drive Link *</label>
+                            <input type="url" name="cover_drive_link" required placeholder="https://drive.google.com/file/d/.../view">
+                        </div>
+
+                        <div class="form-group">
+                            <label>PDF Document Google Drive Link *</label>
+                            <input type="url" name="pdf_drive_link" required placeholder="https://drive.google.com/file/d/.../view">
+                        </div>
+
+                        <div class="form-group full-width">
+                            <button type="submit" class="action-btn approve-btn submit-book-btn">Save & Publish Book</button>
+                        </div>
+                    </form>
+                </div>
+
+                <h2 style="margin-top: 35px;">Catalog List</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Title</th>
+                                <th>Author</th>
+                                <th>Category</th>
+                                <th>Digital Access</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php
+                            $sql = "SELECT Book_ID, Title, Author, Category, Drive_Link FROM book_table ORDER BY Book_ID ASC";
+                            $result = $con->query($sql);
+
+                            if ($result && $result->num_rows > 0):
+                                while ($row = $result->fetch_assoc()):
+                            ?>
+                                <tr>
+                                    <td>#<?php echo $row['Book_ID']; ?></td>
+                                    <td><?php echo htmlspecialchars($row['Title']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Author']); ?></td>
+                                    <td><?php echo htmlspecialchars($row['Category'] ?? 'N/A'); ?></td>
+                                    <td>
+                                        <span class="status-badge <?php echo !empty($row['Drive_Link']) ? 'approved' : 'denied'; ?>">
+                                            <?php echo !empty($row['Drive_Link']) ? 'PDF Linked' : 'No PDF'; ?>
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form method="POST" onsubmit="return confirm('Delete this book from the catalog?');">
+                                            <input type="hidden" name="action" value="remove_book">
+                                            <input type="hidden" name="book_id" value="<?php echo $row['Book_ID']; ?>">
+                                            <button type="submit" class="action-btn deny-btn">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php 
+                                endwhile;
+                            else:
+                            ?>
+                                <tr><td colspan="6" class="no-records">No books added yet.</td></tr>
+                            <?php endif; ?>
+                        </tbody>
+                    </table>
+                </div>
             </section>
 
         <?php elseif ($active_tab === 'reservations'): ?>

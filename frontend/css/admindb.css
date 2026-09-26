@@ -397,4 +397,60 @@ tr:hover{
     .sidebar-overlay.active{
         display: block;
     }
+
+.form-container {
+    background-color: #F8F4EE;
+    padding: 20px;
+    border-radius: 8px;
+    border: 1px solid #E0E0E0;
+}
+
+.add-book-form {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: span 2;
+}
+
+.form-group label {
+    font-size: 13.5px;
+    font-weight: bold;
+    color: #3F4A33;
+    margin-bottom: 5px;
+}
+
+.form-group input, 
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.2s ease;
+}
+
+.submit-book-btn {
+    padding: 12px 20px;
+    cursor: pointer;
+    font-size: 14px;
+    width: fit-content;
+}
+
+@media (max-width: 600px) {
+    .add-book-form {
+        grid-template: 1fr;
+    }
+    .form-group.full-width {
+        grid-column: span 1;
+    }
+}
 }
