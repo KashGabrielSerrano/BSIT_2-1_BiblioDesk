@@ -1,2 +1,3 @@
-backend/connection/
-backend/helpers/
+backend/connection/config.php
+backend/helpers/SystemOperators.php
+admin_registration.php

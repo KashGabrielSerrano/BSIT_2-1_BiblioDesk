@@ -95,13 +95,13 @@ CREATE TABLE `transaction_table` (
 
 CREATE TABLE `user_table` (
   `User_ID` int(11) NOT NULL,
+  `Role` varchar(50) NOT NULL,
   `Student_ID` varchar(50) DEFAULT NULL,
   `Department` varchar(100) DEFAULT NULL,
   `User_QR_Code` varchar(255) DEFAULT NULL,
   `Weekly_reserve_Count` int(11) DEFAULT 0,
   `Email` varchar(150) NOT NULL,
   `Password` varchar(255) NOT NULL,
-  `Role` varchar(50) NOT NULL,
   `Max_Borrow_Limit` int(11) DEFAULT 3
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

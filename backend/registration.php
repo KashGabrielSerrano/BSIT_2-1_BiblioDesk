@@ -1,6 +1,6 @@
 <?php
-include("connection/config.php");
-include("helpers/SystemOperators.php");
+require_once("connection/config.php");
+require_once("helpers/SystemOperators.php");
 
 $con = connection();$so = new SystemOperators();
 

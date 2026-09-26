@@ -18,7 +18,7 @@
                     <span class="side-text">Overview</span>
                 </a>
 
-                <a class="side-act" href="#">
+                <a class="side-act" href="librarydb.php">
                     <img src="../frontend/assets/icons/library-default.png" alt="Library" class="sidebar-icon">
                     <span class="side-text">Library</span>
                 </a>

@@ -1,8 +1,8 @@
 <?php
 session_start();
 
-include("connection/config.php");
-include("helpers/SystemOperators.php");
+require_once("connection/config.php");
+require_once("helpers/SystemOperators.php");
 
 $con = connection();
 $so = new SystemOperators();
@@ -20,7 +20,11 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
 $is_logged_in = isset($_SESSION['user_id']);$error = '';
 
 if ($is_logged_in) {
-    header("Location: studentdb.php");
+    if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
+        header("Location: admindb.php");
+    } else {
+        header("Location: studentdb.php");
+    }
     exit;
 }
 
@@ -43,12 +47,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                 if (password_verify($passInput,$row['Password'])) {
                     session_regenerate_id(true);
 
-                    $_SESSION['user_id'] =$row['User_ID'];
-                    $_SESSION['student_id'] =$so->decrypt($row['Student_ID']);
-                    $_SESSION['email'] = $so->decrypt($row['Email']);
+                    $_SESSION['user_id'] =$row['User_ID'];$_SESSION['email'] = $so->decrypt($row['Email']);
                     $_SESSION['role'] =$row['Role'];
 
-                    header("Location: studentdb.php");
+                    if (!empty($row['Student_ID'])) {$_SESSION['student_id'] = $so->decrypt($row['Student_ID']);
+                    } else {
+                        $_SESSION['student_id'] = null;
+                    }
+
+                    if ($row['Role'] === 'Librarian' || $row['Role'] === 'Admin') {
+                        header("Location: admindb.php");
+                    } else {
+                        header("Location: studentdb.php");
+                    }
                     exit;
                 } else {
                     $error = "The system credentials provided do not match our database records.";
@@ -56,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
             } else {
                 $error = "The system credentials provided do not match our database records.";
             }
+            $stmt->close();
         } else {
             $error = "Failed to execute authentication request.";
         }
