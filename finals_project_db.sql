@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 19, 2026 at 04:31 AM
+-- Generation Time: Sep 26, 2026 at 02:56 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -34,10 +34,12 @@ CREATE TABLE `book_table` (
   `ISBN` varchar(20) DEFAULT NULL,
   `Publisher` varchar(150) DEFAULT NULL,
   `Category` varchar(100) DEFAULT NULL,
+  `Is_digital` enum('Yes','No') NOT NULL DEFAULT 'Yes',
+  `Description` text DEFAULT NULL,
+  `Cover_Image` varchar(255) DEFAULT NULL,
+  `Drive_Link` varchar(255) DEFAULT NULL,
   `Status` varchar(50) DEFAULT 'Available',
-  `Book_QR_Code` varchar(255) DEFAULT NULL,
-  `Digital_books` tinyint(1) DEFAULT 0,
-  `Physical_books` tinyint(1) DEFAULT 1
+  `Book_QR_Code` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
