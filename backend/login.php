@@ -20,7 +20,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
 $is_logged_in = isset($_SESSION['user_id']);$error = '';
 
 if ($is_logged_in) {
-    if (isset($_SESSION['role']) && $_SESSION['role'] === 'Admin') {
+    if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
         header("Location: admindb.php");
     } else {
         header("Location: studentdb.php");
@@ -47,7 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                 if (password_verify($passInput,$row['Password'])) {
                     session_regenerate_id(true);
 
-                    $_SESSION['user_id'] =$row['User_ID'];$_SESSION['email'] = $so->decrypt($row['Email']);
+                    $_SESSION['user_id'] =$row['User_ID'];
+                    $_SESSION['email'] = $so->decrypt($row['Email']);
                     $_SESSION['role'] =$row['Role'];
 
                     if (!empty($row['Student_ID'])) {$_SESSION['student_id'] = $so->decrypt($row['Student_ID']);
