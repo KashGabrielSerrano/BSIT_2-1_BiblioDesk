@@ -1,12 +1,19 @@
 <?php
 session_start();
 require_once "connection/config.php";
-
 $con = connection();
 
-function getDriveDirectImageUrl(string $url)  {
+function getDriveDirectImageUrl(string $url): string {
+    $url = trim($url);
+    if (empty($url)) return '../frontend/assets/icons/library-default.png';
+    $file_id = '';
     if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
-        return "https://lh3.googleusercontent.com/d/" . $matches[1];
+        $file_id = $matches[1];
+    } elseif (preg_match('/id=([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        $file_id = $matches[1];
+    }
+    if (!empty($file_id)) {
+        return "https://drive.google.com/thumbnail?id=" . $file_id . "&sz=w500";
     }
     return $url;
 }
@@ -18,22 +25,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
         echo "<script>alert('Please log in to request a book.'); window.location='login.php';</script>";
         exit();
     }
-
     $book_id    = intval($_POST['book_id']);
     $today_date = date("Y-m-d");
     $today_time = date("H:i:s");
-
     $check_stmt = $con->prepare("SELECT Reservation_ID FROM reservation_table WHERE User_ID = ? AND Book_ID = ? AND Request_approval IN ('Pending', 'Approved')");
     $check_stmt->bind_param("ii", $user_id, $book_id);
     $check_stmt->execute();
     $check_res = $check_stmt->get_result();
-
     if ($check_res->num_rows > 0) {
         echo "<script>alert('You already have an active or pending request for this book.'); window.location='librarydb.php';</script>";
     } else {
         $insert_stmt = $con->prepare("INSERT INTO reservation_table (User_ID, Book_ID, Reservation_Date, Reservation_Time, Request_approval) VALUES (?, ?, ?, ?, 'Pending')");
         $insert_stmt->bind_param("iiss", $user_id, $book_id, $today_date, $today_time);
-
         if ($insert_stmt->execute()) {
             echo "<script>alert('Book request submitted! Awaiting librarian approval.'); window.location='librarydb.php';</script>";
         } else {
@@ -44,12 +47,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action']) && $_POST['
     $check_stmt->close();
 }
 
+$allowed_book_ids = [];
+if ($user_id) {
+    $role = $_SESSION['role'] ?? 'Student';
+    if ($role === 'Admin') {
+        $all_books = $con->query("SELECT Book_ID FROM book_table");
+        while ($row = $all_books->fetch_assoc()) {
+            $allowed_book_ids[] = $row['Book_ID'];
+        }
+    } else {
+        $auth_sql = ("SELECT Book_ID FROM reservation_table WHERE User_ID = ? AND Request_approval = 'Approved' UNION
+                    SELECT Book_ID FROM transaction_table WHERE User_ID = ? AND Return_Date IS NULL");
+        $auth_stmt = $con->prepare($auth_sql);
+        $auth_stmt->bind_param("ii", $user_id, $user_id);
+        $auth_stmt->execute();
+        $res = $auth_stmt->get_result();
+        while ($row = $res->fetch_assoc()) {
+            $allowed_book_ids[] = $row['Book_ID'];
+        }
+        $auth_stmt->close();
+    }
+}
+
 $search_query = "";
 if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
     $search_query = trim($_GET['search']);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,7 +84,7 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
     <script src="../frontend/js/sidebar_Btn.js" defer></script>
     <script src="../frontend/js/carousel.js" defer></script>
 </head>
-<body>  
+<body>
     <aside>
         <div class="logo-contain">
             <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
@@ -108,21 +132,18 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
             <span></span>
             <span></span>
         </button>
-
         <div class="logo-name-container">
             <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk" class="logo-name">
         </div>
-            
+        
         <div class="top-actions">
             <button type="button" class="notification-bell" aria-label="Open Notification Area">
                 <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" class="button-icon">
                 <span class="NotifNum">0</span>
             </button>
-
             <button type="button" class="settings" aria-label="Open Settings">
                 <img src="../frontend/assets/icons/settings.png" alt="settings icon" class="button-icon">
             </button>
-
             <button type="button" class="accountpfp" aria-label="Open Account Information">
                 <img src="../frontend/assets/icons/pfp-icon.png" alt="account profile picture" class="button-icon">
             </button>
@@ -135,7 +156,6 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
                 <img src="../frontend/assets/icons/library-default.png" alt="Library Icon" class="library-icon">
                 <h1 class="library-title">Library</h1>
             </div>
-
             <div class="search-filter-group">
                 <form class="search-form" action="librarydb.php" method="get">
                     <div class="search-input-wrapper">
@@ -146,7 +166,6 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
                         <input type="text" name="search" placeholder="Search" class="search-input" value="<?php echo htmlspecialchars($search_query); ?>">
                     </div>
                 </form>
-
                 <button type="button" class="filter-btn">
                     <svg class="filter-icon-svg" viewBox="0 0 24 24">
                         <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"></polygon>
@@ -177,7 +196,6 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
                 $stmt = $con->prepare($sql);
                 $stmt->bind_param("s", $cat_title);
             }
-
             $stmt->execute();
             $result = $stmt->get_result();
 
@@ -205,7 +223,10 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
                         ?>
                             <div class="<?php echo $card_class; ?>">
                                 <div class="card-content">
-                                    <img src="<?php echo htmlspecialchars($cover_url); ?>" alt="Book Cover" class="book-cover">
+                                    <img src="<?php echo htmlspecialchars($cover_url); ?>" 
+                                         alt="Book Cover" 
+                                         class="book-cover"
+                                         onerror="this.onerror=null; this.src='../frontend/assets/icons/library-default.png';">
                                     <div class="book-info">
                                         <p class="title"><?php echo htmlspecialchars($book['Title']); ?></p>
                                         <p class="author"><?php echo htmlspecialchars($book['Author']); ?></p>
@@ -215,9 +236,12 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
                                                 <input type="hidden" name="book_id" value="<?php echo $book['Book_ID']; ?>">
                                                 <button type="submit" class="reservation-pill" style="border:none; cursor:pointer;">Reservation</button>
                                             </form>
-
                                             <?php if (!empty($book['Drive_Link'])): ?>
-                                                <a class="readonline-pill" href="read_book.php?id=<?php echo $book['Book_ID']; ?>" target="_blank">Read Online</a>
+                                                <?php if (in_array($book['Book_ID'], $allowed_book_ids)): ?>
+                                                    <a class="readonline-pill" href="read_book.php?id=<?php echo $book['Book_ID']; ?>" target="_blank">Read Online</a>
+                                                <?php else: ?>
+                                                    <button type="button" class="readonline-pill" onclick="showRestrictedModal('<?php echo htmlspecialchars(addslashes($book['Title'])); ?>')">Read Online</button>
+                                                <?php endif; ?>
                                             <?php endif; ?>
                                         </div>
                                     </div>
@@ -237,6 +261,32 @@ if (isset($_GET['search']) && !empty(trim($_GET['search']))) {
             </section>
         <?php endforeach; ?>
     </main>
+
+    <div id="accessModalOverlay" class="modal-overlay">
+        <div class="modal-card">
+            <h2 class="modal-title">Access Restricted</h2>
+            <p class="modal-text">You do not have an approved reservation or active loan for <strong id="modalBookTitle">this book</strong>.</p>
+            <p class="modal-subtext">Please request a reservation first and wait for librarian approval.</p>
+            <button type="button" class="modal-close-btn" onclick="closeRestrictedModal()">Got it</button>
+        </div>
+    </div>
+
+    <script>
+        function showRestrictedModal(bookTitle) {
+            document.getElementById('modalBookTitle').textContent = bookTitle;
+            document.getElementById('accessModalOverlay').classList.add('active');
+        }
+
+        function closeRestrictedModal() {
+            document.getElementById('accessModalOverlay').classList.remove('active');
+        }
+
+        document.getElementById('accessModalOverlay').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeRestrictedModal();
+            }
+        });
+    </script>
 
     <div class="sidebar-overlay" id="sidebarOverlay"></div>
 </body>

@@ -6,11 +6,20 @@ require_once "helpers/SystemOperators.php";
 $con = connection();
 $so = new SystemOperators();
 
-// Convert Google Drive share links to direct thumbnail URLs
 function getDriveDirectImageUrl(string $url): string {
+    $url = trim($url);
+    if (empty($url)) return '../frontend/assets/icons/library-default.png';
+
+    $file_id = '';
     if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
-        return "https://lh3.googleusercontent.com/d/" . $matches[1];
+        $file_id = $matches[1];
+    } elseif (preg_match('/id=([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        $file_id = $matches[1];
     }
+    if (!empty($file_id)) {
+        return "https://drive.google.com/thumbnail?id=" . $file_id . "&sz=w500";
+    }
+
     return $url;
 }
 
@@ -56,12 +65,16 @@ if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['action'])) {
         $pdf_drive_raw    = trim(filter_input(INPUT_POST, 'pdf_drive_link', FILTER_SANITIZE_URL));
 
         $cover_image_url = getDriveDirectImageUrl($cover_drive_raw);
-        $pdf_preview_url = preg_replace('/\/view.*/', '/preview', $pdf_drive_raw);
+        
+        $pdf_clean_link = $pdf_drive_raw;
+        if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $pdf_drive_raw, $matches)) {
+            $pdf_clean_link = "https://drive.google.com/file/d/" . $matches[1] . "/view";
+        }
 
         $is_digital = 'Yes';
 
         $stmt = $con->prepare("INSERT INTO book_table (Title, Author, ISBN, Category, Description, Cover_Image, Drive_Link, Is_digital) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt->bind_param("ssssssss", $title, $author, $isbn, $category, $description, $cover_image_url, $pdf_preview_url, $is_digital);
+        $stmt->bind_param("ssssssss", $title, $author, $isbn, $category, $description, $cover_image_url, $pdf_clean_link, $is_digital);
         $stmt->execute();
         $stmt->close();
     }

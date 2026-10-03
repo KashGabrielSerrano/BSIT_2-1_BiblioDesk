@@ -1,0 +1,17 @@
+name: Keep Supabase Active
+
+on:
+  schedule:
+    # Runs at 00:15 UTC every 3 days (8:15 AM GMT+8)
+    - cron: '15 0 */3 * *'
+  workflow_dispatch:
+
+jobs:
+  ping-supabase:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Keep-Alive Request to Supabase REST API
+        run: |
+          curl -i -X GET "https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/rest/v1/" \
+          -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
