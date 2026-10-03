@@ -16,4 +16,4 @@ jobs:
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
           -H "Content-Type: application/json" \
-          -d '{"limit": 1, "offset": 0}'
+          -d '{"prefix": "", "limit": 1}'
