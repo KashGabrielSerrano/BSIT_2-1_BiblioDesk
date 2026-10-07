@@ -1,5 +1,17 @@
 <?php
 session_start();
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_role = $_SESSION['role'] ?? 'Student';
+if ($user_role !== 'Admin' && $user_role !== 'Librarian') {
+    header("Location: studentdb.php");
+    exit();
+}
+
 require_once "connection/config.php";
 require_once "helpers/SystemOperators.php";
 

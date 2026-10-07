@@ -38,20 +38,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
     } else {
         $encrypted_email = $so->encrypt($raw_email);
 
-        $stmt =$con->prepare("SELECT `User_ID`, `Student_ID`, `Email`, `Password`, `Role` FROM `user_table` WHERE `Email` = ?");
+        $stmt =$con->prepare("SELECT `User_ID`, `Student_ID`, `Email`, `Password`, `Role`, `Account_Status` FROM `user_table` WHERE `Email` = ?");
         $stmt->bind_param('s',$encrypted_email);
 
         if ($stmt->execute()) {
-            $result =$stmt->get_result();
-            if ($row =$result->fetch_assoc()) {
-                if (password_verify($passInput,$row['Password'])) {
+            $result = $stmt->get_result();
+            $row = $result->fetch_assoc();
+
+            if ($row && password_verify($passInput, $row['Password'])) {
+                $status = $row['Account_Status'] ?? 'Active';
+
+                if ($status === 'Pending') {
+                    $error = "Your account is pending Admin approval. Please wait for activation.";
+                } elseif ($status === 'Suspended') {
+                    $error = "Your account has been suspended. Please contact the Library Administrator.";
+                } else {
                     session_regenerate_id(true);
-
-                    $_SESSION['user_id'] =$row['User_ID'];
+                    $_SESSION['user_id'] = $row['User_ID'];
                     $_SESSION['email'] = $so->decrypt($row['Email']);
-                    $_SESSION['role'] =$row['Role'];
+                    $_SESSION['role'] = $row['Role'];
 
-                    if (!empty($row['Student_ID'])) {$_SESSION['student_id'] = $so->decrypt($row['Student_ID']);
+                    if (!empty($row['Student_ID'])) {
+                        $_SESSION['student_id'] = $so->decrypt($row['Student_ID']);
                     } else {
                         $_SESSION['student_id'] = null;
                     }
@@ -62,8 +70,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                         header("Location: studentdb.php");
                     }
                     exit;
-                } else {
-                    $error = "The system credentials provided do not match our database records.";
                 }
             } else {
                 $error = "The system credentials provided do not match our database records.";

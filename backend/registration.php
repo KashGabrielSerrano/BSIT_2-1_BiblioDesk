@@ -5,13 +5,18 @@ require_once("helpers/SystemOperators.php");
 $con = connection();$so = new SystemOperators();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {
-    $student_id = $so->encrypt(filter_input(INPUT_POST, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS));
-    $email = $so->encrypt(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
-    $department = $so->encrypt(filter_input(INPUT_POST, 'department', FILTER_SANITIZE_SPECIAL_CHARS));
-    $raw_password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
+    $first_name = trim(filter_input(INPUT_POST, 'first_name', FILTER_SANITIZE_SPECIAL_CHARS));$last_name = trim(filter_input(INPUT_POST, 'last_name', FILTER_SANITIZE_SPECIAL_CHARS));
+    $middle_name = trim(filter_input(INPUT_POST, 'middle_name', FILTER_SANITIZE_SPECIAL_CHARS));$suffix = trim(filter_input(INPUT_POST, 'suffix', FILTER_SANITIZE_SPECIAL_CHARS));
+
+    $full_name_raw = trim(preg_replace('/\s+/', ' ', "$first_name $middle_name $last_name $suffix"));
+    $full_name = $so->encrypt($full_name_raw);
+
+    $student_id = $so->encrypt(filter_input(INPUT_POST, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS));$email = $so->encrypt(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));$department = $so->encrypt(filter_input(INPUT_POST, 'department', FILTER_SANITIZE_SPECIAL_CHARS));$raw_password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
     $hashed_password = password_hash($raw_password, PASSWORD_BCRYPT);
 
-    $role = 'Student';$select_query = "SELECT * FROM `user_table` WHERE `Student_ID` = ? OR `Email` = ?";
+    $role = 'Student';
+    $account_status = 'Pending';
+    $select_query = "SELECT * FROM `user_table` WHERE `Student_ID` = ? OR `Email` = ?";
     $select_stmt =$con->prepare($select_query);$select_stmt->bind_param('ss', $student_id,$email);
 
     if ($select_stmt->execute()) {
@@ -19,8 +24,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {
         if ($result->num_rows > 0) {
             echo "<script> alert('User already exists');</script>";
         } else {
-            $insert_query = 'INSERT INTO `user_table` (`Student_ID`, `Email`, `Password`, `Role`, `Department`) VALUES (?, ?, ?, ?, ?)';
-            $insert_stmt =$con->prepare($insert_query);$insert_stmt->bind_param('sssss', $student_id,$email, $hashed_password,$role, $department);
+            $insert_query = 'INSERT INTO `user_table` (`Full_Name`, `Student_ID`, `Email`, `Password`, `Role`, `Department`, `Account_Status`) VALUES (?, ?, ?, ?, ?, ?, ?)';
+            $insert_stmt = $con->prepare($insert_query);
+            $insert_stmt->bind_param('sssssss',$full_name, $student_id,$email, $hashed_password,$role, $department,$account_status);
             
             try {
                 $insert_stmt->execute();
