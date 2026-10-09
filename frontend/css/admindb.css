@@ -316,25 +316,33 @@ tr:hover{
     background-color: #F8F4EE;
 }
 
-.status-badge{
+.status-badge {
     display: inline-block;
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-size: 12px;
-    font-weight: bold;
-    color: #ffffff;
+    padding: 6px 12px;         
+    border-radius: 6px;        
+    font-size: 12px;           
+    font-weight: bold;         
+    color: #ffffff;           
+    text-align: center;
+    cursor: default;           
+    user-select: none;         
 }
 
-.status-badge.pending, .status-badge.unpaid{
-    background-color: #E89139;
+
+.status-badge.active,
+.status-badge.approved,
+.status-badge.paid {
+    background-color: #5AAF48;  
 }
 
-.status-badge.approved, .status-badge.paid{
-    background-color: #5AAF48;
+.status-badge.pending,
+.status-badge.unpaid {
+    background-color: #E89139;  /
 }
 
-.status-badge.denied{
-    background-color: #E70808;
+.status-badge.suspended,
+.status-badge.denied {
+    background-color: #E70808;  
 }
 
 .action-btn{

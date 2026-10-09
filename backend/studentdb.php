@@ -1,3 +1,36 @@
+<?php
+session_start();
+require_once "connection/config.php";
+require_once "helpers/SystemOperators.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
+
+$user_role = $_SESSION['role'] ?? 'Student';
+if ($user_role === 'Admin' || $user_role === 'Librarian') {
+    header("Location: admindb.php");
+    exit();
+}
+
+$con = connection();
+$so  = new SystemOperators();
+
+$user_id = $_SESSION['user_id'];
+$stmt = $con->prepare("SELECT Full_Name, Student_ID, Department FROM user_table WHERE User_ID = ?");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$student = $stmt->get_result()->fetch_assoc();
+$stmt->close();
+
+$full_name  = !empty($student['Full_Name']) ? $so->decrypt($student['Full_Name']) : 'Student';
+$student_id = !empty($student['Student_ID']) ? $so->decrypt($student['Student_ID']) : 'N/A';
+$department = !empty($student['Department']) ? $so->decrypt($student['Department']) : 'N/A';
+
+?>
+
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -84,11 +117,13 @@
         <section class="user_preview">
             <div class="user_info">
                 <p class="greetings">Welcome Back,</p>
-                <h1>Victor Magtanggol</h1>
-                <dd>BS Information Technology</dd>
-                <dd>R2025XXXXXX</dd>
+                <h1><?php echo $full_name; ?></h1>
+                <dd><?php echo $department; ?></dd>
+                <dd><?php echo $student_id; ?></dd>
             </div>
 
+
+            <!---- STILL STATIC, NEEDS TO BE DYNAMICALLY GENERATED ---->
             <div class="recent_activity">
                 <h2 class="recent-section">Recent Activity</h2>
                 <ul class="recent-list">
@@ -97,7 +132,8 @@
                 </ul>
             </div>
         </section>
-
+        <!---- STILL STATIC, NEEDS TO BE DYNAMICALLY GENERATED ---->
+        
         <section class="recommendation">
             <h2 class="reco-section">Recommendations</h2>
             <div class="books">
