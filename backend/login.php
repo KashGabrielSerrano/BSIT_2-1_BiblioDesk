@@ -88,6 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BiblioDesk LMS - Portal Login</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="../frontend/css/login.css">
 </head>
 <body>
@@ -96,6 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
 <div class="login-container">
     <div class="logo-panel">
         <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
+        <p class="tagline">Read, Archive, Advance,<br>Knowledge.</p>
     </div>
 
     <div class="form-panel">
@@ -110,15 +112,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                 <form action="login.php" method="post">
                     <div class="form-fields">
                         <h1>Welcome to BiblioDesk LMS</h1>
-                        <div class="form-items">
-                            <label for="email">Email:</label>
-                            <input type="email" id="email" name="email" required placeholder="R20XXXXXXXX@feuroosevelt.edu.ph">
-                        </div>
-
-                        <div class="form-items">
-                            <label for="password">Password:</label>
-                            <input type="password" id="password" name="password" required minlength="6" placeholder="••••••••">
-                        </div>
+                    <div class="form-items">
+                        <label for="email" class="form-label">Personal Email</label>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="bibliodesk@example.com" required>
+                    </div>
+                    
+                    <div class="form-items">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="password" required minlength="6" placeholder="••••••••" required>
+                    </div>
                         <button type="submit" name="btnLogin">Login</button>
 
                         <hr>
@@ -130,5 +132,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 </body>
 </html>
