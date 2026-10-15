@@ -106,7 +106,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
         <div class="form-wrapper">
                 <form action="login.php" method="post">
                     <div class="form-fields">
-                        <h1>Welcome to BiblioDesk LMS</h1>
+                        <h1>Log In</h1>
 
                         <?php if (!empty($error)): ?>
                             <div class="alert bg-danger text-white d-flex align-items-center" role="alert">
@@ -130,11 +130,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                          </div>
                     </div>
 
+                    <div class="form-options">
+                     <div class="form-field">
+                        <input type="checkbox" id="checkLabel" name="remember" />
+                        <label for="checkLabel">Remember me</label>
+                     </div>
+                        <a href="forgotpassword.php" class="forgot-password">Forgot Password?</a>
+                    </div>
+
                         <button type="submit" name="btnLogin">Login</button>
 
                         <hr>
                         <p class="register">Don't have an account? <a href="registration.php">REGISTER NOW</a></p>
-                        <p class="terms">By proceeding, you agree to our Terms of Use <br> and confirm that you have read our Privacy Policy.</p>
+                        <p class="terms">By proceeding, you agree to our <a href="terms.php">Terms of Use</a> <br> and confirm that you have read our <a href="privacy.php">Privacy Policy</a>.</p>
                     </div>
                 </form>
         </div>
