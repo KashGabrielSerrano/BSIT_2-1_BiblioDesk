@@ -126,6 +126,7 @@ CREATE TABLE `user_table` (
   `Full_Name` varchar(150) NOT NULL DEFAULT '',
   `Student_ID` varchar(50) DEFAULT NULL,
   `Department` varchar(100) DEFAULT NULL,
+  `Birthday` varchar(255) DEFAULT NULL,
   `User_QR_Code` varchar(255) DEFAULT NULL,
   `Weekly_reserve_Count` int(11) DEFAULT 0,
   `Email` varchar(150) NOT NULL,
@@ -133,7 +134,7 @@ CREATE TABLE `user_table` (
   `Role` enum('Student','Admin','Librarian') NOT NULL DEFAULT 'Student',
   `Max_Borrow_Limit` int(11) DEFAULT 3,
   `Account_Status` enum('Pending','Active','Suspended') NOT NULL DEFAULT 'Pending',
-  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --

@@ -5,8 +5,7 @@ require_once("helpers/SystemOperators.php");
 $con = connection();$so = new SystemOperators();
 
 $modal_message  = '';
-$modal_type     = 'error';
-$modal_redirect = '';
+$modal_type     = 'error';$modal_redirect = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$first_name = trim(filter_input(INPUT_POST, 'first_name', FILTER_SANITIZE_SPECIAL_CHARS));
     $last_name      = trim(filter_input(INPUT_POST, 'last_name', FILTER_SANITIZE_SPECIAL_CHARS));
@@ -21,25 +20,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
     $raw_password   = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
     $confirm_pwd    = filter_input(INPUT_POST, 'confirm_password', FILTER_SANITIZE_SPECIAL_CHARS);
 
-  if ($raw_password !== $confirm_pwd) {
-        $modal_message = 'Passwords do not match.';
+    $raw_birthday   = trim(filter_input(INPUT_POST, 'birthday', FILTER_SANITIZE_SPECIAL_CHARS));
+    $birthday_formatted = '';
+    if (!empty($raw_birthday)) {
+        $date_obj = DateTime::createFromFormat('F j, Y',$raw_birthday);
+        if (!$date_obj) {
+            $date_obj = DateTime::createFromFormat('Y-m-d',$raw_birthday);
+        }
+        if ($date_obj) {
+            $birthday_formatted =$date_obj->format('m-d-Y');
+        }
+    }
+    $birthday_enc   = !empty($birthday_formatted) ? $so->encrypt($birthday_formatted) : null;
+
+  if ($raw_password !== $confirm_pwd) {$modal_message = 'Passwords do not match.';
     } else {
         $hashed_password = password_hash($raw_password, PASSWORD_BCRYPT);
-        $role            = 'Student';
-        $account_status  = 'Pending';
+        $role            = 'Student';$account_status  = 'Pending';
 
         $select_query = "SELECT * FROM `user_table` WHERE `Student_ID` = ? OR `Email` = ?";
-        $select_stmt  = $con->prepare($select_query);
-        $select_stmt->bind_param('ss', $student_id, $email);
+        $select_stmt  =$con->prepare($select_query);$select_stmt->bind_param('ss', $student_id,$email);
 
         if ($select_stmt->execute()) {
-            $result = $select_stmt->get_result();
-            if ($result->num_rows > 0) {
-                $modal_message = 'User already exists.';
+            $result =$select_stmt->get_result();
+            if ($result->num_rows > 0) {$modal_message = 'User already exists.';
             } else {
-                $insert_query = 'INSERT INTO `user_table` (`Full_Name`, `Student_ID`, `Email`, `Password`, `Role`, `Department`, `Account_Status`) VALUES (?, ?, ?, ?, ?, ?, ?)';
+                $insert_query = 'INSERT INTO `user_table` (`Full_Name`, `Student_ID`, `Email`, `Password`, `Role`, `Department`, `Birthday`, `Account_Status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
                 $insert_stmt  = $con->prepare($insert_query);
-                $insert_stmt->bind_param('sssssss', $full_name, $student_id, $email, $hashed_password, $role, $department, $account_status);
+                $insert_stmt->bind_param('ssssssss', $full_name, $student_id, $email, $hashed_password, $role, $department, $birthday_enc, $account_status);
 
                 try {
                     $insert_stmt->execute();
