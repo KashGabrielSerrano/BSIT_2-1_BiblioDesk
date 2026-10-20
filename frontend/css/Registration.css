@@ -1,290 +1,351 @@
 :root {
-  --bg: #4D463D;
-  --cream: #fff5e6;
-  --green: #2e4a10;
-  --green-dark: #1f3308;
-  --ink: #1f2a12;
-  --line: #1c1c1c;
-  --muted: #6e6e6e;
+  --bg: #2c251d;
+  --brown: #4d463d;
+  --green: #2e4e0d;
+  --hover: #8b7e6c;
+  --link: #3b52ca;
+  --text: #333333;
+  --muted: #797575;
+  --gray: #626262;
   --white: #ffffff;
   --danger: #c0392b;
-  --link: #2f45c5;
-
-  /* card size: same width as the original container (560px) */
-  --card-w: 560px;
-  --card-min-h: 600px;
+  --radius: 8px;
 }
 
-html, body { height: 100%; }
-body {
+* {
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
-  background-color: var(--bg);
-  color: var(--white);
-  font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  padding: 0;
 }
 
-.app-container {
-  display: flex;
-  align-items: center;
+body {
   min-height: 100vh;
-  background-color: var(--bg);
+  background: var(--bg);
 }
 
-/* ---------- Brand side (left) ---------- */
-.brand-side {
-  flex: 1 1 auto;
+/* Layout */
+.registration-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 140px;
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px;
+}
+
+.logo-panel {
+  flex: 0 1 480px;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
-  padding: 2rem;
+  align-items: center;
   text-align: center;
+  padding: 20px;
 }
-.brand-icon {
-  width: min(420px, 70%);
+
+.logo {
+  width: auto;
+  max-width: 450px;
+  max-height: 40vh;
   height: auto;
-  margin-bottom: 1.25rem;
+  object-fit: contain;
 }
-.brand-tagline {
-  font-size: 1.05rem;
-  letter-spacing: .12em;
-  line-height: 1.6;
+
+.tagline {
   color: var(--white);
-  margin: 0;
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-top: 30px;
+  line-height: 1.4;
 }
 
-/* ---------- Form side (right): cream panel holding a white card ---------- */
-.form-side {
-  flex: 0 0 auto;
-  width: calc(var(--card-w) + 56px);   /* card + 28px cream border on each side */
-  margin: 2rem 90px 2rem 0;            /* same right gap as the original layout */
-  display: flex;
-  background-color: var(--cream);
-  border-radius: 28px;
-  padding: 28px;
-}
-.form-card {
-  flex: 1 1 auto;
-  min-height: var(--card-min-h);
-  background-color: var(--white);
-  color: var(--ink);
-  border-radius: 16px;
-  padding: 2.75rem 2rem 2rem;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, .28);
-}
-#registrationForm {
-  max-width: 440px;
-  margin: 0 auto;
-}
-
-.form-title {
+h1 {
+  font-size: 32px;
+  color: var(--brown);
+  margin-bottom: 24px;
   text-align: center;
-  font-size: 1.6rem;
-  font-weight: 800;
-  letter-spacing: .02em;
-  text-transform: uppercase;
-  line-height: 1.2;
-  color: var(--ink);
-  margin: 0 0 1.75rem;
 }
 
-/* ---------- Inputs ---------- */
-.form-label {
-  font-size: .8rem;
-  font-weight: 500;
-  color: var(--ink);
-  margin-bottom: .3rem;
-}
-.form-control {
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: .9rem;
-  padding: .6rem 1rem;
-  background-color: var(--white);
-  color: #111;
-}
-.form-control::placeholder { color: #8a8a8a; opacity: 1; }
-.form-control:focus {
-  background-color: var(--white);
-  color: #111;
-  border-color: var(--green);
-  box-shadow: 0 0 0 .2rem rgba(46, 74, 16, .22);
-}
-.form-control.is-invalid {
-  border-color: var(--danger);
-  background-image: none;
-  padding-right: 1rem;
-}
-.form-control.is-invalid:focus { box-shadow: 0 0 0 .2rem rgba(192, 57, 43, .25); }
-
-/* department dropdown (same look as the inputs) */
-.form-select {
-  min-height: 46px;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  font-size: .9rem;
-  padding: .6rem 2.25rem .6rem 1rem;
-  background-color: var(--white);
-  color: #111;
-}
-.form-select:invalid { color: #8a8a8a; }
-.form-select option { color: #111; }
-.form-select:focus {
-  background-color: var(--white);
-  border-color: var(--green);
-  box-shadow: 0 0 0 .2rem rgba(46, 74, 16, .22);
-}
-
-/* password field with show/hide eye */
-.password-field { position: relative; }
-.password-field .form-control,
-.password-field .form-control.is-invalid { padding-right: 2.75rem; }
-.toggle-password {
-  position: absolute;
-  top: 50%;
-  right: .8rem;
-  transform: translateY(-50%);
+hr {
   border: 0;
-  background: none;
-  padding: .25rem;
-  line-height: 0;
-  color: #555;
+  height: 1px;
+  background: var(--brown);
+  opacity: 1;
+  margin: 30px 0;
+}
+
+/* Card */
+.form-wrapper {
+  flex: 0 1 560px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+form {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 550px;
+  padding: 50px 60px;
+  text-align: left;
+}
+
+/* Inputs */
+.form-items {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.form-items label {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--brown);
+  margin-bottom: 7px;
+}
+
+.form-items input,
+.form-items select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #000;
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.form-items input::placeholder,
+.form-items select:invalid {
+  color: var(--muted);
+}
+
+.form-items select option {
+  color: var(--text);
+}
+
+.form-items input:focus,
+.form-items select:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+}
+
+.form-items input.is-invalid,
+.form-items select.is-invalid {
+  border-color: var(--danger);
+}
+
+.form-items input.flatpickr-input[readonly] {
+  background: var(--white);
   cursor: pointer;
 }
-.toggle-password:hover { color: var(--ink); }
-.toggle-password:focus-visible { outline: 2px solid var(--green); border-radius: 4px; }
-.toggle-password .slash { display: none; }
-.toggle-password.is-showing .slash { display: block; }
 
-/* ---------- Buttons ---------- */
-.btn.btn-biblio {
-  background-color: var(--green);
-  border: 1px solid var(--green);
-  color: var(--white);
-  font-size: .8rem;
-  font-weight: 600;
-  letter-spacing: .03em;
-  text-transform: uppercase;
-  min-height: 44px;
-  min-width: 128px;
-  padding: .5rem 1.5rem;
-  border-radius: 8px;
-  transition: background-color .2s, border-color .2s, transform .1s;
+.flatpickr-calendar,
+.flatpickr-calendar * {
+  font-family: Arial, Helvetica, sans-serif;
 }
-.btn.btn-biblio:hover:not(:disabled) {
-  background-color: var(--green-dark);
-  border-color: var(--green-dark);
-  color: var(--white);
-}
-.btn.btn-biblio:active:not(:disabled) { transform: translateY(1px); }
-.btn.btn-biblio:focus-visible { outline: none; box-shadow: 0 0 0 .2rem rgba(46, 74, 16, .35); }
-.btn.btn-biblio:disabled { opacity: .55; cursor: not-allowed; }
 
-/* ---------- Multi-step form ---------- */
-.form-page { display: none; }
-.form-page.active { display: block; animation: fadeIn .3s ease; }
+/* Password toggle */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  padding-right: 45px;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  z-index: 10;
+}
+
+.password-toggle-icon:hover {
+  color: var(--brown);
+}
+
+/* Steps */
+.form-page {
+  display: none;
+}
+
+.form-page.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(6px); }
-  to   { opacity: 1; transform: none; }
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .step-actions {
   display: flex;
-  justify-content: space-between;
-  gap: .75rem;
-  margin-top: 2rem;
-}
-.step-actions--single .btn.btn-biblio { flex: 1 1 auto; }
-
-/* The step counter stays in the page for the script, but is only read by screen readers */
-.step-indicator {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  margin: -1px;
-  padding: 0;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
+  gap: 12px;
+  margin-top: 10px;
 }
 
-/* ---------- Per-page tweaks ---------- */
-#student_id { text-transform: uppercase; }
-#student_id::placeholder { text-transform: none; }
-
-/* ---------- OTP page ---------- */
-.form-title.otp-title {
-  font-size: 2.75rem;
-  letter-spacing: 0;
-  text-transform: none;
-  margin-bottom: .75rem;
-}
-.otp-sub {
-  text-align: center;
-  font-size: .95rem;
-  line-height: 1.45;
-  color: #111;
-  max-width: 290px;
-  margin: 0 auto 1.75rem;
-}
-.otp-boxes {
-  position: relative;
-  display: flex;
-  justify-content: center;
-  gap: .6rem;
-  margin-bottom: 1.25rem;
-}
-.otp-box.form-control {
-  width: 50px;
-  min-height: 56px;
-  padding: 0;
-  text-align: center;
-  font-size: 1.4rem;
+.step-actions button {
+  flex: 1;
+  padding: 12px;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
   font-weight: 600;
-}
-/* the real #otp field (posted to PHP) stays in the form but is not shown */
-.otp-hidden {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
-.otp-resend {
+  cursor: pointer;
   text-align: center;
-  font-size: .95rem;
-  color: #111;
-  margin: 1.5rem 0 0;
 }
-.otp-resend .resend-link {
+
+.step-actions button:hover {
+  background: var(--hover);
+}
+
+.step-actions button[data-action="prev"] {
+  background: var(--white);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+}
+
+.step-actions button[data-action="prev"]:hover {
+  background: var(--brown);
+  color: var(--white);
+}
+
+/* Footer text */
+.register {
+  font-size: 15px;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.register a {
   color: var(--link);
-  font-weight: 600;
+  font-weight: bold;
   text-decoration: underline;
 }
 
-/* ---------- Responsive ---------- */
-@media (max-width: 1100px) {
-  .form-side { margin-right: 2rem; }
+.terms {
+  font-size: 13px;
+  color: var(--gray);
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 15px;
 }
-@media (max-width: 900px) {
-  .app-container { flex-direction: column; align-items: stretch; }
-  .brand-side { flex: 0 0 auto; padding: 2rem 1rem 1.25rem; }
-  .brand-icon { width: min(240px, 60%); margin-bottom: .75rem; }
-  .brand-tagline { font-size: .95rem; }
-  .form-side {
-    width: calc(100% - 1.5rem);
-    max-width: calc(var(--card-w) + 56px);
-    margin: 0 auto 1.5rem;
-    padding: 14px;
-    border-radius: 22px;
+
+.terms a {
+  color: var(--gray);
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .registration-container {
+    padding: 10px;
   }
-  .form-card { min-height: 0; padding: 1.75rem 1.25rem 1.5rem; }
-  .otp-boxes { gap: .4rem; }
-  .otp-box.form-control { width: 42px; min-height: 50px; }
+  form {
+    padding: 24px 40px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+  .form-items {
+    margin-bottom: 12px;
+  }
+  .form-items label {
+    margin-bottom: 4px;
+  }
+  .form-items input,
+  .form-items select {
+    padding: 10px 14px;
+  }
+  .step-actions button {
+    padding: 10px;
+  }
+  hr {
+    margin: 20px 0;
+  }
+  .terms {
+    margin-top: 8px;
+  }
+  .logo {
+    max-height: 35vh;
+  }
+  .tagline {
+    margin-top: 16px;
+    font-size: 18px;
+  }
 }
+
+@media (max-width: 992px) {
+  .tagline {
+    font-size: 18px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  .registration-container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+    gap: 20px;
+  }
+  .logo-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 180px;
+  }
+  .logo {
+    max-width: 160px;
+    max-height: 120px;
+  }
+  .tagline {
+    font-size: 15px;
+    margin-top: 10px;
+  }
+  form {
+    padding: 25px 20px;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .form-wrapper {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .form-page.active { animation: none; }
-  .btn.btn-biblio { transition: none; }
+  .form-page.active {
+    animation: none;
+  }
 }
