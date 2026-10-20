@@ -2,18 +2,16 @@ name: Keep Supabase Active
 
 on:
   schedule:
-    # Runs at 00:15 UTC every 3 days (8:15 AM GMT+8)
-    - cron: '15 0 */3 * *'
+    # Runs twice daily at 00:00 and 12:00 UTC (8:00 AM and 8:00 PM GMT+8)
+    - cron: '0 0,12 * * *'
   workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
     steps:
-      - name: Send Keep-Alive Request to Supabase REST API
+      - name: Send Database Query Request to Supabase REST API
         run: |
-          curl -i -X POST "https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/storage/v1/object/list/book-covers" \
+          curl -i -X GET "https://${{ secrets.SUPABASE_PROJECT_ID }}.supabase.co/rest/v1/keep_alive?select=id&limit=1" \
           -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
-          -H "Content-Type: application/json" \
-          -d '{"prefix": "", "limit": 1}'
+          -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}"
