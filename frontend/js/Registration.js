@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    // Error modal
+    // Error modal instance
     const errorModal = (typeof bootstrap !== "undefined")
         ? bootstrap.Modal.getOrCreateInstance(errorModalEl)
         : null;
@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // Steps
+    // Page Step Logic
     function showPage() {
         pages.forEach(function (page) { page.classList.remove("active"); });
         pages[currentPage].classList.add("active");
@@ -88,7 +88,6 @@ document.addEventListener("DOMContentLoaded", function () {
                 input.value = input.value.trim();
             }
 
-            // Flatpickr hides the original birthday input, so highlight the visible copy
             const target = (input.id === "birthday") ? birthdayPicker.altInput : input;
 
             if (input.hasAttribute("required") && input.value === "") {
@@ -127,24 +126,6 @@ document.addEventListener("DOMContentLoaded", function () {
         b.addEventListener("click", previousPage);
     });
 
-    form.addEventListener("submit", function (event) {
-        if (currentPage < pages.length - 1) {
-            event.preventDefault();
-            nextPage();
-            return;
-        }
-        if (!validateCurrentPage("registering")) {
-            event.preventDefault();
-            return;
-        }
-        const password = document.getElementById("password");
-        const confirmPassword = document.getElementById("confirm_password");
-        if (password.value !== confirmPassword.value) {
-            event.preventDefault();
-            showError("Passwords do not match.", confirmPassword);
-        }
-    });
-
     document.getElementById("student_id").addEventListener("input", function () {
         this.value = this.value.toUpperCase();
     });
@@ -161,7 +142,7 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
-    if (errorModalEl.dataset.message) {
+    if (errorModalEl && errorModalEl.dataset.message) {
         showServerMessage(
             errorModalEl.dataset.message,
             errorModalEl.dataset.type,
@@ -170,4 +151,274 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     showPage();
+
+    // OTP Modal & Timer 
+    const modalElement     = document.getElementById('otpModal');
+    const otpModal         = modalElement ? new bootstrap.Modal(modalElement) : null;
+    const otpAlert         = document.getElementById('otpAlert');
+    const otpInput         = document.getElementById('otpCodeInput');
+    const otpEmailDisplay  = document.getElementById('otpEmailDisplay');
+    const otpExpiryTimer   = document.getElementById('otpExpiryTimer');
+    const btnVerify        = document.getElementById('btnVerifyOtp');
+    const btnResend        = document.getElementById('btnResendOtp');
+    const btnSubmitRegister = document.getElementById('btnSubmitRegister');
+
+    let expiryCountdownInterval = null;
+    let resendCountdownInterval = null;
+
+    function showAlert(msg, isSuccess = false) {
+        if (!otpAlert) return;
+        otpAlert.className = `alert ${isSuccess ? 'alert-success' : 'alert-danger'}`;
+        otpAlert.textContent = msg;
+        otpAlert.classList.remove('d-none');
+    }
+
+    function clearAlert() {
+        if (otpAlert) {
+            otpAlert.classList.add('d-none');
+            otpAlert.textContent = '';
+        }
+    }
+
+    // Expiration Timer synced with backend timestamp
+    function startExpiryTimer(expiresAtMs) {
+        clearInterval(expiryCountdownInterval);
+
+        const targetTime = expiresAtMs || (Date.now() + 300000);
+
+        function updateTimer() {
+            const now = Date.now();
+            const remainingSeconds = Math.max(0, Math.floor((targetTime - now) / 1000));
+
+            const minutes = Math.floor(remainingSeconds / 60);
+            const seconds = remainingSeconds % 60;
+
+            if (otpExpiryTimer) {
+                otpExpiryTimer.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+
+            if (remainingSeconds <= 0) {
+                clearInterval(expiryCountdownInterval);
+                showAlert('Your verification code has expired. Please request a new one.');
+                if (btnVerify) btnVerify.disabled = true;
+                if (otpInput) otpInput.disabled = true;
+            }
+        }
+
+        updateTimer();
+        expiryCountdownInterval = setInterval(updateTimer, 1000);
+    }
+
+    // 60-second resend cooldown timer
+    function startResendCooldown(seconds = 60) {
+        clearInterval(resendCountdownInterval);
+        if (!btnResend) return;
+
+        btnResend.disabled = true;
+        let left = seconds;
+        btnResend.innerHTML = `Resend code in <span id="resendTimer">${left}</span>s`;
+
+        resendCountdownInterval = setInterval(() => {
+            left--;
+            const timerSpan = document.getElementById('resendTimer');
+            if (timerSpan) timerSpan.textContent = left;
+
+            if (left <= 0) {
+                clearInterval(resendCountdownInterval);
+                btnResend.disabled = false;
+                btnResend.innerHTML = 'Resend OTP';
+            }
+        }, 1000);
+    }
+
+    // Reset OTP modal state when opened
+    function initializeOtpModal(email, expiresAtMs) {
+        if (otpEmailDisplay) otpEmailDisplay.textContent = email;
+        if (otpInput) {
+            otpInput.value = '';
+            otpInput.disabled = false;
+            otpInput.classList.remove('is-invalid');
+        }
+        if (btnVerify) {
+            btnVerify.disabled = false;
+            btnVerify.innerHTML = 'Verify & Complete Registration';
+        }
+        clearAlert();
+        startExpiryTimer(expiresAtMs);
+        startResendCooldown(60);
+
+        if (otpModal) {
+            otpModal.show();
+            modalElement.addEventListener('shown.bs.modal', () => {
+                if (otpInput) otpInput.focus();
+            }, { once: true });
+        }
+    }
+
+    // Format OTP input: strictly numbers only
+    if (otpInput) {
+        otpInput.addEventListener('input', function () {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            this.classList.remove('is-invalid');
+            clearAlert();
+
+            // Auto-trigger verification upon typing 6th digit
+            if (this.value.length === 6 && btnVerify && !btnVerify.disabled) {
+                btnVerify.click();
+            }
+        });
+    }
+
+    // 1. Form submission: Trigger registration & update button UI
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        if (currentPage < pages.length - 1) {
+            nextPage();
+            return;
+        }
+
+        if (!validateCurrentPage("registering")) return;
+
+        const password = document.getElementById("password");
+        const confirmPassword = document.getElementById("confirm_password");
+        if (password.value !== confirmPassword.value) {
+            showError("Passwords do not match.", confirmPassword);
+            return;
+        }
+
+        const emailInput = document.getElementById('email');
+        const userEmail = emailInput ? emailInput.value.trim() : '';
+
+        // Immediate Feedback: Disable submit button & show spinner
+        const originalBtnText = btnSubmitRegister ? btnSubmitRegister.innerHTML : 'Submit Registration';
+        if (btnSubmitRegister) {
+            btnSubmitRegister.disabled = true;
+            btnSubmitRegister.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending OTP...`;
+        }
+
+        const formData = new FormData(form);
+        formData.append('action', 'submit_registration');
+
+        try {
+            const response = await fetch('registration_controller.php', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await response.json();
+
+            if (data.success) {
+                initializeOtpModal(userEmail, data.expires_at);
+            } else {
+                showError(data.message);
+            }
+        } catch (err) {
+            showError('An unexpected server error occurred. Please try again.');
+        } finally {
+            if (btnSubmitRegister) {
+                btnSubmitRegister.disabled = false;
+                btnSubmitRegister.innerHTML = originalBtnText;
+            }
+        }
+    });
+
+    // 2. OTP Verification Handler
+    if (btnVerify) {
+        btnVerify.addEventListener('click', async () => {
+            const otpCode = otpInput ? otpInput.value.trim() : '';
+
+            if (otpCode.length !== 6) {
+                showAlert('Please enter the full 6-digit code.');
+                if (otpInput) {
+                    otpInput.classList.add('is-invalid');
+                    otpInput.focus();
+                }
+                return;
+            }
+
+            // Immediate feedback: Disable button & show spinner
+            btnVerify.disabled = true;
+            btnVerify.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Verifying...`;
+            if (otpInput) otpInput.disabled = true;
+
+            const formData = new FormData();
+            formData.append('action', 'verify_otp');
+            formData.append('otp_code', otpCode);
+
+            try {
+                const response = await fetch('registration_controller.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                if (data.success) {
+                    showAlert(data.message, true);
+                    clearInterval(expiryCountdownInterval);
+                    clearInterval(resendCountdownInterval);
+
+                    setTimeout(() => {
+                        window.location.href = 'login.php';
+                    }, 1500);
+                } else {
+                    showAlert(data.message, false);
+                    if (otpInput) {
+                        otpInput.disabled = false;
+                        otpInput.value = '';
+                        otpInput.classList.add('is-invalid');
+                        otpInput.focus();
+                    }
+                    btnVerify.disabled = false;
+                    btnVerify.innerHTML = 'Verify & Complete Registration';
+                }
+            } catch (err) {
+                showAlert('Verification failed due to a server connection error.');
+                if (otpInput) otpInput.disabled = false;
+                btnVerify.disabled = false;
+                btnVerify.innerHTML = 'Verify & Complete Registration';
+            }
+        });
+    }
+
+    // 3. Resend OTP Handler
+    if (btnResend) {
+        btnResend.addEventListener('click', async () => {
+            btnResend.disabled = true;
+            const originalText = btnResend.innerHTML;
+            btnResend.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Sending...`;
+
+            const formData = new FormData();
+            formData.append('action', 'resend_otp');
+
+            try {
+                const response = await fetch('registration_controller.php', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+
+                showAlert(data.message, data.success);
+
+                if (data.success) {
+                    if (otpInput) {
+                        otpInput.value = '';
+                        otpInput.disabled = false;
+                        otpInput.focus();
+                    }
+                    if (btnVerify) btnVerify.disabled = false;
+                    
+                    // Restart both timers synced with backend timestamp
+                    startExpiryTimer(data.expires_at);
+                    startResendCooldown(60);
+                } else {
+                    btnResend.disabled = false;
+                    btnResend.innerHTML = originalText;
+                }
+            } catch (err) {
+                showAlert('Failed to resend code. Please try again.');
+                btnResend.disabled = false;
+                btnResend.innerHTML = originalText;
+            }
+        });
+    }
 });

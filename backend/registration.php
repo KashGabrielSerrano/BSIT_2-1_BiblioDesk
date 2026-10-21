@@ -33,7 +33,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
     }
     $birthday_enc   = !empty($birthday_formatted) ? $so->encrypt($birthday_formatted) : null;
 
-  if ($raw_password !== $confirm_pwd) {$modal_message = 'Passwords do not match.';
+    if ($raw_password !== $confirm_pwd) {$modal_message = 'Passwords do not match.';
     } else {
         $hashed_password = password_hash($raw_password, PASSWORD_BCRYPT);
         $role            = 'Student';$account_status  = 'Pending';
@@ -51,7 +51,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
 
                 try {
                     $insert_stmt->execute();
-                    $modal_message  = 'Registration successful! Please wait for admin approval.';
+                    $modal_message  = 'Registration successful!';
                     $modal_type     = 'success';
                     $modal_redirect = 'login.php';
                 } catch (mysqli_sql_exception $e) {
@@ -88,7 +88,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
     </div>
  
     <div class="form-wrapper">
-        <form id="registrationForm" action="registration.php" method="post" novalidate>
+        <form id="registrationForm" novalidate>
             <div class="form-fields">
                 <h1>Registration</h1>
  
@@ -165,7 +165,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
                     </div>
                     <div class="step-actions">
                         <button type="button" data-action="prev">Previous</button>
-                        <button type="submit" name="btnRegister">Submit Registration</button>
+                        <button type="submit" name="btnRegister" id="btnSubmitRegister">Submit Registration</button>
                     </div>
                 </div>
  
@@ -197,9 +197,48 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$fir
         </div>
     </div>
 </div>
+
+<!-- OTP Verification Modal -->
+<div class="modal fade" id="otpModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="otpModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="modal-header bibliodesk-modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="otpModalTitle">
+                    <i class="bi bi-shield-lock-fill me-2 fs-4"></i>Email Verification
+                </h5>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-muted mb-1">A 6-digit verification code was sent to:</p>
+                <p class="fw-bold fs-6 text-dark mb-3" id="otpEmailDisplay">user@example.com</p>
+                
+                <div id="otpAlert" class="alert d-none py-2 px-3 small rounded-3" role="alert"></div>
+
+                <div class="mb-3">
+                    <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" class="form-control text-center font-monospace fs-2 py-2 bibliodesk-otp-input" maxlength="6" placeholder="000000" autocomplete="off">
+                </div>
+
+                <div class="mb-3 text-muted small">
+                    <i class="bi bi-clock-history me-1"></i>Code expires in <span id="otpExpiryTimer" class="fw-bold text-danger">05:00</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <small class="text-muted">Didn't receive the code?</small>
+                    <button type="button" id="btnResendOtp" class="btn btn-link btn-sm p-0 text-decoration-none bibliodesk-resend-link" disabled>
+                        Resend code in <span id="resendTimer">60</span>s
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" id="btnVerifyOtp" class="btn bibliodesk-btn-primary w-100 py-2 rounded-3 shadow-sm">
+                    Verify & Complete Registration
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
  
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
-<script src="../frontend/js/Registration.js?v=8"></script>
+<script src="../frontend/js/Registration.js?"></script>
 </body>
 </html>

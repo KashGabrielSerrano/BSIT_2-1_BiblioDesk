@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 07, 2026 at 07:25 AM
+-- Generation Time: Oct 21, 2026 at 11:18 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,6 +40,28 @@ CREATE TABLE `book_table` (
   `Is_digital` enum('Yes','No') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `book_table`
+--
+
+INSERT INTO `book_table` (`Book_ID`, `Title`, `Description`, `Cover_Image`, `Drive_Link`, `Author`, `ISBN`, `Publisher`, `Category`, `Is_digital`) VALUES
+(1, 'TEST BOOK', 'sum', 'https://drive.google.com/thumbnail?id=159Gsh59gDq11n2ddXUeBHsMNLnY-0QWu&sz=w500', 'https://fqwxstfflwbkmajqdjog.supabase.co/storage/v1/object/public/pdf-books/week2_what_is_interaction_design.pdf', '123123', '978', NULL, 'BSIT', 'Yes');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `email_verifications`
+--
+
+CREATE TABLE `email_verifications` (
+  `Verification_ID` int(11) NOT NULL,
+  `User_ID` int(11) NOT NULL,
+  `OTP_Code` varchar(6) NOT NULL,
+  `Expires_At` datetime NOT NULL,
+  `Is_Used` tinyint(1) NOT NULL DEFAULT 0,
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 -- --------------------------------------------------------
 
 --
@@ -73,6 +95,13 @@ CREATE TABLE `reservation_table` (
   `Weekly_reserve_count` int(11) DEFAULT 0,
   `Request_approval` varchar(50) DEFAULT 'Pending'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `reservation_table`
+--
+
+INSERT INTO `reservation_table` (`Reservation_ID`, `User_ID`, `Book_ID`, `Reservation_Date`, `Reservation_Time`, `Weekly_reserve_count`, `Request_approval`) VALUES
+(1, 2, 1, '2026-10-09', '17:15:10', 0, 'Approved');
 
 -- --------------------------------------------------------
 
@@ -115,6 +144,13 @@ CREATE TABLE `transaction_table` (
   `Received_By` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `transaction_table`
+--
+
+INSERT INTO `transaction_table` (`Transaction_ID`, `User_ID`, `Book_ID`, `Issue_Date`, `Due_Date`, `Return_Date`, `Issued_By`, `Received_By`) VALUES
+(1, 2, 1, '2026-10-09', '2026-10-16', NULL, 3, NULL);
+
 -- --------------------------------------------------------
 
 --
@@ -134,8 +170,25 @@ CREATE TABLE `user_table` (
   `Role` enum('Student','Admin','Librarian') NOT NULL DEFAULT 'Student',
   `Max_Borrow_Limit` int(11) DEFAULT 3,
   `Account_Status` enum('Pending','Active','Suspended') NOT NULL DEFAULT 'Pending',
-  `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `user_table`
+--
+
+INSERT INTO `user_table` (`User_ID`, `Full_Name`, `Student_ID`, `Department`, `Birthday`, `User_QR_Code`, `Weekly_reserve_Count`, `Email`, `Password`, `Role`, `Max_Borrow_Limit`, `Account_Status`, `Created_At`) VALUES
+(1, 'aCtkRXd2MXpiTmdUdDBpanZHZ25HUDlRajMybTBLS296VXZGaWUrVjhSbz0=', 'MDJGZjZsU3RPMk1WOU5QOGxGdFYrd0Q4eE5WUVJnZFlyeEtNZU', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', NULL, NULL, 0, 'MDJGZjZsU3RPMk1WOU5QOGxGdFYrd0Q4eE5WUVJnZFlyeEtNZUcwTGVpYz0=', '$2y$10$46GLQStgq41bZXVclogJs.DEhoKnxyAWDCaNgb16UHdGzNpVdgbFa', 'Admin', 3, 'Active', '2026-10-07 12:26:14'),
+(2, 'aEVYU25wM2J0UE9kVTZaUnpmVXRYb1ZnRXZSKzcrVmxSUFB2amdTT2d0ST0=', 'YkRIVEkvaWZCV25NRnhIK0xmQmxvZz09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', NULL, NULL, 0, 'NkUxSkhpeUU2Z0NuNURoRmdBK2hkTnN2VHZCc3M1Sit2MjE3V2JZUy81d3RYVVZIejgzSjU4ZW51SzBIVlBHdA==', '$2y$10$uNugdnrjV/PmefbtUhkhB.XrCcSsptD/UNfPXC0pgmPxN4sd19bAy', 'Student', 3, 'Active', '2026-10-07 12:52:25'),
+(3, 'RE1qVzBSNldEd2lxM3EzSng1U0FNVGFUOERFZFhtMHZHejI3U0k0aUU1WT0=', 'LzJ1dzFvRjlCV3JBNnh6RnpiWVl5QT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', NULL, NULL, 0, 'TDdLRzliZmhvSEV4Mi9uN3dJYlpJRlI2TWEvVDdrV05kMnFwQjBaMHVZdz0=', '$2y$10$CpZtXbnFOcSBOFn7yn7OHeWjXaOzsr6K9oNkOsXPFNB.A2xZnR5Ze', 'Librarian', 3, 'Active', '2026-10-09 15:00:12'),
+(4, 'eC9KWi9Ub2owWEtLWTBtZ1RWdndZVmIzSHpLZWNMKzAzL3VScEE3NnVzcz0=', 'Skhyc3NoZnd2TytZZ2crb24ycDJ5QT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', NULL, NULL, 0, 'MUMyR0VNZzdWM29hZXB1K3JoeGppeTErbUk5N2krSEZYbFFqZTVjU3YyTT0=', '$2y$10$uh4AiuThviF.rrlpas97k.2gkLiCrADFAfhEfVxugGsErf/VQTSiC', 'Student', 3, 'Pending', '2026-10-19 03:14:23'),
+(5, 'ZXVQdGFvVnliY2o1OHNzWUpBcnl5Zz09', 'V1ZYaGxUQmIyS3VJbCtNT3B4NEpxMzd3OWoxSUpjSitTSXE5Z2', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', NULL, NULL, 0, 'YndiODV1TmlDbmxCMzUzTU9veEZ1VXNybDdIbFhCWXdNekR0ZGxvVENyaz0=', '$2y$10$Kh0rIJ7VJf/oX5CaPG52je5lEmoPK5zbG0QuhuFJbLvos3RnVl5R2', 'Student', 3, 'Pending', '2026-10-20 11:05:52'),
+(6, 'eUpOZU4yR1dqNjVGTlZYVVFLMGx6S1NOaWwrSkhRYkhFaGJKR0hsOW9ET3o3bVE2QzlRYXEzWXFIZWtTbnJxTg==', 'UFdaVHI4N0NsQVJNbmlIVE4wdkx2MTJmQjBMSm5kTy9OM1RBSl', 'dzBneHVSQWVFaDRDdXh5QmFOVEFpdz09', NULL, NULL, 0, 'dlR6MVNYaWJlR09KN1h2VEMyVWQrbE1YUC84cmEwaVg3MXoyb3d2UWlVWT0=', '$2y$10$bpZPQQ4yywJ..WnF.Pfadu9/L1PkIsRo66JeLZpi5ItPpL6WM527.', 'Student', 3, 'Pending', '2026-10-20 11:27:05'),
+(7, 'cWJIS0VxUnoyLzl4SWM1bVFFVURlRC9lS1JOMjliZ0U2S29sV2dtYWJuOFE3bnlGc1VDd3QxMVpwdEtkMm42bw==', 'cnRMZzkvQW5qWExTakM2QkJWdmhoYWwxT3o4TlJ5N242WUd1WW', 'QzM5azNWWHpPNHRuZ0JHa0hWVDJDZz09', NULL, NULL, 0, 'RnVNL1NlSTZMTlFsUmhjbi9pNENBZXJVdDNlOTB1NGxBcjdaeFlmRFdHVT0=', '$2y$10$9wfQ6yEo.dGsabT1jCpYV.cL.nO1R0eYfn/w32TaxVaNKyMR7CpFy', 'Student', 3, 'Pending', '2026-10-20 11:34:59'),
+(8, 'QVNGaUwraDJIY0ZLRDRhbEFYYURheThSTnpKTk1kZGRVZ1dLTTJmTHRTNDNnMWlQTDhTc2NhNkRUV1ZJcjE5VnlSVTltZkNFby9SbktGYktkcUZsK0NWa0dKZjhIWXV0RCs2M0hqb2Y3MlU9', 'cnRMZzkvQW5qWExTakM2QkJWdmhoU0poZGllS2N4c296cS9DRD', 'N1NzeFkzK3ZlTmplU0U4d0FRb3Y5dz09', 'cEI3bEZ0QnNDV1RGNjhzZlZwY0llUT09', NULL, 0, 'QVNGaUwraDJIY0ZLRDRhbEFYYURhL1dMcnI5RktlSGVKRHhyOUswNVc0T1Z3YlFTK0hRS3FzY2hiLzMyY2tHUw==', '$2y$10$fpcyms1NQ/bOMbtF1JfLIeajGhi3Y/MkVJTFrB4TYMya.o02hj84G', 'Student', 3, 'Pending', '2026-10-20 11:39:00'),
+(9, 'LzBnOUJ4ZEUrM1lWSENVdGpTMnJlSis3SkI0T1F5UVBrRUl4MzZyMEoyS2RIVjYwdFE1MC9naCtyS1BxeVl5Yw==', 'SlIwYjFKOEl2eERvVFVXbk1wQXBFeVFad1lRNStmZHdnaVRMck', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'dzVGMFhQUXRkdi9XenN6UTJqRnJtcjRDdExCWndmTElTNGp6N1FVN2sraz0=', '$2y$10$IaUZKXykPNFQp7DlLB7m9uRHTrtSA78mbVCknZ6522aMG5FbkYobK', 'Student', 3, 'Pending', '2026-10-20 13:06:03'),
+(10, 'RW9aeXlBZW9hSlVvREFXTHpnTHdIMjhWR2pEQmt1VkdDcnR1TU9rVGNnbDkwUWJMeTZkd2NtU2g1blRwRlRObGkwL0tQakwweW50NjF4K2lXdThUNWc9PQ==', 'aGlLaFJ2c0YwU3pVRDJzZkllUG5wOURBUm9KQ1diNkdHak5FVW', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'SllMa2cxY1I1OXJKRmVLT2pXS0RoNXlZc1FnbGtweUd5Tkd5UUNxVm84bz0=', '$2y$10$T7qz/ScqYVJMk5Ifik.lSuenKFSHcX7On3wFhiXQUpNcwfZ6bqEQa', 'Student', 3, 'Pending', '2026-10-20 13:09:26'),
+(11, 'b2I2ZCt0UUl6Q21PNWNlQXN2VzJOcHBieVY1Yk5LdmxYcWV5RnFRa1JoZXltM0NSNURiZGJHNFAzTFlrTDg5dw==', 'OVl2ODgyQjdGeUprVEdma1owZkd2QT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'cTY1Mnl2VlplZmlRYWtjbjFuVzA1c2ZlMG9WbkRXdWNJeXdGOGN6Q0pRZz0=', '$2y$10$.IUa.R2.AezDPrrFZguyk.W9wfczKyeRR9UekNzXWdtKuaENq6Nz2', 'Student', 3, 'Pending', '2026-10-20 13:13:37');
 
 --
 -- Indexes for dumped tables
@@ -147,6 +200,13 @@ CREATE TABLE `user_table` (
 ALTER TABLE `book_table`
   ADD PRIMARY KEY (`Book_ID`),
   ADD UNIQUE KEY `ISBN` (`ISBN`);
+
+--
+-- Indexes for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  ADD PRIMARY KEY (`Verification_ID`),
+  ADD KEY `User_ID` (`User_ID`);
 
 --
 -- Indexes for table `fine_table`
@@ -199,7 +259,13 @@ ALTER TABLE `user_table`
 -- AUTO_INCREMENT for table `book_table`
 --
 ALTER TABLE `book_table`
-  MODIFY `Book_ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Book_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  MODIFY `Verification_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- AUTO_INCREMENT for table `fine_table`
@@ -211,7 +277,7 @@ ALTER TABLE `fine_table`
 -- AUTO_INCREMENT for table `reservation_table`
 --
 ALTER TABLE `reservation_table`
-  MODIFY `Reservation_ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Reservation_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `system_settings`
@@ -223,17 +289,23 @@ ALTER TABLE `system_settings`
 -- AUTO_INCREMENT for table `transaction_table`
 --
 ALTER TABLE `transaction_table`
-  MODIFY `Transaction_ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `Transaction_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `user_table`
 --
 ALTER TABLE `user_table`
-  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- Constraints for dumped tables
 --
+
+--
+-- Constraints for table `email_verifications`
+--
+ALTER TABLE `email_verifications`
+  ADD CONSTRAINT `fk_email_verifications_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `fine_table`
