@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 21, 2026 at 11:18 AM
+-- Generation Time: Oct 22, 2026 at 12:04 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -57,10 +57,20 @@ CREATE TABLE `email_verifications` (
   `Verification_ID` int(11) NOT NULL,
   `User_ID` int(11) NOT NULL,
   `OTP_Code` varchar(6) NOT NULL,
-  `Expires_At` datetime NOT NULL,
+  `Expires_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `Is_Used` tinyint(1) NOT NULL DEFAULT 0,
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `email_verifications`
+--
+
+INSERT INTO `email_verifications` (`Verification_ID`, `User_ID`, `OTP_Code`, `Expires_At`, `Is_Used`, `Created_At`) VALUES
+(18, 24, '335356', '2026-10-22 01:39:41', 1, '2026-10-22 09:34:41'),
+(19, 25, '314302', '2026-10-22 01:41:50', 0, '2026-10-22 09:36:50'),
+(20, 26, '705361', '2026-10-22 01:47:39', 0, '2026-10-22 09:42:39'),
+(21, 27, '589700', '2026-10-22 01:53:44', 0, '2026-10-22 09:48:44');
 
 -- --------------------------------------------------------
 
@@ -160,12 +170,12 @@ INSERT INTO `transaction_table` (`Transaction_ID`, `User_ID`, `Book_ID`, `Issue_
 CREATE TABLE `user_table` (
   `User_ID` int(11) NOT NULL,
   `Full_Name` varchar(150) NOT NULL DEFAULT '',
-  `Student_ID` varchar(50) DEFAULT NULL,
-  `Department` varchar(100) DEFAULT NULL,
+  `Student_ID` varchar(255) DEFAULT NULL,
+  `Department` varchar(255) DEFAULT NULL,
   `Birthday` varchar(255) DEFAULT NULL,
   `User_QR_Code` varchar(255) DEFAULT NULL,
   `Weekly_reserve_Count` int(11) DEFAULT 0,
-  `Email` varchar(150) NOT NULL,
+  `Email` varchar(255) NOT NULL,
   `Password` varchar(255) NOT NULL,
   `Role` enum('Student','Admin','Librarian') NOT NULL DEFAULT 'Student',
   `Max_Borrow_Limit` int(11) DEFAULT 3,
@@ -188,7 +198,11 @@ INSERT INTO `user_table` (`User_ID`, `Full_Name`, `Student_ID`, `Department`, `B
 (8, 'QVNGaUwraDJIY0ZLRDRhbEFYYURheThSTnpKTk1kZGRVZ1dLTTJmTHRTNDNnMWlQTDhTc2NhNkRUV1ZJcjE5VnlSVTltZkNFby9SbktGYktkcUZsK0NWa0dKZjhIWXV0RCs2M0hqb2Y3MlU9', 'cnRMZzkvQW5qWExTakM2QkJWdmhoU0poZGllS2N4c296cS9DRD', 'N1NzeFkzK3ZlTmplU0U4d0FRb3Y5dz09', 'cEI3bEZ0QnNDV1RGNjhzZlZwY0llUT09', NULL, 0, 'QVNGaUwraDJIY0ZLRDRhbEFYYURhL1dMcnI5RktlSGVKRHhyOUswNVc0T1Z3YlFTK0hRS3FzY2hiLzMyY2tHUw==', '$2y$10$fpcyms1NQ/bOMbtF1JfLIeajGhi3Y/MkVJTFrB4TYMya.o02hj84G', 'Student', 3, 'Pending', '2026-10-20 11:39:00'),
 (9, 'LzBnOUJ4ZEUrM1lWSENVdGpTMnJlSis3SkI0T1F5UVBrRUl4MzZyMEoyS2RIVjYwdFE1MC9naCtyS1BxeVl5Yw==', 'SlIwYjFKOEl2eERvVFVXbk1wQXBFeVFad1lRNStmZHdnaVRMck', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'dzVGMFhQUXRkdi9XenN6UTJqRnJtcjRDdExCWndmTElTNGp6N1FVN2sraz0=', '$2y$10$IaUZKXykPNFQp7DlLB7m9uRHTrtSA78mbVCknZ6522aMG5FbkYobK', 'Student', 3, 'Pending', '2026-10-20 13:06:03'),
 (10, 'RW9aeXlBZW9hSlVvREFXTHpnTHdIMjhWR2pEQmt1VkdDcnR1TU9rVGNnbDkwUWJMeTZkd2NtU2g1blRwRlRObGkwL0tQakwweW50NjF4K2lXdThUNWc9PQ==', 'aGlLaFJ2c0YwU3pVRDJzZkllUG5wOURBUm9KQ1diNkdHak5FVW', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'SllMa2cxY1I1OXJKRmVLT2pXS0RoNXlZc1FnbGtweUd5Tkd5UUNxVm84bz0=', '$2y$10$T7qz/ScqYVJMk5Ifik.lSuenKFSHcX7On3wFhiXQUpNcwfZ6bqEQa', 'Student', 3, 'Pending', '2026-10-20 13:09:26'),
-(11, 'b2I2ZCt0UUl6Q21PNWNlQXN2VzJOcHBieVY1Yk5LdmxYcWV5RnFRa1JoZXltM0NSNURiZGJHNFAzTFlrTDg5dw==', 'OVl2ODgyQjdGeUprVEdma1owZkd2QT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'cTY1Mnl2VlplZmlRYWtjbjFuVzA1c2ZlMG9WbkRXdWNJeXdGOGN6Q0pRZz0=', '$2y$10$.IUa.R2.AezDPrrFZguyk.W9wfczKyeRR9UekNzXWdtKuaENq6Nz2', 'Student', 3, 'Pending', '2026-10-20 13:13:37');
+(11, 'b2I2ZCt0UUl6Q21PNWNlQXN2VzJOcHBieVY1Yk5LdmxYcWV5RnFRa1JoZXltM0NSNURiZGJHNFAzTFlrTDg5dw==', 'OVl2ODgyQjdGeUprVEdma1owZkd2QT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'Y294aXEyUExmRzVXbWhjTmlPL0VPdz09', NULL, 0, 'cTY1Mnl2VlplZmlRYWtjbjFuVzA1c2ZlMG9WbkRXdWNJeXdGOGN6Q0pRZz0=', '$2y$10$.IUa.R2.AezDPrrFZguyk.W9wfczKyeRR9UekNzXWdtKuaENq6Nz2', 'Student', 3, 'Pending', '2026-10-20 13:13:37'),
+(24, 'Y1dMMTlEb0RZM1RaVVJnZmE3bXd6QXlBdUlOOVhGcFFsbnlOTDJQaEVYNC9kcHE2OGhlQU1SYUoyaDhGaWRVZw==', 'Sk1RNGdtK1VSa3daVjJEWklWeGl1UT09', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'V3ZialZkOG1QSGh2SjZUUVRzbXExdz09', NULL, 0, 'NUM0aG1aVW5zRmJncXpzUStJOTQrLzFNQWlrMkdvLzVhMUNoV0tkZWVqVT0=', '$2y$10$RbKgi.YxP/Lpakn8PqH1QOHvbVhBX25LmIgVQgW.xERkbqXubFyhe', 'Student', 3, 'Active', '2026-10-22 09:34:41'),
+(25, 'bzdNVEVtTkYvbGNLNTcvMWNNT1hNa2IzSm1jdW5aWGlmNklPQUFUN2ovWTlTQkkyTkxjRHlZZFBJU2grU21Ybw==', 'YzRaWjNmd0VFRmZBTXViRndMUVRMZVBuYk9lWTFoUk5TQ3V5d0Vob1A4az0=', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'V3ZialZkOG1QSGh2SjZUUVRzbXExdz09', NULL, 0, 'MjVnQXRSWldNVkRNcTJLcXcvS0FZMUVnNjFPdk8wZGloNUxOMUpFWXBmYz0=', '$2y$10$rgCd4zxcZkQHdQJxWInJj.UosJxvQ33Ypq35bbPvj7yLt7BYeayYS', 'Student', 3, 'Pending', '2026-10-22 09:36:50'),
+(26, 'bzdNVEVtTkYvbGNLNTcvMWNNT1hNa2IzSm1jdW5aWGlmNklPQUFUN2ovWTlTQkkyTkxjRHlZZFBJU2grU21Ybw==', 'UWZtU0JqZmRmNFpRTW1JK21XUnFlVU9YY2QzbE0xQTRyQUJpeUlPcDFObz0=', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'V3ZialZkOG1QSGh2SjZUUVRzbXExdz09', NULL, 0, 'ZjFzdjBYaE5JZzRjQVk4MVNycldtYWZ3Sjh0UExtNkp2Si9IV1Z5TEJOSmptRGczWFhoKzcrNndYRHRUdHJWZw==', '$2y$10$t8H1sm9wn.CJgCFJ/8To.ORA76.82IUS7zcuFRDiv1rH.eg73yxni', 'Student', 3, 'Pending', '2026-10-22 09:42:39'),
+(27, 'bzdNVEVtTkYvbGNLNTcvMWNNT1hNa2IzSm1jdW5aWGlmNklPQUFUN2ovWTlTQkkyTkxjRHlZZFBJU2grU21Ybw==', 'UWZtU0JqZmRmNFpRTW1JK21XUnFlUUQxUTQvZ0o3T2w3aWNzck9RaVdZMD0=', 'QzNWQXNKS1lzZlRRZ1lkRFZDc1YrQT09', 'V3ZialZkOG1QSGh2SjZUUVRzbXExdz09', NULL, 0, 'ZjFzdjBYaE5JZzRjQVk4MVNycldtV2taUEFlREhMd0JGQ2lnYVJNZ0VKVUdOYVdSbFg3SDJYT0x0ZSsvd1FBaA==', '$2y$10$NSXVarAkB5dC5VmNzomCYOObSG3AldedGtzPgympt18KCObywKPAO', 'Student', 3, 'Pending', '2026-10-22 09:48:44');
 
 --
 -- Indexes for dumped tables
@@ -265,7 +279,7 @@ ALTER TABLE `book_table`
 -- AUTO_INCREMENT for table `email_verifications`
 --
 ALTER TABLE `email_verifications`
-  MODIFY `Verification_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `Verification_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `fine_table`
@@ -295,7 +309,7 @@ ALTER TABLE `transaction_table`
 -- AUTO_INCREMENT for table `user_table`
 --
 ALTER TABLE `user_table`
-  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
+  MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- Constraints for dumped tables
