@@ -1,84 +1,523 @@
+:root {
+  --bg: #2c251d;
+  --brown: #4d463d;
+  --green: #2e4e0d;
+  --hover: #8b7e6c;
+  --link: #3b52ca;
+  --text: #333333;
+  --muted: #797575;
+  --gray: #626262;
+  --white: #ffffff;
+  --danger: #c0392b;
+  --radius: 8px;
+}
+
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background-color: #8f9a78;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  min-height: 100vh;
+  background: var(--bg);
 }
 
+/* Layout */
 .registration-container {
-    width: 83%;
-    height: 720px;
-    background-color: #f0e1ce;
-    border-radius: 12px;
-    padding: 40px 75px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 140px;
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px;
 }
 
-.page {
-    display: none;
+.logo-panel {
+  flex: 0 1 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
 }
 
-.page.active {
-    display: block;
+.logo {
+  width: auto;
+  max-width: 450px;
+  max-height: 40vh;
+  height: auto;
+  object-fit: contain;
+}
+
+.tagline {
+  color: var(--white);
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-top: 30px;
+  line-height: 1.4;
 }
 
 h1 {
-    text-align: center;
-    color: #193b1d;
-    font-size: 52px;
-    margin-bottom: 45px;
+  font-weight: bold;
+  font-size: 32px;
+  color: var(--brown);
+  margin-bottom: 24px;
+  text-align: center;
 }
 
-.form-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--brown);
+  opacity: 1;
+  margin: 30px 0;
 }
 
-.form-group {
-    margin-bottom: 30px;
+/* Card */
+.form-wrapper {
+  flex: 0 1 560px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
-label {
-    display: block;
-    color: #303b2d;
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 7px;
+form {
+  background: var(--white);
+  border-radius: 16px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  min-height: 550px;
+  padding: 50px 60px;
+  text-align: left;
 }
 
-input {
+/* Inputs */
+.form-items {
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.form-items label {
+  display: block;
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--brown);
+  margin-bottom: 7px;
+}
+
+.form-items input,
+.form-items select {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #000;
+  border-radius: var(--radius);
+  background: var(--white);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.form-items input::placeholder,
+.form-items select:invalid {
+  color: var(--muted);
+}
+
+.form-items select option {
+  color: var(--text);
+}
+
+.form-items input:focus,
+.form-items select:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+}
+
+.form-items input.is-invalid,
+.form-items select.is-invalid {
+  border-color: var(--danger);
+}
+
+.form-items input.flatpickr-input[readonly] {
+  background: var(--white);
+  cursor: pointer;
+}
+
+.flatpickr-calendar,
+.flatpickr-calendar * {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Password toggle */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.password-container input {
+  padding-right: 45px;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: 14px;
+  transform: translateY(-50%);
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  z-index: 10;
+}
+
+.password-toggle-icon:hover {
+  color: var(--brown);
+}
+
+/* Steps */
+.form-page {
+  display: none;
+}
+
+.form-page.active {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.step-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.step-actions button {
+  flex: 1;
+  padding: 12px;
+  background: var(--green);
+  color: var(--white);
+  border: none;
+  border-radius: var(--radius);
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+
+.step-actions button:hover {
+  background: var(--hover);
+}
+
+.step-actions button[data-action="prev"] {
+  background: var(--white);
+  color: var(--brown);
+  border: 1px solid var(--brown);
+}
+
+.step-actions button[data-action="prev"]:hover {
+  background: var(--brown);
+  color: var(--white);
+}
+
+/* Footer text */
+.register {
+  font-size: 15px;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.register a {
+  color: var(--link);
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.terms {
+  font-size: 13px;
+  color: var(--gray);
+  text-align: center;
+  line-height: 1.4;
+  margin-top: 15px;
+}
+
+.terms a {
+  color: var(--gray);
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+/* OTP Verification Modal */
+#otpModal {
+  z-index: 1060 !important;
+}
+
+#otpModal .modal-dialog {
+  position: relative;
+  z-index: 1061 !important;
+  max-width: 440px;
+}
+
+/* 1. Main Modal Card  */
+#otpModal .modal-content {
+  background-color: transparent !important;
+  color: var(--text, #333333) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1062 !important;
+}
+
+/* 2. Header */
+#otpModal .bibliodesk-modal-header {
+  background-color: #1a1611 !important;
+  color: #ffffff !important;
+  border-bottom: 1px solid #332d25 !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+}
+
+#otpModal .bibliodesk-modal-header .modal-title {
+  color: #ffffff !important;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#otpModal .bibliodesk-modal-header i {
+  color: var(--hover, #8b7e6c) !important;
+}
+
+/* 3. Modal Body & Footer */
+#otpModal .modal-body {
+  background-color: #ffffff !important;
+  color: var(--text, #333333) !important;
+  position: relative !important;
+  z-index: 1063 !important;
+}
+
+#otpModal .modal-footer {
+  background-color: #ffffff !important;
+  border-bottom-left-radius: 13px !important;
+  border-bottom-right-radius: 13px !important;
+}
+
+#otpModal .text-dark,
+#otpModal #otpEmailDisplay {
+  color: #1f1b16 !important;
+  word-break: break-all;
+}
+
+#otpModal .text-muted {
+  color: #6c757d !important;
+}
+
+#otpModal .border-top {
+  border-color: #e5e0d8 !important;
+}
+
+/* 4. OTP Code Input */
+#otpModal .bibliodesk-otp-input {
+  background-color: #fbfaf8 !important;
+  color: #1f1b16 !important;
+  border: 2px solid #8b7e6c !important;
+  border-radius: 8px !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 6px !important;
+  font-weight: bold;
+  caret-color: #1f1b16;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#otpModal .bibliodesk-otp-input:focus {
+  background-color: #ffffff !important;
+  color: #1f1b16 !important;
+  border-color: var(--green, #2e4e0d) !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
+  outline: none !important;
+}
+
+#otpModal .bibliodesk-otp-input::placeholder {
+  color: #a49d94 !important;
+}
+
+/* 5. Expiry Timer */
+#otpModal #otpExpiryTimer {
+  color: var(--danger, #c0392b) !important;
+}
+
+/* 6. Submit Button for OTP */
+#otpModal .bibliodesk-btn-primary {
+  background-color: var(--green, #2e4e0d) !important;
+  color: #ffffff !important;
+  border: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#otpModal .bibliodesk-btn-primary:hover:not(:disabled) {
+  background-color: var(--hover, #8b7e6c) !important;
+  color: #ffffff !important;
+}
+
+#otpModal .bibliodesk-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+#otpModal .bibliodesk-btn-primary:disabled {
+  background-color: #d1ccc5 !important;
+  color: #797575 !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* 7. Resend Code */
+#otpModal .bibliodesk-resend-link {
+  color: var(--link, #3b52ca) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: color 0.2s ease;
+}
+
+#otpModal .bibliodesk-resend-link:hover:not(:disabled) {
+  color: #1d3399 !important;
+  text-decoration: underline !important;
+}
+
+#otpModal .bibliodesk-resend-link:disabled {
+  color: #9ca3af !important;
+  cursor: not-allowed;
+}
+
+/* 8. Alert Box Inside Modal */
+#otpModal #otpAlert.alert-danger {
+  background-color: #fef2f2 !important;
+  color: #991b1b !important;
+  border: 1px solid #fecaca !important;
+}
+
+#otpModal #otpAlert.alert-success {
+  background-color: #f0fdf4 !important;
+  color: #166534 !important;
+  border: 1px solid #bbf7d0 !important;
+}
+
+/* 9. Backdrop & Background Logo Dimming */
+.modal-backdrop.show {
+  opacity: 0.75 !important;
+  background-color: #12100e !important;
+}
+
+body.modal-open .logo-panel {
+  opacity: 0.15 !important;
+  transition: opacity 0.25s ease;
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .registration-container {
+    padding: 10px;
+  }
+  form {
+    padding: 24px 40px;
+  }
+  h1 {
+    font-size: 26px;
+    margin-bottom: 14px;
+  }
+  .form-items {
+    margin-bottom: 12px;
+  }
+  .form-items label {
+    margin-bottom: 4px;
+  }
+  .form-items input,
+  .form-items select {
+    padding: 10px 14px;
+  }
+  .step-actions button {
+    padding: 10px;
+  }
+  hr {
+    margin: 20px 0;
+  }
+  .terms {
+    margin-top: 8px;
+  }
+  .logo {
+    max-height: 35vh;
+  }
+  .tagline {
+    margin-top: 16px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 992px) {
+  .tagline {
+    font-size: 18px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  .registration-container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+    gap: 20px;
+  }
+  .logo-panel {
+    flex: 0 0 auto;
     width: 100%;
-    height: 57px;
-    padding: 0 17px;
-    border: 1px solid #888;
-    border-radius: 12px;
-    font-size: 18px;
+    height: 180px;
+  }
+  .logo {
+    max-width: 160px;
+    max-height: 120px;
+  }
+  .tagline {
+    font-size: 15px;
+    margin-top: 10px;
+  }
+  form {
+    padding: 25px 20px;
+  }
+  h1 {
+    font-size: 22px;
+    margin-bottom: 16px;
+  }
+  .form-wrapper {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
 }
 
-.button-container {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 25px;
-}
-
-button {
-    width: 190px;
-    height: 58px;
-    background-color: #6f8555;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
-    cursor: pointer;
+@media (prefers-reduced-motion: reduce) {
+  .form-page.active {
+    animation: none;
+  }
 }
