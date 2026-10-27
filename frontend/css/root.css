@@ -1,0 +1,31 @@
+/*
+cc = color coding
+qs = quick stats
+nb = no book
+ne = non-educational books
+ed = educational books
+ra = research articles
+*/
+:root{
+    --main-color: #2C251D;
+    --main-bg-color: #F4F0EA;
+
+    --cc-dates: #45746F;
+    --cc-book-ne: #9E7B58;
+    --cc-book-ed: #488C3E;
+    --cc-book-ra: #3E7DA7;
+    --cc-nb-ne: #C0B19D;
+    --cc-nb-ed: #89C87F;
+    --cc-nb-ra: #82B5D6;
+    --cc-qs-neutral: #8A7B68;
+    --cc-qs-red: #C23D3D;
+    --cc-qs-yellow: #C28A3D;
+    --cc-qs-green: #488C3E;
+
+    --fcolor-main: #000000;
+    --fcolor-secondary: #ffffff;
+
+    --sidebar-default: 80px;
+    --sidebar-expand: 250px;
+    --topbar-height: 80px;
+}

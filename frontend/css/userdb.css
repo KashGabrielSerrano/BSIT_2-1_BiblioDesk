@@ -1,0 +1,158 @@
+@import url(root.css);
+
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    background-color: var(--main-bg-color);
+}
+
+main{
+    padding: 0 90px;
+}
+
+.topbar{
+    background-color: var(--main-color);
+    min-height: var(--topbar-height);
+}
+
+.cardsColor{
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+.dateBadge{
+    flex: none;
+    width: 54px; height: 54px;
+    background: var(--cc-dates);
+    color: var(--fcolor-secondary);
+    line-height: 1.1;
+}
+
+.dateBadge small{
+    font-size: .65rem; 
+}
+
+.neutralBox{
+    background-color: var(--cc-qs-neutral);
+}
+
+.greenBox{
+    background-color: var(--cc-qs-green);
+}
+
+.yellowBox{
+    background-color: var(--cc-qs-yellow);
+}
+
+.libID{ 
+    border-top: 1px solid rgba(246, 241, 231, .25); 
+}
+
+.bookCover{ 
+    --bs-aspect-ratio: 133.33%; 
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.bookCover::after{
+    content: "";
+    position: absolute;
+    top: 0; 
+    bottom: 0; 
+    left: 0;
+    width: 7%;
+    max-width: 500px;
+    background: rgba(125, 85, 45, .55);
+}
+
+.bookCover:hover{
+    transform: translateY(-8px) scale(1.05);
+    position: relative;
+    background-color: #ffffff; /*the color white might change later on*/
+}
+
+.textArea{
+    text-decoration: none;
+    color: var(--fcolor-main);
+}
+
+#sidebar{
+    --bs-offcanvas-width: var(--sidebar-expand);  
+    background-color: var(--main-color) !important;
+    color: var(--main-bg-color);
+}
+
+.logoContain{ 
+    height: var(--topbar-height); 
+}
+
+.sideIcon{ 
+    width: 48px; 
+    height: 48px; 
+    flex: none; 
+    transition: background .2s; 
+}
+
+.sideIcon.bg-light img{ 
+    filter: invert(1); 
+}     
+
+.sideAct:hover .sideIcon:not(.bg-light){
+    background: rgba(255, 255, 255, .14); 
+}
+
+footer{
+    background-color: var(--main-color);
+}
+
+.footerLogo{
+    width: 100%;
+    max-width: 350px;
+}
+
+@media (min-width: 576px){ 
+    .libID{ 
+        border-top: 0; 
+        border-left: 1px solid rgba(246, 241, 231, .25); 
+    } 
+}
+
+@media (min-width: 768px){
+    body{ 
+        padding-left: var(--sidebar-default); 
+    }
+
+    .topbar{
+        padding-left: var(--sidebar-default); 
+    }
+
+    #sidebar{
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        z-index: 1045;                  
+        width: var(--sidebar-default);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: width .25s ease, box-shadow .25s ease;
+    }
+
+    .sideText{
+        opacity: 0; 
+        transition: opacity .15s;
+    }
+}
+
+@media (min-width: 768px) and (hover: hover){
+    #sidebar:hover{ 
+        width: var(--sidebar-expand); 
+        box-shadow: 6px 0 18px rgba(0, 0, 0, .35); 
+    }
+    
+    #sidebar:hover .sideText{ 
+        opacity: 1; 
+        transition-delay: .08s; 
+    }
+}
