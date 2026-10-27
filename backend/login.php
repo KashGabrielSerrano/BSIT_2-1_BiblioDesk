@@ -1,11 +1,27 @@
 <?php
 session_start();
 
-require_once("connection/config.php");
-require_once("helpers/SystemOperators.php");
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
 
-$con = connection();
+
+$con = $conn;
 $so = new SystemOperators();
+
+
+$max_attempts = 5;       
+$lockout_minutes = 15;   
+$user_ip = $_SERVER['REMOTE_ADDR'];
+
+
+$time_threshold = date("Y-m-d H:i:s", strtotime("-$lockout_minutes minutes"));
+$stmt = $con->prepare("SELECT COUNT(*) FROM login_attempts WHERE ip_address = ? AND attempt_time > ?");
+$stmt->bind_param("ss", $user_ip, $time_threshold);
+$stmt->execute();
+$stmt->bind_result($failed_count);
+$stmt->fetch();
+$stmt->close();
+
 
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {$_SESSION = [];
     if (ini_get("session.use_cookies")) {
