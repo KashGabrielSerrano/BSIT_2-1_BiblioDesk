@@ -1,0 +1,236 @@
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: #2C251D;
+}
+
+.terms_privacy-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 140px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.logo-panel {
+    flex: 0 1 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.logo {
+    width: auto;
+    max-width: 450px;
+    max-height: 40vh;
+    height: auto;
+    object-fit: contain;
+}
+
+.tagline {
+    color: #FFFFFF;
+    font-size: 20px;
+    letter-spacing: 3px;
+    margin-top: 30px;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: #4D463D;
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: #4D463D;
+    opacity: 1;
+    margin: 24px 0;
+}
+
+/* Card */
+.form-wrapper {
+    flex: 0 1 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+}
+
+.tos_privacy-card {
+    background-color: #FFFFFF;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    width: 100%;
+    min-height: 550px;
+    max-height: calc(100vh - 32px);
+    padding: 50px 60px;
+}
+
+
+.tos_privacy-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding-right: 10px;
+    margin-bottom: 24px;
+    color: #333333;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.tos_privacy-body h6 {
+    font-size: 15px;
+    font-weight: bold;
+    color: #4D463D;
+    margin: 18px 0 6px;
+}
+
+.tos_privacy-body h6:first-child {
+    margin-top: 0;
+}
+
+.tos_privacy-body strong {
+    color: #4D463D;
+}
+
+.tos_privacy-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.tos_privacy-body::-webkit-scrollbar-thumb {
+    background: #8b7e6c;
+    border-radius: 3px;
+}
+
+/* Buttons */
+.step-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.step-actions button {
+    flex: 1;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+}
+
+.btn-agree {
+    background-color: #2E4E0D;
+    color: #FFFFFF;
+    border: none;
+}
+
+.btn-agree:hover {
+    background-color: #8b7e6c;
+}
+
+.btn-back {
+    background-color: #FFFFFF;
+    color: #4D463D;
+    border: 1px solid #4D463D;
+}
+
+.btn-back:hover {
+    background-color: #4D463D;
+    color: #FFFFFF;
+}
+
+/* Footer text */
+.register {
+    font-size: 15px;
+    color: #333333;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.register a {
+    color: #3B52CA;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.terms_privacy {
+    font-size: 13px;
+    color: #626262;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 5px;
+}
+
+.terms_privacy a {
+    color: #626262;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+/* Media Queries */
+@media (max-height: 700px) {
+    .terms_privacy-container { padding: 10px; }
+    .tos_privacy-card { padding: 24px 40px; }
+    h1 { font-size: 26px; margin-bottom: 14px; }
+    hr { margin: 16px 0; }
+    .step-actions button { padding: 10px; }
+    .logo { max-height: 35vh; }
+    .tagline { margin-top: 16px; font-size: 18px; }
+}
+
+@media (max-width: 992px) {
+    .tagline { font-size: 18px; }
+    h1 { font-size: 26px; }
+}
+
+@media (max-width: 768px) {
+    .terms_privacy-container {
+        flex-direction: column;
+        height: auto;
+        padding: 10px;
+        gap: 20px;
+    }
+    .logo-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        height: 180px;
+    }
+    .logo {
+        max-width: 160px;
+        max-height: 120px;
+    }
+    .tagline {
+        font-size: 15px;
+        margin-top: 10px;
+    }
+    .tos_privacy-card {
+        padding: 25px 20px;
+        max-height: none;
+    }
+    h1 {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+    .form-wrapper {
+        flex: 0 0 auto;
+        max-width: 100%;
+    }
+}
