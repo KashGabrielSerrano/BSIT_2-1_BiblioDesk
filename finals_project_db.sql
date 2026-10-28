@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 27, 2026 at 01:52 PM
+-- Generation Time: Oct 28, 2026 at 11:33 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -52,7 +52,8 @@ CREATE TABLE `email_verifications` (
   `OTP_Code` varchar(6) NOT NULL,
   `Expires_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
   `Is_Used` tinyint(1) NOT NULL DEFAULT 0,
-  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Attempts` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -223,7 +224,8 @@ ALTER TABLE `transaction_table`
 --
 ALTER TABLE `user_table`
   ADD PRIMARY KEY (`User_ID`),
-  ADD UNIQUE KEY `Email` (`Email`);
+  ADD UNIQUE KEY `Email` (`Email`),
+  ADD UNIQUE KEY `unique_student_id` (`Student_ID`);
 
 --
 -- AUTO_INCREMENT for dumped tables

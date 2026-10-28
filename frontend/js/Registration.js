@@ -142,6 +142,23 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
 
+    // Warn when a password goes past the 64-character limit
+    const PASSWORD_MAX = 64;
+    ["password", "confirm_password"].forEach(function (id) {
+        const input = document.getElementById(id);
+        if (!input) return;
+
+        let lastValid = "";
+        input.addEventListener("input", function () {
+            if (input.value.length > PASSWORD_MAX) {
+                input.value = lastValid;   // undo the over-limit typing or paste
+                showError("Password must not exceed " + PASSWORD_MAX + " characters.", input);
+            } else {
+                lastValid = input.value;
+            }
+        });
+    });
+
     if (errorModalEl && errorModalEl.dataset.message) {
         showServerMessage(
             errorModalEl.dataset.message,
@@ -322,7 +339,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
-    // 2. OTP Verification Handler
+    // 2. OTP Verification Handler (With Lockout Timer & Control UI Fix)
     if (btnVerify) {
         btnVerify.addEventListener('click', async () => {
             const otpCode = otpInput ? otpInput.value.trim() : '';
@@ -362,14 +379,43 @@ document.addEventListener("DOMContentLoaded", function () {
                     }, 1500);
                 } else {
                     showAlert(data.message, false);
-                    if (otpInput) {
-                        otpInput.disabled = false;
-                        otpInput.value = '';
-                        otpInput.classList.add('is-invalid');
-                        otpInput.focus();
+
+                    // Check for max attempts, lockout, or session expiry
+                    const isLockout = data.message.includes('Too many failed attempts') || 
+                                      data.message.includes('invalidated') || 
+                                      data.message.includes('expired');
+
+                    if (isLockout) {
+                        // 1. Stop expiry countdown and show EXPIRED status
+                        clearInterval(expiryCountdownInterval);
+                        if (otpExpiryTimer) otpExpiryTimer.textContent = "EXPIRED";
+
+                        // 2. Keep text input & verify button disabled to block further inputs
+                        if (otpInput) {
+                            otpInput.disabled = true;
+                            otpInput.value = '';
+                            otpInput.classList.add('is-invalid');
+                        }
+                        btnVerify.disabled = true;
+                        btnVerify.innerHTML = 'Verify & Complete Registration';
+
+                        // 3. Immediately stop resend cooldown & enable Resend button for recovery
+                        clearInterval(resendCountdownInterval);
+                        if (btnResend) {
+                            btnResend.disabled = false;
+                            btnResend.innerHTML = 'Resend OTP';
+                        }
+                    } else {
+                        // Normal wrong code: Re-enable input for next try
+                        if (otpInput) {
+                            otpInput.disabled = false;
+                            otpInput.value = '';
+                            otpInput.classList.add('is-invalid');
+                            otpInput.focus();
+                        }
+                        btnVerify.disabled = false;
+                        btnVerify.innerHTML = 'Verify & Complete Registration';
                     }
-                    btnVerify.disabled = false;
-                    btnVerify.innerHTML = 'Verify & Complete Registration';
                 }
             } catch (err) {
                 showAlert('Verification failed due to a server connection error.');
@@ -380,15 +426,19 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     }
 
-    // 3. Resend OTP Handler
+    // 3. Resend OTP Handler (Includes fallback email parameter)
     if (btnResend) {
         btnResend.addEventListener('click', async () => {
             btnResend.disabled = true;
             const originalText = btnResend.innerHTML;
             btnResend.innerHTML = `<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>Sending...`;
 
+            const emailInput = document.getElementById('email');
+            const userEmail = emailInput ? emailInput.value.trim() : '';
+
             const formData = new FormData();
             formData.append('action', 'resend_otp');
+            formData.append('email', userEmail);
 
             try {
                 const response = await fetch('registration_controller.php', {

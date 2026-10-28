@@ -1,71 +1,16 @@
 <?php
-require_once("connection/config.php");
-require_once("helpers/SystemOperators.php");
-
-$con = connection();$so = new SystemOperators();
-
-$modal_message  = '';
-$modal_type     = 'error';$modal_redirect = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {$first_name = trim(filter_input(INPUT_POST, 'first_name', FILTER_SANITIZE_SPECIAL_CHARS));
-    $last_name      = trim(filter_input(INPUT_POST, 'last_name', FILTER_SANITIZE_SPECIAL_CHARS));
-    $middle_name    = trim(filter_input(INPUT_POST, 'middle_name', FILTER_SANITIZE_SPECIAL_CHARS));
-    $suffix         = trim(filter_input(INPUT_POST, 'suffix', FILTER_SANITIZE_SPECIAL_CHARS));
-    $full_name_raw  = trim(preg_replace('/\s+/', ' ', "$first_name $middle_name $last_name $suffix"));
-    $full_name      = $so->encrypt($full_name_raw);
-    
-    $student_id     = $so->encrypt(filter_input(INPUT_POST, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS));
-    $email          = $so->encrypt(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
-    $department     = $so->encrypt(filter_input(INPUT_POST, 'department', FILTER_SANITIZE_SPECIAL_CHARS));
-    $raw_password   = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-    $confirm_pwd    = filter_input(INPUT_POST, 'confirm_password', FILTER_SANITIZE_SPECIAL_CHARS);
-
-    $raw_birthday   = trim(filter_input(INPUT_POST, 'birthday', FILTER_SANITIZE_SPECIAL_CHARS));
-    $birthday_formatted = '';
-    if (!empty($raw_birthday)) {
-        $date_obj = DateTime::createFromFormat('F j, Y',$raw_birthday);
-        if (!$date_obj) {
-            $date_obj = DateTime::createFromFormat('Y-m-d',$raw_birthday);
-        }
-        if ($date_obj) {
-            $birthday_formatted =$date_obj->format('m-d-Y');
-        }
-    }
-    $birthday_enc   = !empty($birthday_formatted) ? $so->encrypt($birthday_formatted) : null;
-
-    if ($raw_password !== $confirm_pwd) {$modal_message = 'Passwords do not match.';
+session_start();
+if (isset($_SESSION['user_id'])) {
+    if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
+        header("Location: admindb.php");
     } else {
-        $hashed_password = password_hash($raw_password, PASSWORD_BCRYPT);
-        $role            = 'Student';$account_status  = 'Pending';
-
-        $select_query = "SELECT * FROM `user_table` WHERE `Student_ID` = ? OR `Email` = ?";
-        $select_stmt  =$con->prepare($select_query);$select_stmt->bind_param('ss', $student_id,$email);
-
-        if ($select_stmt->execute()) {
-            $result =$select_stmt->get_result();
-            if ($result->num_rows > 0) {$modal_message = 'User already exists.';
-            } else {
-                $insert_query = 'INSERT INTO `user_table` (`Full_Name`, `Student_ID`, `Email`, `Password`, `Role`, `Department`, `Birthday`, `Account_Status`) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-                $insert_stmt  = $con->prepare($insert_query);
-                $insert_stmt->bind_param('ssssssss', $full_name, $student_id, $email, $hashed_password, $role, $department, $birthday_enc, $account_status);
-
-                try {
-                    $insert_stmt->execute();
-                    $modal_message  = 'Registration successful!';
-                    $modal_type     = 'success';
-                    $modal_redirect = 'login.php';
-                } catch (mysqli_sql_exception $e) {
-                    error_log($e->getMessage());
-                    $modal_message = 'Registration failed. Please try again.';
-                }
-                $insert_stmt->close();
-            }
-        } else {
-            $modal_message = 'Failed to execute query.';
-        }
-        $select_stmt->close();
+        header("Location: studentdb.php");
     }
+    exit();
 }
+$modal_message  = '';
+$modal_type     = 'error';
+$modal_redirect = '';
 ?>
 
 <!DOCTYPE html>
