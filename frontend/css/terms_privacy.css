@@ -7,7 +7,7 @@
 
 body {
     min-height: 100vh;
-    background-color: #2C251D;
+    background-color: var(--main-color);
 }
 
 .terms_privacy-container {
@@ -39,7 +39,7 @@ body {
 }
 
 .tagline {
-    color: #FFFFFF;
+    color: var(--fcolor-secondary);
     font-size: 20px;
     letter-spacing: 3px;
     margin-top: 30px;
@@ -49,7 +49,7 @@ body {
 h1 {
     font-size: 32px;
     font-weight: bold;
-    color: #4D463D;
+    color: var(--main-color); 
     margin-bottom: 24px;
     text-align: center;
 }
@@ -57,12 +57,11 @@ h1 {
 hr {
     border: 0;
     height: 1px;
-    background: #4D463D;
+    background: var(--main-color);
     opacity: 1;
     margin: 24px 0;
 }
 
-/* Card */
 .form-wrapper {
     flex: 0 1 560px;
     width: 100%;
@@ -73,7 +72,7 @@ hr {
 }
 
 .tos_privacy-card {
-    background-color: #FFFFFF;
+    background-color: var(--fcolor-secondary);
     border-radius: 16px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
     display: flex;
@@ -85,13 +84,12 @@ hr {
     padding: 50px 60px;
 }
 
-
 .tos_privacy-body {
     flex: 1 1 auto;
     overflow-y: auto;
     padding-right: 10px;
     margin-bottom: 24px;
-    color: #333333;
+    color: var(--fcolor-main);
     font-size: 15px;
     line-height: 1.6;
 }
@@ -99,7 +97,7 @@ hr {
 .tos_privacy-body h6 {
     font-size: 15px;
     font-weight: bold;
-    color: #4D463D;
+    color: var(--main-color);
     margin: 18px 0 6px;
 }
 
@@ -108,7 +106,7 @@ hr {
 }
 
 .tos_privacy-body strong {
-    color: #4D463D;
+    color: var(--main-color);
 }
 
 .tos_privacy-body::-webkit-scrollbar {
@@ -116,11 +114,10 @@ hr {
 }
 
 .tos_privacy-body::-webkit-scrollbar-thumb {
-    background: #8b7e6c;
+    background: var(--cc-qs-neutral);
     border-radius: 3px;
 }
 
-/* Buttons */
 .step-actions {
     display: flex;
     gap: 12px;
@@ -136,51 +133,40 @@ hr {
     text-align: center;
 }
 
-.btn-agree {
-    background-color: #2E4E0D;
-    color: #FFFFFF;
-    border: none;
-}
-
-.btn-agree:hover {
-    background-color: #8b7e6c;
-}
-
 .btn-back {
-    background-color: #FFFFFF;
-    color: #4D463D;
-    border: 1px solid #4D463D;
+    background-color: var(--btn);
+    color: var(--fcolor-secondary);
+    border: 1px solid var(--main-color);
 }
 
 .btn-back:hover {
-    background-color: #4D463D;
-    color: #FFFFFF;
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
 }
 
-/* Footer text */
 .register {
     font-size: 15px;
-    color: #333333;
+    color: var(--fcolor-main);
     text-align: center;
     margin-bottom: 10px;
 }
 
 .register a {
-    color: #3B52CA;
+    color: var(--cc-book-ra);
     font-weight: bold;
     text-decoration: underline;
 }
 
 .terms_privacy {
     font-size: 13px;
-    color: #626262;
+    color: var(--cc-qs-neutral);
     text-align: center;
     line-height: 1.4;
     margin-top: 5px;
 }
 
 .terms_privacy a {
-    color: #626262;
+    color: var(--cc-qs-neutral);
     font-weight: bold;
     text-decoration: underline;
 }

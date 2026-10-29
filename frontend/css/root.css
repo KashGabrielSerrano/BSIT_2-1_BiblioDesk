@@ -28,4 +28,37 @@ ra = research articles
     --sidebar-default: 80px;
     --sidebar-expand: 250px;
     --topbar-height: 80px;
+
+/* Login and Registration */
+    --btn: #2E4E0D;
+
+/* OTP alerts */
+    --alert-danger-bg: #FEF2F2;
+    --alert-danger-text: #991B1B;
+    --alert-danger-border: #FECACA;
+    --alert-success-bg: #F0FDF4;
+    --alert-success-text: #166534;
+    --alert-success-border: #BBF7D0;
+
+/* OTP modal */
+    --dark-header: #1A1611;
+    --dark-border: #332D25;
+    --ink: #1F1B16;
+    --muted-alt: #6C757D;
+    --line: #E5E0D8;
+    --input-bg: #FBFAF8;
+    --placeholder: #A49D94;
+    --disabled-bg: #D1CCC5;
+    --disabled-text: #9CA3AF;
+    --backdrop: #12100E;
+
+/* Text and base */
+    --brown: #4D463D;
+    --text: #333333;
+    --muted: #797575;
+    --gray: #626262;
+    --link: #3B52CA;
+    --link-hover: #1D3399;
+    --hover: #8B7E6C;
+    --danger: #C0392B;
 }
