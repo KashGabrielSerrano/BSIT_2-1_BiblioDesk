@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 28, 2026 at 11:33 AM
+-- Generation Time: Oct 29, 2026 at 09:54 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -50,7 +50,7 @@ CREATE TABLE `email_verifications` (
   `Verification_ID` int(11) NOT NULL,
   `User_ID` int(11) NOT NULL,
   `OTP_Code` varchar(6) NOT NULL,
-  `Expires_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  `Expires_At` timestamp NOT NULL DEFAULT current_timestamp(),
   `Is_Used` tinyint(1) NOT NULL DEFAULT 0,
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
   `Attempts` int(11) NOT NULL DEFAULT 0
@@ -157,6 +157,22 @@ CREATE TABLE `user_table` (
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_tokens`
+--
+
+CREATE TABLE `user_tokens` (
+  `id` int(11) NOT NULL,
+  `user_id` int(11) NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `user_agent` varchar(255) NOT NULL,
+  `ip_address` varchar(45) NOT NULL,
+  `expires_at` datetime NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 --
 -- Indexes for dumped tables
 --
@@ -228,6 +244,14 @@ ALTER TABLE `user_table`
   ADD UNIQUE KEY `unique_student_id` (`Student_ID`);
 
 --
+-- Indexes for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_token_hash` (`token_hash`),
+  ADD KEY `idx_user_id` (`user_id`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -280,6 +304,12 @@ ALTER TABLE `user_table`
   MODIFY `User_ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
 -- Constraints for dumped tables
 --
 
@@ -319,6 +349,12 @@ ALTER TABLE `transaction_table`
   ADD CONSTRAINT `transaction_table_ibfk_2` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `transaction_table_ibfk_3` FOREIGN KEY (`Issued_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL,
   ADD CONSTRAINT `transaction_table_ibfk_4` FOREIGN KEY (`Received_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `user_tokens`
+--
+ALTER TABLE `user_tokens`
+  ADD CONSTRAINT `fk_user_tokens_user` FOREIGN KEY (`user_id`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

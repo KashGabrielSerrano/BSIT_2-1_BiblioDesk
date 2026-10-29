@@ -1,4 +1,4 @@
-<?php 
+<?php
 session_start();
 require_once __DIR__ . "/connection/config.php";
 require_once __DIR__ . "/helpers/SystemOperators.php";
@@ -29,7 +29,7 @@ function get_client_ip() {
 
 $user_ip = get_client_ip();
 
-function record_failed_attempt($con, $user_ip, $encrypted_email = null) {
+function record_failed_attempt(mysqli $con, string $user_ip, $encrypted_email = null) {
     $log_stmt = $con->prepare("INSERT INTO login_attempts (ip_address, email_attempted) VALUES (?, ?)");
     $log_stmt->bind_param("ss", $user_ip, $encrypted_email);
     $log_stmt->execute();
@@ -40,10 +40,9 @@ $raw_email = isset($_POST['email']) ? trim($_POST['email']) : '';
 $encrypted_email = !empty($raw_email) ? $so->encrypt($raw_email) : null;
 
 $time_threshold = date("Y-m-d H:i:s", strtotime("-$lockout_minutes minutes"));
-
-$stmt = $con->prepare("SELECT COUNT(*), MAX(attempt_time) FROM login_attempts 
-     WHERE (ip_address = ? OR (email_attempted = ? AND email_attempted IS NOT NULL)) 
-     AND attempt_time > ?");
+$stmt = $con->prepare("SELECT COUNT(*), MAX(attempt_time) FROM login_attempts
+      WHERE (ip_address = ? OR (email_attempted = ? AND email_attempted IS NOT NULL))
+      AND attempt_time > ?");
 $stmt->bind_param("sss", $user_ip, $encrypted_email, $time_threshold);
 $stmt->execute();
 $stmt->bind_result($failed_count, $latest_attempt_time);
@@ -69,6 +68,16 @@ if ($failed_count >= $max_attempts) {
 
 // Handle Logout
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    if (isset($_COOKIE['remember_me'])) {
+        $hashed_token = hash('sha256', $_COOKIE['remember_me']);
+        $del_stmt = $con->prepare("DELETE FROM user_tokens WHERE token_hash = ?");
+        if ($del_stmt) {
+            $del_stmt->bind_param("s", $hashed_token);
+            $del_stmt->execute();
+            $del_stmt->close();
+        }
+        setcookie("remember_me", "", time() - 3600, "/", "", false, true);
+    }
     $_SESSION = [];
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
@@ -79,7 +88,10 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
     exit;
 }
 
-// Redirect if already logged in
+// Check auto-login via persistent cookie
+$so->checkRememberMe($con);
+
+// Redirect to correct dashboard if already logged in
 $is_logged_in = isset($_SESSION['user_id']);
 if ($is_logged_in) {
     if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
@@ -90,7 +102,7 @@ if ($is_logged_in) {
     exit;
 }
 
-// Handle Login Submission
+// Login Submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_logged_in && !$is_locked_out) {
     $passInput = $_POST['password'] ?? '';
     if (empty($raw_email) || empty($passInput)) {
@@ -134,6 +146,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
 
                     $otp_expires_at_ms = $expires_at_unix ? ($expires_at_unix * 1000) : null;
                     $pending_email_display = $raw_email;
+
                     $so->sendEmail($raw_email, $otp_code);
                     $show_otp_modal = true;
                 } elseif ($status === 'Suspended') {
@@ -144,6 +157,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                     $_SESSION['email']      = $so->decrypt($row['Email']);
                     $_SESSION['role']       = $row['Role'];
                     $_SESSION['student_id'] = !empty($row['Student_ID']) ? $so->decrypt($row['Student_ID']) : null;
+
+                    // Persistent Token Generation for Remember Me Functionality
+                    if (isset($_POST['remember'])) {
+                        $random_bytes = random_bytes(32);
+                        $token = bin2hex($random_bytes);
+                        $hashed_token = hash('sha256', $token);
+                        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+                        $expires_at = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60)); // 30 Days Expiration
+
+                        $tok_stmt = $con->prepare("INSERT INTO user_tokens (user_id, token_hash, user_agent, ip_address, expires_at) VALUES (?, ?, ?, ?, ?)");
+                        if ($tok_stmt) {
+                            $tok_stmt->bind_param("issss", $row['User_ID'], $hashed_token, $user_agent, $user_ip, $expires_at);
+                            $tok_stmt->execute();
+                            $tok_stmt->close();
+                        }
+                        setcookie("remember_me", $token, time() + (30 * 24 * 60 * 60), "/", "", false, true);
+                    }
 
                     // Clear failed attempts on successful login
                     $clear_stmt = $con->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR email_attempted = ?");
@@ -245,12 +275,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                 <p class="fw-bold fs-6 text-dark mb-3" id="otpEmailDisplay"><?= htmlspecialchars($pending_email_display, ENT_QUOTES, 'UTF-8') ?></p>
                 
                 <div id="otpAlert" class="alert d-none py-2 px-3 small rounded-3" role="alert"></div>
+
                 <div class="mb-3">
                     <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" class="form-control text-center font-monospace fs-2 py-2 bibliodesk-otp-input" maxlength="6" placeholder="000000" autocomplete="off">
                 </div>
+
                 <div class="mb-3 text-muted small">
                     <i class="bi bi-clock-history me-1"></i>Code expires in <span id="otpExpiryTimer" class="fw-bold text-danger">05:00</span>
                 </div>
+
                 <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
                     <small class="text-muted">Didn't receive the code?</small>
                     <button type="button" id="btnResendOtp" class="btn btn-link btn-sm p-0 text-decoration-none bibliodesk-resend-link" disabled>
