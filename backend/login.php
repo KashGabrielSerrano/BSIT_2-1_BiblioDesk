@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                         <input type="checkbox" id="checkLabel" name="remember" />
                         <label for="checkLabel">Remember me</label>
                     </div>
-                    <a href="forgotpassword.php" class="forgot-password">Forgot Password?</a>
+                    <a href="forgotpassword.php" class="forgot-password" data-bs-toggle="modal" data-bs-target="#forgotModal">Forgot Password?</a>
                 </div>
 
                 <button type="submit" name="btnLogin">Login</button>
@@ -259,6 +259,88 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                 <p class="terms">By proceeding, you agree to our <a href="terms.php">Terms of Use</a> <br> and confirm that you have read our <a href="privacy.php">Privacy Policy</a>.</p>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Forgot Password Modal -->
+<div class="modal fade" id="forgotModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="forgotModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+
+            <div class="modal-header bibliodesk-modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="forgotModalTitle">
+                    <span id="fpTitleText">Forgot Password</span>
+                </h5>
+
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+
+            <div class="modal-body p-4 text-center">
+                <div id="fpAlert" class="alert d-none py-2 px-3 small rounded-3" role="alert"></div>
+
+                <!-- Email -->
+                <div data-step="1">
+                    <p class="text-muted mb-3">Enter the email linked to your account for the verification code.</p>
+                    <div class="text-start">
+                        <label for="fpEmail" class="form-label fw-bold small">Personal Email</label>
+                        <input type="email" id="fpEmail" class="form-control fp-input py-2" placeholder="bibliodesk@example.com" autocomplete="email">
+                    </div>
+                </div>
+
+                <!-- OTP -->
+                <div data-step="2" class="d-none">
+                    <p class="text-muted mb-1">A 6-digit verification code was sent to:</p>
+                    <p class="fw-bold fs-6 text-dark mb-3" id="fpEmailDisplay">user@example.com</p>
+
+                    <div class="mb-3">
+                        <input type="text" id="fpOtpInput" inputmode="numeric" pattern="[0-9]*" class="form-control text-center font-monospace fs-2 py-2 bibliodesk-otp-input" maxlength="6" placeholder="000000" autocomplete="off">
+                    </div>
+
+                    <div class="mb-3 text-muted small">
+                        <i class="bi bi-clock-history me-1"></i>Code expires in <span id="fpExpiryTimer" class="fw-bold text-danger">05:00</span>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                        <button type="button" id="fpChangeEmail" class="btn btn-link btn-sm p-0 text-decoration-none fp-link">Change Email?</button>
+                        <button type="button" id="fpResendBtn" class="btn btn-link btn-sm p-0 text-decoration-none bibliodesk-resend-link" disabled>
+                            Resend code in <span id="fpResendTimer">60</span>s
+                        </button>
+                    </div>
+                </div>
+
+                <!-- New password -->
+                <div data-step="3" class="d-none">
+                    <p class="text-muted mb-3">Create a new password for your account.</p>
+
+                    <div class="text-start mb-3">
+                        <label for="fpNewPassword" class="form-label fw-bold small">New Password</label>
+                        <div class="password-container">
+                            <input type="password" id="fpNewPassword" class="form-control fp-input py-2" minlength="8" placeholder="At least 8 characters" autocomplete="new-password">
+                            <span class="password-toggle-icon" data-target="fpNewPassword"><i class="bi bi-eye"></i></span>
+                        </div>
+                    </div>
+
+                    <div class="text-start mb-2">
+                        <label for="fpConfirmPassword" class="form-label fw-bold small">Confirm New Password</label>
+                        <div class="password-container">
+                            <input type="password" id="fpConfirmPassword" class="form-control fp-input py-2" minlength="8" placeholder="Re-enter password" autocomplete="new-password">
+                            <span class="password-toggle-icon" data-target="fpConfirmPassword"><i class="bi bi-eye"></i></span>
+                        </div>
+                    </div>
+
+                    <ul class="fp-rules text-start small text-muted mt-3 mb-0 list-unstyled">
+                        <li id="fpRuleLength"><i class="bi bi-circle me-2"></i>At least 8 characters</li>
+                        <li id="fpRuleMatch"><i class="bi bi-circle me-2"></i>Passwords match</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" id="fpSendBtn" class="btn bibliodesk-btn-primary w-100 py-2 rounded-3 shadow-sm">Send Verification Code</button>
+                <button type="button" id="fpVerifyBtn" class="btn bibliodesk-btn-primary w-100 py-2 rounded-3 shadow-sm d-none">Verify Code</button>
+                <button type="button" id="fpResetBtn" class="btn bibliodesk-btn-primary w-100 py-2 rounded-3 shadow-sm d-none">Reset Password</button>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -303,6 +385,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
 <script src="../frontend/js/Toggle.js"></script>
+<script src="../frontend/js/login_forgotpassword.js"></script>
 <?php if ($show_otp_modal): ?>
 <script>
     window.otpExpiresAtMs = <?= json_encode($otp_expires_at_ms) ?>;

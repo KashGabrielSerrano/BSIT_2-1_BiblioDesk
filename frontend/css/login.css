@@ -371,7 +371,7 @@ form button[type="submit"]:hover {
   cursor: not-allowed;
 }
 
-/* 8. Alert Box Inside Modal */
+/* Alert Box Inside Modal */
 #otpModal #otpAlert.alert-danger {
   background-color: var(--alert-danger-bg) !important;
   color: var(--alert-danger-text) !important;
@@ -384,7 +384,7 @@ form button[type="submit"]:hover {
   border: 1px solid var(--alert-success-border) !important;
 }
 
-/*Backdrop & Background Logo Dimming */
+/* Backdrop & Background Logo Dimming */
 .modal-backdrop.show {
   opacity: 0.75 !important;
   background-color: var(--backdrop) !important;
@@ -395,6 +395,214 @@ body.modal-open .logo-panel {
   transition: opacity 0.25s ease;
 }
 
+/* Forgot Password Modal */
+#forgotModal {
+  z-index: 1060 !important;
+}
+
+#forgotModal .modal-dialog {
+  position: relative;
+  z-index: 1061 !important;
+  max-width: 440px;
+}
+
+#forgotModal .modal-content {
+  background-color: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1062 !important;
+}
+
+#forgotModal .bibliodesk-modal-header {
+  background-color: var(--main-color) !important;
+  color: var(--fcolor-secondary) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+}
+
+#forgotModal .bibliodesk-modal-header .modal-title {
+  color: var(--fcolor-secondary) !important;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#forgotModal .bibliodesk-modal-header .modal-title i {
+  color: var(--hover) !important;
+}
+
+#forgotModal .modal-body {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--text) !important;
+  position: relative !important;
+  z-index: 1063 !important;
+}
+
+#forgotModal .modal-footer {
+  background-color: var(--fcolor-secondary) !important;
+  border-bottom-left-radius: 13px !important;
+  border-bottom-right-radius: 13px !important;
+}
+
+#forgotModal .text-dark,
+#forgotModal #fpEmailDisplay {
+  color: var(--ink) !important;
+  word-break: break-all;
+}
+
+#forgotModal .text-muted {
+  color: var(--muted-alt) !important;
+}
+
+#forgotModal .border-top {
+  border-color: var(--line) !important;
+}
+
+#forgotModal .form-label {
+  color: var(--brown);
+}
+
+#forgotModal .fp-input {
+  border: 1px solid var(--fcolor-main);
+  border-radius: 8px;
+  color: var(--text);
+  background-color: var(--fcolor-secondary);
+  font-size: 0.95rem;
+}
+
+#forgotModal .fp-input::placeholder {
+  color: var(--muted);
+}
+
+#forgotModal .fp-input:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+  outline: none;
+}
+
+#forgotModal .fp-input.is-invalid {
+  border-color: var(--danger);
+}
+
+#forgotModal .password-container input {
+  padding-right: 45px;
+}
+
+#forgotModal .bibliodesk-otp-input {
+  background-color: var(--input-bg) !important;
+  color: var(--ink) !important;
+  border: 2px solid var(--hover) !important;
+  border-radius: 8px !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 6px !important;
+  font-weight: bold;
+  caret-color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#forgotModal .bibliodesk-otp-input:focus {
+  background-color: var(--fcolor-secondary) !important;
+  border-color: var(--btn) !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
+  outline: none !important;
+}
+
+#forgotModal .bibliodesk-otp-input.is-invalid {
+  border-color: var(--danger) !important;
+}
+
+#forgotModal .bibliodesk-otp-input::placeholder {
+  color: var(--placeholder) !important;
+}
+
+#forgotModal #fpExpiryTimer {
+  color: var(--danger) !important;
+}
+
+#forgotModal .bibliodesk-btn-primary {
+  background-color: var(--btn) !important;
+  color: var(--fcolor-secondary) !important;
+  border: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#forgotModal .bibliodesk-btn-primary:hover:not(:disabled) {
+  background-color: var(--hover) !important;
+}
+
+#forgotModal .bibliodesk-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+#forgotModal .bibliodesk-btn-primary:disabled {
+  background-color: var(--disabled-bg) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+#forgotModal .bibliodesk-resend-link,
+#forgotModal .fp-link {
+  color: var(--link) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: color 0.2s ease;
+}
+
+#forgotModal .bibliodesk-resend-link:hover:not(:disabled),
+#forgotModal .fp-link:hover {
+  color: var(--link-hover) !important;
+  text-decoration: underline !important;
+}
+
+#forgotModal .bibliodesk-resend-link:disabled {
+  color: var(--disabled-text) !important;
+  cursor: not-allowed;
+}
+
+#forgotModal #fpAlert.alert-danger {
+  background-color: var(--alert-danger-bg) !important;
+  color: var(--alert-danger-text) !important;
+  border: 1px solid var(--alert-danger-border) !important;
+}
+
+#forgotModal #fpAlert.alert-success {
+  background-color: var(--alert-success-bg) !important;
+  color: var(--alert-success-text) !important;
+  border: 1px solid var(--alert-success-border) !important;
+}
+
+.fp-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fp-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.fp-dots span.active {
+  background: var(--btn);
+  transform: scale(1.25);
+}
+
+.fp-rules li.ok {
+  color: var(--alert-success-text);
+}
 
 /* Media Queries */
 @media (max-height: 700px) {
