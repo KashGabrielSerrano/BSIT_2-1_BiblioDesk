@@ -1,17 +1,3 @@
-:root {
-  --bg: #2c251d;
-  --brown: #4d463d;
-  --green: #2e4e0d;
-  --hover: #8b7e6c;
-  --link: #3b52ca;
-  --text: #333333;
-  --muted: #797575;
-  --gray: #626262;
-  --white: #ffffff;
-  --danger: #c0392b;
-  --radius: 8px;
-}
-
 * {
   box-sizing: border-box;
   font-family: Arial, Helvetica, sans-serif;
@@ -21,7 +7,7 @@
 
 body {
   min-height: 100vh;
-  background: var(--bg);
+  background: var(--main-color);
 }
 
 /* Layout */
@@ -54,7 +40,7 @@ body {
 }
 
 .tagline {
-  color: var(--white);
+  color: var(--fcolor-secondary);
   font-size: 20px;
   letter-spacing: 3px;
   margin-top: 30px;
@@ -87,7 +73,7 @@ hr {
 }
 
 form {
-  background: var(--white);
+  background: var(--fcolor-secondary);
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
   display: flex;
@@ -117,9 +103,9 @@ form {
 .form-items select {
   width: 100%;
   padding: 12px 14px;
-  border: 1px solid #000;
-  border-radius: var(--radius);
-  background: var(--white);
+  border: 1px solid var(--fcolor-main);
+  border-radius: 8px;
+  background: var(--fcolor-secondary);
   color: var(--text);
   font-size: 0.95rem;
   outline: none;
@@ -146,7 +132,7 @@ form {
 }
 
 .form-items input.flatpickr-input[readonly] {
-  background: var(--white);
+  background: var(--fcolor-secondary);
   cursor: pointer;
 }
 
@@ -210,10 +196,10 @@ form {
 .step-actions button {
   flex: 1;
   padding: 12px;
-  background: var(--green);
-  color: var(--white);
+  background: var(--btn);
+  color: var(--fcolor-secondary);
   border: none;
-  border-radius: var(--radius);
+  border-radius: 8px;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
@@ -225,14 +211,14 @@ form {
 }
 
 .step-actions button[data-action="prev"] {
-  background: var(--white);
+  background: var(--fcolor-secondary);
   color: var(--brown);
   border: 1px solid var(--brown);
 }
 
 .step-actions button[data-action="prev"]:hover {
   background: var(--brown);
-  color: var(--white);
+  color: var(--fcolor-secondary);
 }
 
 /* Footer text */
@@ -274,10 +260,10 @@ form {
   max-width: 440px;
 }
 
-/* 1. Main Modal Card  */
+/* OTP Main Modal Card */
 #otpModal .modal-content {
   background-color: transparent !important;
-  color: var(--text, #333333) !important;
+  color: var(--text) !important;
   border: 1px solid rgba(0, 0, 0, 0.15) !important;
   border-radius: 14px !important;
   box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
@@ -286,88 +272,88 @@ form {
   z-index: 1062 !important;
 }
 
-/* 2. Header */
+/* OTP Header */
 #otpModal .bibliodesk-modal-header {
-  background-color: #1a1611 !important;
-  color: #ffffff !important;
-  border-bottom: 1px solid #332d25 !important;
+  background-color: var(--dark-header) !important;
+  color: var(--fcolor-secondary) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
   padding: 16px 24px !important;
   border-top-left-radius: 13px !important;
   border-top-right-radius: 13px !important;
 }
 
 #otpModal .bibliodesk-modal-header .modal-title {
-  color: #ffffff !important;
+  color: var(--fcolor-secondary) !important;
   font-size: 1.15rem;
   font-weight: 600;
 }
 
 #otpModal .bibliodesk-modal-header i {
-  color: var(--hover, #8b7e6c) !important;
+  color: var(--hover) !important;
 }
 
-/* 3. Modal Body & Footer */
+/* OTP Modal Body & Footer */
 #otpModal .modal-body {
-  background-color: #ffffff !important;
-  color: var(--text, #333333) !important;
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--text) !important;
   position: relative !important;
   z-index: 1063 !important;
 }
 
 #otpModal .modal-footer {
-  background-color: #ffffff !important;
+  background-color: var(--fcolor-secondary) !important;
   border-bottom-left-radius: 13px !important;
   border-bottom-right-radius: 13px !important;
 }
 
 #otpModal .text-dark,
 #otpModal #otpEmailDisplay {
-  color: #1f1b16 !important;
+  color: var(--ink) !important;
   word-break: break-all;
 }
 
 #otpModal .text-muted {
-  color: #6c757d !important;
+  color: var(--muted-alt) !important;
 }
 
 #otpModal .border-top {
-  border-color: #e5e0d8 !important;
+  border-color: var(--line) !important;
 }
 
-/* 4. OTP Code Input */
+/*OTP Code Input */
 #otpModal .bibliodesk-otp-input {
-  background-color: #fbfaf8 !important;
-  color: #1f1b16 !important;
-  border: 2px solid #8b7e6c !important;
+  background-color: var(--input-bg) !important;
+  color: var(--ink) !important;
+  border: 2px solid var(--hover) !important;
   border-radius: 8px !important;
   font-size: 1.8rem !important;
   letter-spacing: 6px !important;
   font-weight: bold;
-  caret-color: #1f1b16;
+  caret-color: var(--ink);
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 }
 
 #otpModal .bibliodesk-otp-input:focus {
-  background-color: #ffffff !important;
-  color: #1f1b16 !important;
-  border-color: var(--green, #2e4e0d) !important;
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--ink) !important;
+  border-color: var(--btn) !important;
   box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
   outline: none !important;
 }
 
 #otpModal .bibliodesk-otp-input::placeholder {
-  color: #a49d94 !important;
+  color: var(--placeholder) !important;
 }
 
-/* 5. Expiry Timer */
+/*Expiry Timer*/
 #otpModal #otpExpiryTimer {
-  color: var(--danger, #c0392b) !important;
+  color: var(--danger) !important;
 }
 
-/* 6. Submit Button for OTP */
+/*Submit Button for OTP*/
 #otpModal .bibliodesk-btn-primary {
-  background-color: var(--green, #2e4e0d) !important;
-  color: #ffffff !important;
+  background-color: var(--btn) !important;
+  color: var(--fcolor-secondary) !important;
   border: none !important;
   font-size: 15px !important;
   font-weight: 600 !important;
@@ -376,8 +362,8 @@ form {
 }
 
 #otpModal .bibliodesk-btn-primary:hover:not(:disabled) {
-  background-color: var(--hover, #8b7e6c) !important;
-  color: #ffffff !important;
+  background-color: var(--hover) !important;
+  color: var(--fcolor-secondary) !important;
 }
 
 #otpModal .bibliodesk-btn-primary:active:not(:disabled) {
@@ -385,15 +371,15 @@ form {
 }
 
 #otpModal .bibliodesk-btn-primary:disabled {
-  background-color: #d1ccc5 !important;
-  color: #797575 !important;
+  background-color: var(--disabled-bg) !important;
+  color: var(--muted) !important;
   cursor: not-allowed;
   opacity: 0.85;
 }
 
-/* 7. Resend Code */
+/* Resend Code */
 #otpModal .bibliodesk-resend-link {
-  color: var(--link, #3b52ca) !important;
+  color: var(--link) !important;
   font-size: 0.875rem;
   font-weight: 500;
   text-decoration: none !important;
@@ -401,32 +387,30 @@ form {
 }
 
 #otpModal .bibliodesk-resend-link:hover:not(:disabled) {
-  color: #1d3399 !important;
+  color: var(--link-hover) !important;
   text-decoration: underline !important;
 }
 
 #otpModal .bibliodesk-resend-link:disabled {
-  color: #9ca3af !important;
+  color: var(--disabled-text) !important;
   cursor: not-allowed;
 }
 
-/* 8. Alert Box Inside Modal */
 #otpModal #otpAlert.alert-danger {
-  background-color: #fef2f2 !important;
-  color: #991b1b !important;
-  border: 1px solid #fecaca !important;
+  background-color: var(--alert-danger-bg) !important;
+  color: var(--alert-danger-text) !important;
+  border: 1px solid var(--alert-danger-border) !important;
 }
 
 #otpModal #otpAlert.alert-success {
-  background-color: #f0fdf4 !important;
-  color: #166534 !important;
-  border: 1px solid #bbf7d0 !important;
+  background-color: var(--alert-success-bg) !important;
+  color: var(--alert-success-text) !important;
+  border: 1px solid var(--alert-success-border) !important;
 }
 
-/* 9. Backdrop & Background Logo Dimming */
 .modal-backdrop.show {
   opacity: 0.75 !important;
-  background-color: #12100e !important;
+  background-color: var(--backdrop) !important;
 }
 
 body.modal-open .logo-panel {
