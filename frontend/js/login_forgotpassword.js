@@ -298,14 +298,15 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // Show / hide password
-    modalEl.querySelectorAll('.password-toggle-icon').forEach(icon => {
+    document.querySelectorAll('.login-container .password-toggle-icon, #forgotModal .password-toggle-icon').forEach(icon => {
         icon.addEventListener('click', () => {
             const input = document.getElementById(icon.dataset.target);
+            if (!input) return;
             const eye = icon.querySelector('i');
             const show = input.type === 'password';
             input.type = show ? 'text' : 'password';
-            eye.classList.toggle('bi-eye', !show);
-            eye.classList.toggle('bi-eye-slash', show);
+            eye.classList.toggle('bi-eye', show);
+            eye.classList.toggle('bi-eye-slash', !show);
         });
     });
 

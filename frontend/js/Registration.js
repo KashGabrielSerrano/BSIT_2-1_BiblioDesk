@@ -137,8 +137,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const eye = icon.querySelector("i");
             const show = input.type === "password";
             input.type = show ? "text" : "password";
-            eye.classList.toggle("bi-eye", !show);
-            eye.classList.toggle("bi-eye-slash", show);
+            eye.classList.toggle("bi-eye", show);
+            eye.classList.toggle("bi-eye-slash", !show);
         });
     });
 

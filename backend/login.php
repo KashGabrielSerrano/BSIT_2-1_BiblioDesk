@@ -239,8 +239,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                     <label for="password" class="form-label">Password</label>
                     <div class="password-container">
                         <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Enter your password" required>
-                        <span id="togglePassword" class="password-toggle-icon">
-                            <i class="bi bi-eye" id="toggleIcon"></i>
+                        <span id="togglePassword" class="password-toggle-icon" data-target="password">
+                            <i class="bi bi-eye-slash" id="toggleIcon"></i>
                         </span>
                     </div>
                 </div>
@@ -316,7 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                         <label for="fpNewPassword" class="form-label fw-bold small">New Password</label>
                         <div class="password-container">
                             <input type="password" id="fpNewPassword" class="form-control fp-input py-2" minlength="8" placeholder="At least 8 characters" autocomplete="new-password">
-                            <span class="password-toggle-icon" data-target="fpNewPassword"><i class="bi bi-eye"></i></span>
+                            <span class="password-toggle-icon" data-target="fpNewPassword"><i class="bi bi-eye-slash"></i></span>
                         </div>
                     </div>
 
@@ -324,7 +324,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnLogin']) && !$is_l
                         <label for="fpConfirmPassword" class="form-label fw-bold small">Confirm New Password</label>
                         <div class="password-container">
                             <input type="password" id="fpConfirmPassword" class="form-control fp-input py-2" minlength="8" placeholder="Re-enter password" autocomplete="new-password">
-                            <span class="password-toggle-icon" data-target="fpConfirmPassword"><i class="bi bi-eye"></i></span>
+                            <span class="password-toggle-icon" data-target="fpConfirmPassword"><i class="bi bi-eye-slash"></i></span>
                         </div>
                     </div>
 

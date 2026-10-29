@@ -99,14 +99,14 @@ $modal_redirect = '';
                         <label for="password">Password</label>
                         <div class="password-container">
                             <input type="password" id="password" name="password" minlength="8" placeholder="At least 8 characters" required>
-                            <span class="password-toggle-icon" data-target="password"><i class="bi bi-eye"></i></span>
+                            <span class="password-toggle-icon" data-target="password"><i class="bi bi-eye-slash"></i></span>
                         </div>
                     </div>
                     <div class="form-items">
                         <label for="confirm_password">Confirm Password</label>
                         <div class="password-container">
                             <input type="password" id="confirm_password" name="confirm_password" minlength="8" placeholder="Re-enter password" required>
-                            <span class="password-toggle-icon" data-target="confirm_password"><i class="bi bi-eye"></i></span>
+                            <span class="password-toggle-icon" data-target="confirm_password"><i class="bi bi-eye-slash"></i></span>
                         </div>
                     </div>
                     <div class="step-actions">
