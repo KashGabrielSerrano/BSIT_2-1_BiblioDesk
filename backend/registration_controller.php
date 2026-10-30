@@ -113,9 +113,10 @@ if ($action === 'submit_registration') {
         $inval_stmt->close();
 
         // Create new OTP
-        $otp_code = $so->generateOTPCode();
-        $otp_stmt = $con->prepare("INSERT INTO email_verifications (User_ID, OTP_Code, Expires_At, Is_Used, Attempts) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE), 0, 0)");
-        $otp_stmt->bind_param("is", $user_id, $otp_code);
+        $otp_code   = $so->generateOTPCode();
+        $expires_at = date("Y-m-d H:i:s", strtotime("+5 minutes"));
+        $otp_stmt   = $con->prepare("INSERT INTO email_verifications (User_ID, OTP_Code, Expires_At, Is_Used, Attempts) VALUES (?, ?, ?, 0, 0)");
+        $otp_stmt->bind_param("iss", $user_id, $otp_code, $expires_at);
         $otp_stmt->execute();
         $otp_stmt->close();
 
@@ -253,9 +254,10 @@ if ($action === 'resend_otp') {
     $inval_stmt->close();
 
     // Generate & store new OTP
-    $otp_code = $so->generateOTPCode();
-    $otp_stmt = $con->prepare("INSERT INTO email_verifications (User_ID, OTP_Code, Expires_At, Is_Used, Attempts) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 5 MINUTE), 0, 0)");
-    $otp_stmt->bind_param("is", $user_id, $otp_code);
+    $otp_code   = $so->generateOTPCode();
+    $expires_at = date("Y-m-d H:i:s", strtotime("+5 minutes"));
+    $otp_stmt   = $con->prepare("INSERT INTO email_verifications (User_ID, OTP_Code, Expires_At, Is_Used, Attempts) VALUES (?, ?, ?, 0, 0)");
+    $otp_stmt->bind_param("iss", $user_id, $otp_code, $expires_at);
     $otp_stmt->execute();
     $otp_stmt->close();
 
