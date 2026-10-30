@@ -5,6 +5,12 @@
 
 document.addEventListener('DOMContentLoaded', () => {
 
+    // Helper to fetch current CSRF Token from DOM
+    function getCsrfToken() {
+        const input = document.querySelector('input[name="csrf_token"]');
+        return input ? input.value : '';
+    }
+
     /* =========================================================================
      * MODULE 1: MAIN USER LOGIN FUNCTIONALITY
      * ========================================================================= */
@@ -49,7 +55,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 btnLogin.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...`;
             }
 
-            const formData = new FormData();
+            const formData = new FormData(loginForm);
             formData.append('action', 'login');
             formData.append('email', email);
             formData.append('password', password);
@@ -132,6 +138,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         async function sendControllerRequest(action, extraData = {}) {
             const formData = new FormData();
+            formData.append('csrf_token', getCsrfToken());
             formData.append('action', action);
             for (const key in extraData) {
                 formData.append(key, extraData[key]);
@@ -588,6 +595,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (otpInput) otpInput.disabled = true;
 
                 const formData = new FormData();
+                formData.append('csrf_token', getCsrfToken());
                 formData.append('action', 'verify_otp');
                 formData.append('otp_code', otpCode);
 
@@ -656,6 +664,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const userEmail = (emailInput && emailInput.value.trim()) || window.pendingEmail || '';
 
                 const formData = new FormData();
+                formData.append('csrf_token', getCsrfToken());
                 formData.append('action', 'resend_otp');
                 formData.append('email', userEmail);
 
@@ -691,7 +700,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     /* =========================================================================
-     * MODULE 4: PASSWORD VISIBILITY TOGGLE (GLOBAL HELPER) (Gawa ni Claire Princess Arcino)
+     * MODULE 4: PASSWORD VISIBILITY TOGGLE (GLOBAL HELPER)
      * ========================================================================= */
     (() => {
         document.querySelectorAll('.password-toggle-icon').forEach(icon => {

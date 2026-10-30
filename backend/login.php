@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once __DIR__ . "/connection/config.php";
 require_once __DIR__ . "/helpers/SystemOperators.php";
 
@@ -8,6 +7,8 @@ $so  = new SystemOperators();
 
 // Handle Logout
 if (isset($_GET['action']) && $_GET['action'] === 'logout') {
+    $is_secure = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on';
+    
     if (isset($_COOKIE['remember_me'])) {
         $hashed_token = hash('sha256', $_COOKIE['remember_me']);
         $del_stmt = $con->prepare("DELETE FROM user_tokens WHERE token_hash = ?");
@@ -16,8 +17,17 @@ if (isset($_GET['action']) && $_GET['action'] === 'logout') {
             $del_stmt->execute();
             $del_stmt->close();
         }
-        setcookie("remember_me", "", time() - 3600, "/", "", false, true);
+        
+        setcookie("remember_me", "", [
+            'expires'  => time() - 3600,
+            'path'     => '/',
+            'domain'   => '',
+            'secure'   => $is_secure,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
     }
+    
     $_SESSION = [];
     if (ini_get("session.use_cookies")) {
         $params = session_get_cookie_params();
@@ -61,6 +71,8 @@ if (isset($_SESSION['user_id'])) {
     </div>
     <div class="form-wrapper">
         <form id="loginForm" novalidate>
+            <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+            
             <div class="form-fields">
                 <h1>Log In</h1>
                 <div id="loginAlert" class="alert bg-danger text-white d-none align-items-center mb-3" role="alert">

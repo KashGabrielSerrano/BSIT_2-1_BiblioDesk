@@ -1,14 +1,11 @@
 <?php
-session_start();
-header('Content-Type: application/json');
-
 require_once __DIR__ . "/connection/config.php";
 require_once __DIR__ . "/helpers/SystemOperators.php";
+header('Content-Type: application/json');
 
 $con = connection();
 $so  = new SystemOperators();
 
-// JSON Helper
 function sendResponse(bool $success, string $message, array $extra = []): void {
     echo json_encode(array_merge([
         'success' => $success,
@@ -17,7 +14,6 @@ function sendResponse(bool $success, string $message, array $extra = []): void {
     exit();
 }
 
-// Client IP Helper
 function get_client_ip(): string {
     if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
         return $_SERVER['HTTP_CF_CONNECTING_IP'];
@@ -43,9 +39,18 @@ function record_failed_attempt(mysqli $con, string $user_ip, ?string $encrypted_
     }
 }
 
-// Cleanup old login attempts periodically
 if (rand(1, 100) === 1) {
     $con->query("DELETE FROM login_attempts WHERE attempt_time < NOW() - INTERVAL 1 DAY");
+}
+
+// Enforce CSRF Token Validation across POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $submitted_token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (empty($submitted_token) || !hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
+        http_response_code(403);
+        error_log("Security Warning: Potential CSRF attempt blocked from IP " . $user_ip);
+        sendResponse(false, 'Your session has expired or the request could not be verified. Please reload the page.');
+    }
 }
 
 $action = $_POST['action'] ?? '';
@@ -67,7 +72,6 @@ if ($action === 'login') {
     $max_attempts    = 5;
     $time_threshold  = date("Y-m-d H:i:s", strtotime("-$lockout_minutes minutes"));
 
-    // Check Lockout Status
     $stmt = $con->prepare("SELECT COUNT(*), MAX(attempt_time) FROM login_attempts WHERE (ip_address = ? OR (email_attempted = ? AND email_attempted IS NOT NULL)) AND attempt_time > ?");
     $stmt->bind_param("sss", $user_ip, $encrypted_email, $time_threshold);
     $stmt->execute();
@@ -82,7 +86,6 @@ if ($action === 'login') {
         sendResponse(false, "Too many failed login attempts. Please try again in {$minutes_remaining} minute(s).");
     }
 
-    // Query User Account
     $stmt = $con->prepare("SELECT User_ID, Student_ID, Email, Password, Role, Account_Status FROM user_table WHERE Email = ?");
     $stmt->bind_param("s", $encrypted_email);
     $stmt->execute();
@@ -95,25 +98,21 @@ if ($action === 'login') {
     }
 
     $status = $user['Account_Status'] ?? 'Active';
-
     if ($status === 'Suspended') {
         sendResponse(false, 'Your account has been suspended. Please contact the Library Administrator.');
     }
 
-    // Handle Unverified / Pending Registration
     if ($status === 'Pending') {
         $user_id = $user['User_ID'];
         $_SESSION['pending_user_id'] = $user_id;
         $_SESSION['pending_email']   = $raw_email;
         $_SESSION['last_otp_resend'] = time();
 
-        // Invalidate previous active OTPs
         $inval_stmt = $con->prepare("UPDATE email_verifications SET Is_Used = 1 WHERE User_ID = ? AND Is_Used = 0");
         $inval_stmt->bind_param("i", $user_id);
         $inval_stmt->execute();
         $inval_stmt->close();
 
-        // Generate New Activation OTP
         $otp_code   = $so->generateOTPCode();
         $expires_at = date("Y-m-d H:i:s", strtotime("+5 minutes"));
         $otp_stmt   = $con->prepare("INSERT INTO email_verifications (User_ID, OTP_Code, Expires_At, Is_Used, Attempts) VALUES (?, ?, ?, 0, 0)");
@@ -121,7 +120,6 @@ if ($action === 'login') {
         $otp_stmt->execute();
         $otp_stmt->close();
 
-        // Get Expiry
         $time_stmt = $con->prepare("SELECT UNIX_TIMESTAMP(Expires_At) AS expires_at FROM email_verifications WHERE User_ID = ? ORDER BY Verification_ID DESC LIMIT 1");
         $time_stmt->bind_param("i", $user_id);
         $time_stmt->execute();
@@ -129,7 +127,6 @@ if ($action === 'login') {
         $time_stmt->close();
 
         $so->sendEmail($raw_email, $otp_code, 'registration');
-
         sendResponse(true, 'Account unverified. An activation code has been sent to your email.', [
             'requires_otp'  => true,
             'email'         => $raw_email,
@@ -137,19 +134,19 @@ if ($action === 'login') {
         ]);
     }
 
-    // Successful Login
+    // Regenerate Session ID and renew CSRF Token
     session_regenerate_id(true);
+    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     $_SESSION['user_id']    = $user['User_ID'];
     $_SESSION['email']      = $so->decrypt($user['Email']);
     $_SESSION['role']       = $user['Role'];
     $_SESSION['student_id'] = !empty($user['Student_ID']) ? $so->decrypt($user['Student_ID']) : null;
 
-    // Handle Remember Me Token Generation
     if ($remember) {
-        $token = bin2hex(random_bytes(32));
+        $token        = bin2hex(random_bytes(32));
         $hashed_token = hash('sha256', $token);
-        $user_agent = $_SERVER['HTTP_USER_AGENT'] ?? '';
-        $expires_at = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60));
+        $user_agent   = $_SERVER['HTTP_USER_AGENT'] ?? '';
+        $expires_at   = date('Y-m-d H:i:s', time() + (30 * 24 * 60 * 60));
 
         $tok_stmt = $con->prepare("INSERT INTO user_tokens (user_id, token_hash, user_agent, ip_address, expires_at) VALUES (?, ?, ?, ?, ?)");
         if ($tok_stmt) {
@@ -158,7 +155,7 @@ if ($action === 'login') {
             $tok_stmt->close();
         }
 
-        $is_secure = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on';
+        $is_secure = isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) === 'on';
         setcookie("remember_me", $token, [
             'expires'  => time() + (30 * 24 * 60 * 60),
             'path'     => '/',
@@ -169,7 +166,6 @@ if ($action === 'login') {
         ]);
     }
 
-    // Clear Failed Login Attempts
     $clear_stmt = $con->prepare("DELETE FROM login_attempts WHERE ip_address = ? OR email_attempted = ?");
     $clear_stmt->bind_param("ss", $user_ip, $encrypted_email);
     $clear_stmt->execute();
@@ -184,13 +180,11 @@ if ($action === 'login') {
 // ==========================================
 if ($action === 'fp_send_otp') {
     $email = trim($_POST['email'] ?? '');
-
     if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         sendResponse(false, 'Please enter a valid email address.');
     }
 
     $generic_message = 'If an account associated with this email address exists, we have sent a verification code.';
-
     $encrypted_email = $so->encrypt($email);
 
     $stmt = $con->prepare("SELECT User_ID, Account_Status FROM user_table WHERE Email = ?");
@@ -205,7 +199,6 @@ if ($action === 'fp_send_otp') {
 
     $user_id = $user['User_ID'];
 
-    // Invalidate old OTPs
     $inval_stmt = $con->prepare("UPDATE email_verifications SET Is_Used = 1 WHERE User_ID = ? AND Is_Used = 0");
     $inval_stmt->bind_param("i", $user_id);
     $inval_stmt->execute();
@@ -349,9 +342,9 @@ if ($action === 'fp_resend_otp') {
 // 5. ACTION: FORGOT PASSWORD - RESET PASSWORD
 // ==========================================
 if ($action === 'fp_reset_password') {
-    $user_id     = $_SESSION['fp_user_id'] ?? null;
-    $is_verified = $_SESSION['fp_verified'] ?? false;
-    $new_pass    = $_POST['new_password'] ?? '';
+    $user_id      = $_SESSION['fp_user_id'] ?? null;
+    $is_verified  = $_SESSION['fp_verified'] ?? false;
+    $new_pass     = $_POST['new_password'] ?? '';
     $confirm_pass = $_POST['confirm_password'] ?? '';
 
     if (!$user_id || !$is_verified) {
@@ -371,14 +364,12 @@ if ($action === 'fp_reset_password') {
     }
 
     $hashed_password = password_hash($new_pass, PASSWORD_DEFAULT);
-
     $stmt = $con->prepare("UPDATE user_table SET Password = ? WHERE User_ID = ?");
     $stmt->bind_param("si", $hashed_password, $user_id);
 
     if ($stmt->execute()) {
         $stmt->close();
 
-        // Destroy persistent user tokens
         $del_tok = $con->prepare("DELETE FROM user_tokens WHERE user_id = ?");
         $del_tok->bind_param("i", $user_id);
         $del_tok->execute();
@@ -393,3 +384,4 @@ if ($action === 'fp_reset_password') {
 }
 
 sendResponse(false, 'Invalid action request.');
+?>

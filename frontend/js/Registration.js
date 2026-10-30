@@ -11,6 +11,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
+    // Helper to fetch current CSRF Token
+    function getCsrfToken() {
+        const csrfInput = document.getElementById("csrf_token");
+        return csrfInput ? csrfInput.value : "";
+    }
+
     // Error modal instance
     const errorModal = (typeof bootstrap !== "undefined")
         ? bootstrap.Modal.getOrCreateInstance(errorModalEl)
@@ -359,6 +365,7 @@ document.addEventListener("DOMContentLoaded", function () {
             if (otpInput) otpInput.disabled = true;
 
             const formData = new FormData();
+            formData.append('csrf_token', getCsrfToken());
             formData.append('action', 'verify_otp');
             formData.append('otp_code', otpCode);
 
@@ -437,6 +444,7 @@ document.addEventListener("DOMContentLoaded", function () {
             const userEmail = emailInput ? emailInput.value.trim() : '';
 
             const formData = new FormData();
+            formData.append('csrf_token', getCsrfToken());
             formData.append('action', 'resend_otp');
             formData.append('email', userEmail);
 

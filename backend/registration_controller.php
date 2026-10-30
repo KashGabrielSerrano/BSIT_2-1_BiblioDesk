@@ -1,11 +1,37 @@
 <?php
-session_start();
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
+
 header('Content-Type: application/json');
-require_once "connection/config.php";
-require_once "helpers/SystemOperators.php";
 
 $con = connection();
 $so  = new SystemOperators();
+
+function get_client_ip(): string {
+    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
+        return $_SERVER['HTTP_CF_CONNECTING_IP'];
+    }
+    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+        $ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+        $client_ip = trim($ip_list[0]);
+        if (filter_var($client_ip, FILTER_VALIDATE_IP)) {
+            return $client_ip;
+        }
+    }
+    return filter_var($_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP) ?: '0.0.0.0';
+}
+
+$user_ip = get_client_ip();
+
+// Enforce CSRF Token Validation across POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $submitted_token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (empty($submitted_token) || !hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
+        http_response_code(403);
+        error_log("Security Warning: Potential CSRF attempt blocked from IP " . $user_ip);
+        sendResponse(false, 'Your session has expired or the request could not be verified. Please reload the page.');
+    }
+}
 
 $action = $_POST['action'] ?? '';
 

@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
+
 if (isset($_SESSION['user_id'])) {
     if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
         header("Location: admindb.php");
@@ -35,6 +37,9 @@ $modal_redirect = '';
  
     <div class="form-wrapper">
         <form id="registrationForm" novalidate>
+            <!-- Hidden CSRF Token Field -->
+            <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
+
             <div class="form-fields">
                 <h1>Registration</h1>
  
