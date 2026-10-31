@@ -5,6 +5,17 @@ header('Content-Type: application/json');
 
 $con = connection();
 $so  = new SystemOperators();
+$user_ip = $so->getClientIP();
+
+// Enforce CSRF Token Validation across POST requests
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $submitted_token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (empty($submitted_token) || !hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
+        http_response_code(403);
+        error_log("Security Warning: Potential CSRF attempt blocked from IP " . $user_ip);
+        sendResponse(false, 'Your session has expired or the request could not be verified. Please reload the page.');
+    }
+}
 
 function sendResponse(bool $success, string $message, array $extra = []): void {
     echo json_encode(array_merge([
@@ -13,22 +24,6 @@ function sendResponse(bool $success, string $message, array $extra = []): void {
     ], $extra));
     exit();
 }
-
-function get_client_ip(): string {
-    if (!empty($_SERVER['HTTP_CF_CONNECTING_IP']) && filter_var($_SERVER['HTTP_CF_CONNECTING_IP'], FILTER_VALIDATE_IP)) {
-        return $_SERVER['HTTP_CF_CONNECTING_IP'];
-    }
-    if (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ip_list = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        $client_ip = trim($ip_list[0]);
-        if (filter_var($client_ip, FILTER_VALIDATE_IP)) {
-            return $client_ip;
-        }
-    }
-    return filter_var($_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP) ?: '0.0.0.0';
-}
-
-$user_ip = get_client_ip();
 
 function record_failed_attempt(mysqli $con, string $user_ip, ?string $encrypted_email = null): void {
     $log_stmt = $con->prepare("INSERT INTO login_attempts (ip_address, email_attempted) VALUES (?, ?)");
@@ -41,16 +36,6 @@ function record_failed_attempt(mysqli $con, string $user_ip, ?string $encrypted_
 
 if (rand(1, 100) === 1) {
     $con->query("DELETE FROM login_attempts WHERE attempt_time < NOW() - INTERVAL 1 DAY");
-}
-
-// Enforce CSRF Token Validation across POST requests
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $submitted_token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
-    if (empty($submitted_token) || !hash_equals($_SESSION['csrf_token'] ?? '', $submitted_token)) {
-        http_response_code(403);
-        error_log("Security Warning: Potential CSRF attempt blocked from IP " . $user_ip);
-        sendResponse(false, 'Your session has expired or the request could not be verified. Please reload the page.');
-    }
 }
 
 $action = $_POST['action'] ?? '';

@@ -1,8 +1,8 @@
 <?php
-session_start();
-require_once "connection/config.php";
-require_once "helpers/fpdf.php";
-require_once "helpers/fpdi/src/autoload.php";
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/fpdf.php";
+require_once __DIR__ . "/helpers/fpdi/src/autoload.php";
+
 $con = connection();
 use setasign\Fpdi\Fpdi;
 
