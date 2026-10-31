@@ -5,6 +5,7 @@ nb = no book
 ne = non-educational books
 ed = educational books
 ra = research articles
+rec = recommendations
 */
 :root{
     --main-color: #2C251D;
@@ -14,6 +15,7 @@ ra = research articles
     --cc-book-ne: #9E7B58;
     --cc-book-ed: #488C3E;
     --cc-book-ra: #3E7DA7;
+    --cc-book-rec:#7b522e;
     --cc-nb-ne: #C0B19D;
     --cc-nb-ed: #89C87F;
     --cc-nb-ra: #82B5D6;
@@ -21,6 +23,8 @@ ra = research articles
     --cc-qs-red: #C23D3D;
     --cc-qs-yellow: #C28A3D;
     --cc-qs-green: #488C3E;
+
+    --cc-rec:#FFE4C4;
 
     --fcolor-main: #000000;
     --fcolor-secondary: #ffffff;

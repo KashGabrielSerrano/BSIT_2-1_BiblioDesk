@@ -1,3 +1,3 @@
 function goBack() {
-    window.location.href = 'login.php';
+    window.history.back();
 }
