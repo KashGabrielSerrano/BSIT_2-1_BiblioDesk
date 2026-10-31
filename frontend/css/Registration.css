@@ -418,6 +418,49 @@ body.modal-open .logo-panel {
   transition: opacity 0.25s ease;
 }
 
+/* Global Styling for Bootstrap Checkbox */
+.form-items .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.6rem;
+    padding-left: 0 !important;
+    margin-top: 0.5rem;
+}
+
+.form-items input[type="checkbox"].form-check-input {
+    appearance: auto;
+    -webkit-appearance: checkbox;
+    accent-color: #2C251D !important;
+    width: 1.15em !important;
+    height: 1.15em !important;
+    min-width: 1.15em !important;
+    max-width: 1.15em !important;
+    margin: 0.15em 0 0 0 !important;
+    float: none !important;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.form-items .form-check-input.is-invalid ~ .form-check-label,
+.form-items .form-check.is-invalid .form-check-label,
+.form-items .form-check-label.is-invalid {
+    color: inherit !important;
+}
+
+.form-items input[type="checkbox"].form-check-input:focus,
+.form-items input[type="checkbox"].form-check-input:focus-visible,
+.form-items input[type="checkbox"].form-check-input:active {
+    outline: none !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+.form-items .form-check-label {
+    cursor: pointer;
+    line-height: 1.4;
+    user-select: none;
+}
+
 /* Responsive */
 @media (max-height: 700px) {
   .registration-container {

@@ -227,10 +227,10 @@
                         <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk logo" height="56" class="footerLogo">
                         <ul class="list-unstyled lh-lg mt-3 ps-4">
                             <li>
-                                <a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">Terms of Use</a>
+                                <a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=terms">Terms of Use</a>
                             </li>
                             <li>
-                                <a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">Privacy Policy</a>
+                                <a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=privacy">Privacy Policy</a>
                             </li>
                             <li>
                                 <a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">More About BiblioDesk</a>

@@ -114,6 +114,20 @@ $modal_redirect = '';
                             <span class="password-toggle-icon" data-target="confirm_password"><i class="bi bi-eye-slash"></i></span>
                         </div>
                     </div>
+
+                <!-- Mandatory Terms & Privacy Checkbox -->
+                    <div class="form-items mt-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" name="terms_accepted" required>
+                            <label class="form-check-label small" for="termsCheck">
+                                I have read and agree to the 
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#termsPrivacyModal" data-view="terms" class="text-primary text-decoration-underline">Terms of Use</a> 
+                                and 
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#termsPrivacyModal" data-view="privacy" class="text-primary text-decoration-underline">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+
                     <div class="step-actions">
                         <button type="button" data-action="prev">Previous</button>
                         <button type="submit" name="btnRegister" id="btnSubmitRegister">Submit Registration</button>
@@ -122,9 +136,34 @@ $modal_redirect = '';
  
                 <hr>
                 <p class="register">Already have an account? <a href="login.php">LOG IN</a></p>
-                <p class="terms">By proceeding, you agree to our <a href="terms.php">Terms of Use</a> <br> and confirm that you have read our <a href="privacy.php">Privacy Policy</a>.</p>
+                                <p class="terms">By proceeding, you agree to our <a href="terms_privacy.php?view=terms">Terms of Use</a> <br> 
+                                 and confirm that you have read our <a href="terms_privacy.php?view=privacy">Privacy Policy</a>.</p>
             </div>
         </form>
+    </div>
+</div>
+
+<!-- Terms & Privacy Dynamic Modal -->
+<div class="modal fade" id="termsPrivacyModal" tabindex="-1" aria-labelledby="termsPrivacyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header bibliodesk-modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="termsPrivacyModalTitle">
+                    <span id="tpModalTitleText">Terms of Use & Privacy Policy</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="termsPrivacyModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" class="btn btn-secondary rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
     </div>
 </div>
  

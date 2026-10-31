@@ -104,7 +104,8 @@ if (isset($_SESSION['user_id'])) {
                 <button type="submit" id="btnLogin">Login</button>
                 <hr>
                 <p class="register">Don't have an account? <a href="registration.php">REGISTER NOW</a></p>
-                <p class="terms">By proceeding, you agree to our <a href="terms.php">Terms of Use</a> <br> and confirm that you have read our <a href="privacy.php">Privacy Policy</a>.</p>
+                <p class="terms">By proceeding, you agree to our <a href="terms_privacy.php?view=terms">Terms of Use</a> <br> 
+                                 and confirm that you have read our <a href="terms_privacy.php?view=privacy">Privacy Policy</a>.</p>
             </div>
         </form>
     </div>
