@@ -1,7 +1,6 @@
 <?php
-session_start();
-require_once "connection/config.php";
-require_once "helpers/SystemOperators.php";
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
 
 $con = connection();$so  = new SystemOperators();
 

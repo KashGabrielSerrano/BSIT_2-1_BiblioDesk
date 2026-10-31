@@ -96,6 +96,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
             const target = (input.id === "birthday") ? birthdayPicker.altInput : input;
 
+            if (input.type === "checkbox" && input.hasAttribute("required") && !input.checked) {
+                showError("You must read and agree to the Terms of Use and Privacy Policy to proceed.", target);
+                return false;
+            }
+
             if (input.hasAttribute("required") && input.value === "") {
                 showError("Please fill in all required fields before " + actionWord + ".", target);
                 return false;
@@ -477,6 +482,39 @@ document.addEventListener("DOMContentLoaded", function () {
                 btnResend.disabled = false;
                 btnResend.innerHTML = originalText;
             }
+        });
+    }
+
+    // Terms of Use & Privacy Policy Modal Handler
+    const tpModal = document.getElementById('termsPrivacyModal');
+    if (tpModal) {
+        tpModal.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const view = button ? button.getAttribute('data-view') : 'terms';
+            const modalTitle = document.getElementById('tpModalTitleText');
+            const modalBody = document.getElementById('termsPrivacyModalBody');
+
+            modalTitle.textContent = (view === 'privacy') ? 'Privacy Policy' : 'Terms of Use';
+            modalBody.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-success" role="status"><span class="visually-hidden">Loading...</span></div></div>';
+
+            fetch(`terms_privacy.php?view=${view}`)
+                .then(response => response.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    const contentCard = doc.querySelector('.tos_privacy-card');
+                    if (contentCard) {
+                        // Remove standalone page back-buttons inside modal view if present
+                        const backBtn = contentCard.querySelector('.step-actions');
+                        if (backBtn) backBtn.remove();
+                        modalBody.innerHTML = contentCard.innerHTML;
+                    } else {
+                        modalBody.innerHTML = '<p class="text-danger">Failed to load content.</p>';
+                    }
+                })
+                .catch(() => {
+                    modalBody.innerHTML = '<p class="text-danger">Unable to load terms and privacy policy at this time.</p>';
+                });
         });
     }
 });
