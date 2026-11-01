@@ -10,6 +10,7 @@ rec = recommendations
 :root{
     --main-color: #2C251D;
     --main-bg-color: #F4F0EA;
+    --topbar-color: #352C21;
 
     --cc-dates: #45746F;
     --cc-book-ne: #9E7B58;
