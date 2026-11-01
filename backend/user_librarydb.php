@@ -418,7 +418,6 @@
         </section>
     </main>
 
-    <!-- Temporary UI needs to change Book Details Modal -->
     <div class="modal fade bookModal" id="bookDetailsModal" tabindex="-1" aria-labelledby="modalBookTitle"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">

@@ -177,16 +177,9 @@ main {
   white-space: nowrap;
 }
 
-.bookModal-btn-read:hover,
-.bookModal-btn-addto:hover,
-.bookModal-btn-bookmark:hover {
-  background-color: var(--cc-qs-neutral);
-  color: var(--fcolor-secondary);
-}
-
-.bookModal-btn-read:active,
-.bookModal-btn-addto:active,
-.bookModal-btn-bookmark:active {
+#modalBookRead:active,
+#modalBookAddToCollections:active,
+#modalBookBookmark:active {
   transform: scale(0.97);
 }
 
