@@ -1,25 +1,36 @@
 document.addEventListener('DOMContentLoaded', () => {
+/* ---------- Books Modal ---------- */
+       window.openBookModal = function (d, imgSrc) {
+        const setText = (id, value) => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = value;
+        };
 
-    /* ---------- Books Modal (Global) ---------- */
-    window.openBookModal = function (d, imgSrc) {
-        const titleEl = document.getElementById('modalBookTitle');
-        const authorEl = document.getElementById('modalBookAuthor');
-        const descEl = document.getElementById('modalBookDesc');
+        const toggle = (id, show) => {
+            const el = document.getElementById(id);
+            if (el) el.classList.toggle('d-none', !show);
+        };
+
+        setText('modalBookTitle', d.title || 'Unknown Title');
+        setText('modalBookAuthor', 'By ' + (d.author || 'Unknown Author'));
+        setText('modalBookDesc', d.desc || 'No description available.');
+        setText('modalBookIsbn', 'ISBN: ' + (d.isbn || 'N/A'));
+        setText('modalBookGenre', d.genre || '');
+        setText('modalBookPublisherName', d.publisher || 'Unknown');
+
+        toggle('modalBookGenre', !!d.genre);
+        toggle('modalBookPublisher', !!d.publisher);
+
         const imgEl = document.getElementById('modalBookImg');
-        const idEl = document.getElementById('modalBookId');
-
-        if (titleEl) titleEl.textContent = d.title || 'Unknown Title';
-        if (authorEl) authorEl.textContent = 'By ' + (d.author || 'Unknown Author');
-        if (descEl) descEl.textContent = d.desc || 'No description available.';
         if (imgEl) imgEl.src = imgSrc || '';
+
+        const idEl = document.getElementById('modalBookId');
         if (idEl) idEl.value = d.id || '';
 
         const read = document.getElementById('modalBookRead');
         if (read) {
-            read.href = 'javascript:void(0);'; 
-            read.onclick = () => {
-                alert('Reader backend coming soon!');
-            };
+            read.href = 'javascript:void(0);';
+            read.onclick = () => alert('Reader backend coming soon!');
             read.classList.remove('d-none');
         }
 
@@ -29,18 +40,18 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    /* ---------- Grid cards (Recommendations, Educational, etc.) ---------- */
+/* ---------- Grid cards ---------- */
     document.addEventListener('click', (e) => {
         const card = e.target.closest('.book-trigger');
         if (!card) return;
 
-        e.preventDefault();   // Stops anchor jump
+        e.preventDefault();  
 
         const img = card.querySelector('img');
         window.openBookModal(card.dataset, img ? img.src : '');
     });
 
-    /* ---------- New Arrivals carousel ---------- */
+/* ---------- New Arrivals---------- */
     const container = document.getElementById('newarrivalsContainer');
     const prevBtn = document.getElementById('ccPrevBtn');
     const nextBtn = document.getElementById('ccNextBtn');
@@ -69,11 +80,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     item.style.zIndex = '5';
                 } else if (distance === 2) {
                     item.style.transform = 'scale(0.85)';
-                    item.style.opacity = '0.70';
+                    item.style.opacity = '0.60';
                     item.style.zIndex = '3';
                 } else {
                     item.style.transform = 'scale(0.65)';
-                    item.style.opacity = '0.70';
+                    item.style.opacity = '0.50';
                     item.style.zIndex = '1';
                 }
             });
@@ -122,3 +133,4 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActiveCenter();
     }
 });
+

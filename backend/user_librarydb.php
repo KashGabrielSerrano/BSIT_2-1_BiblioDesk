@@ -130,44 +130,48 @@
             <div class="newarrivals-wrapper mx-auto">
                 <div class="newarrivals-card"></div>
                 <div class="newarrivals-container" id="newarrivalsContainer">
-                    <div class="newarrivals-item" data-title="Pride and Prejudice" data-author="Jane Austen"
-                        data-desc="A classic novel of manners set in 19th-century England.">
-                        <img src="../frontend/assets/temporary/temporaryimage_1.jpg" alt="Pride and Prejudice">
+
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_1.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item" data-title="Tales of Norse Mythology" data-author="Helen A. Guerber"
-                        data-desc="Stories of gods, giants, and heroes of ancient Scandinavian lore.">
-                        <img src="../frontend/assets/temporary/temporaryimage_2.jpg" alt="Tales of Norse Mythology">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_2.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item active" data-title="Colorful Life" data-author="Olivia Wilson"
-                        data-desc="A captivating modern novel exploring art, passion, and personal discovery.">
-                        <img src="../frontend/assets/temporary/temporaryimage_3.jpg" alt="Colorful Life">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_3.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item" data-title="How to Be Eaten" data-author="Maria Adelmann"
-                        data-desc="A modern reimagining of classic fairy tale characters in a support group.">
-                        <img src="../frontend/assets/temporary/temporaryimage_4.jpg" alt="How to Be Eaten">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_4.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item" data-title="Dekada '70" data-author="Lualhati Bautista"
-                        data-desc="A landmark Philippine historical novel focusing on a family during martial law.">
-                        <img src="../frontend/assets/temporary/temporaryimage_5.jpg" alt="Dekada '70">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_5.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item" data-title="Dekada '70" data-author="Lualhati Bautista"
-                        data-desc="A landmark Philippine historical novel focusing on a family during martial law.">
-                        <img src="../frontend/assets/temporary/temporaryimage_5.jpg" alt="Dekada '70">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_1.jpg" alt="Pride and Prejudice">
                     </div>
-                    <div class="newarrivals-item" data-title="Dekada '70" data-author="Lualhati Bautista"
-                        data-desc="A landmark Philippine historical novel focusing on a family during martial law.">
-                        <img src="../frontend/assets/temporary/temporaryimage_5.jpg" alt="Dekada '70">
+                    <div class="newarrivals-item" data-id="1" data-title="Pride and Prejudice" data-author="Jane Austen" data-desc="A classic novel of manners set in 19th-century England."
+                    data-isbn="978-1234567890"  data-genre="Fiction"  data-publisher="Publisher Name"  data-allowed="0"  data-hasfile="1">
+                    <img src="../frontend/assets/temporary/temporaryimage_2.jpg" alt="Pride and Prejudice">
                     </div>
                 </div>
             </div>
+        </section>
 
-            <!-- Controls for the carousel books -->
-            <div class="d-flex justify-content-center gap-3 mt-4 newarrivals-controls">
-                <button id="ccPrevBtn" class="btn btn-outline-dark btn-sm rounded-circle px-3 py-2" type="button"><i
-                        class="bi bi-chevron-left"></i></button>
-                <button id="ccNextBtn" class="btn btn-outline-dark btn-sm rounded-circle px-3 py-2" type="button"><i
-                        class="bi bi-chevron-right"></i></button>
-            </div>
+
+
+        <!-- Controls for the carousel books -->
+        <div class="d-flex justify-content-center gap-3 mt-4 newarrivals-controls">
+            <button id="ccPrevBtn" class="btn btn-outline-dark btn-sm rounded-circle px-3 py-2" type="button"><i
+                    class="bi bi-chevron-left"></i></button>
+            <button id="ccNextBtn" class="btn btn-outline-dark btn-sm rounded-circle px-3 py-2" type="button"><i
+                    class="bi bi-chevron-right"></i></button>
+        </div>
         </section>
         </section>
 
@@ -178,13 +182,13 @@
                     <h2 class="h3 fw-semibold mb-0 mt-3">Recommendations</h2>
                 </div>
 
-                <div
-                    class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 justify-content-center text-center">
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 justify-content-center text-center">
                     <div class="col">
                         <a href="#"
-                            class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative justify-content-center text-decoration-none"
-                            data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                            data-allowed="0" data-hasfile="1">
+                        class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                        data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_1.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
                         </a>
@@ -192,13 +196,14 @@
                             <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
                             <p class="small mb-3 text-muted">Author Name</p>
                         </a>
-                    </div>
+                </div>
 
                     <div class="col">
                         <a href="#"
-                            class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative justify-content-center text-decoration-none"
-                            data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                            data-allowed="0" data-hasfile="1">
+                        class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                        data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_1.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
                         </a>
@@ -206,13 +211,14 @@
                             <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
                             <p class="small mb-3 text-muted">Author Name</p>
                         </a>
-                    </div>
+                </div>
 
                     <div class="col">
                         <a href="#"
-                            class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative justify-content-center text-decoration-none"
-                            data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                            data-allowed="0" data-hasfile="1">
+                        class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                        data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_1.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
                         </a>
@@ -220,13 +226,14 @@
                             <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
                             <p class="small mb-3 text-muted">Author Name</p>
                         </a>
-                    </div>
+                </div>
 
                     <div class="col">
                         <a href="#"
-                            class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative justify-content-center text-decoration-none"
-                            data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                            data-allowed="0" data-hasfile="1">
+                        class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                        data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_1.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
                         </a>
@@ -234,13 +241,14 @@
                             <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
                             <p class="small mb-3 text-muted">Author Name</p>
                         </a>
-                    </div>
+                </div>
 
                     <div class="col">
                         <a href="#"
-                            class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative justify-content-center text-decoration-none"
-                            data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                            data-allowed="0" data-hasfile="1">
+                        class="book-trigger d-block ratio recCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                        data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_1.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
                         </a>
@@ -248,8 +256,6 @@
                             <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
                             <p class="small mb-3 text-muted">Author Name</p>
                         </a>
-                    </div>
-
                 </div>
             </div>
         </section>
@@ -263,33 +269,35 @@
                 <a href="#" class="fs-5"><u>More &gt;</u></a>
             </div>
 
-            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_2.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_2.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_2.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_2.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
             </div>
@@ -304,50 +312,51 @@
                 <a href="#" class="fs-5"><u>More &gt;</u></a>
             </div>
 
-            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio noneduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio noneduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio noneduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
-
-            </div>
             </div>
         </section>
 
@@ -360,82 +369,90 @@
                 <a href="#" class="fs-5"><u>More &gt;</u></a>
             </div>
 
-            <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio rsCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio rsCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
 
                 <div class="col">
                     <a href="#"
                         class="book-trigger d-block ratio rsCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-allowed="0" data-hasfile="1">
-                        <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
-                            class="w-100 h-100 object-fit-cover" alt="">
-                    </a>
-                    <a href="#" class="textArea text-decoration-none">
-                        <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
-                        <p class="small mb-3 text-muted">Author Name</p>
-                    </a>
+                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-hasfile="1">
+                            <img src="../frontend/assets/temporary/temporaryimage_4.jpg"
+                                class="w-100 h-100 object-fit-cover" alt="">
+                        </a>
+                        <a href="#" class="textArea text-decoration-none">
+                            <h3 class="h6 fw-bold mt-3 mb-0">Book Title</h3>
+                            <p class="small mb-3 text-muted">Author Name</p>
+                        </a>
                 </div>
             </div>
         </section>
     </main>
 
-<!-- Temporary UI needs to change Book Details Modal -->
-<div class="modal fade" id="bookDetailsModal" tabindex="-1" aria-labelledby="bookModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content rounded-4 shadow">
-            <div class="modal-header border-0 pb-0">
-                <h5 class="modal-title fw-bold" id="modalBookTitle">Book Title</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4 text-start">
-                <div class="row align-items-center">
-                    <div class="col-md-4 text-center mb-3 mb-md-0">
-                        <img id="modalBookImg" src="" alt="Cover" class="img-fluid rounded-3 shadow-sm">
-                    </div>
-                    <div class="col-md-8">
-                        <p class="text-muted mb-1" id="modalBookAuthor">Author Name</p>
-                        <hr class="my-1">
-                        <p class="small text-secondary" id="modalBookDesc">Book description will appear here.</p>
-                        
-                        <input type="hidden" id="modalBookId" value="">
-                        <div class="d-flex flex-wrap gap-2 justify-content-start mt-4">
-                            <a id="modalBookRead" href="#" target="_blank" 
-                                class="btn btn-sm rounded-pill px-4 text-white shadow-sm fw-bold d-none" 
-                                style="background-color: var(--btn);">Read</a>
+    <!-- Temporary UI needs to change Book Details Modal -->
+    <div class="modal fade bookModal" id="bookDetailsModal" tabindex="-1" aria-labelledby="modalBookTitle"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-4 text-center mb-3 mb-md-0">
+                            <img id="modalBookImg" src="" alt="Cover" class="bookModal-cover img-fluid">
+                            <p class="Bookisbn mt-3" id="modalBookIsbn">ISBN: 1234567890</p>
+                        </div>
+                        <div class="col-md-8">
+                            <h5 class="modal-title display-5" id="modalBookTitle">Book Title</h5>
+                            <p class="bookModal-author" id="modalBookAuthor">Author Name</p>
+                            <hr>
+                            <span class="bookGenre" id="modalBookGenre">New</span>
+                            <p class="bookModal-desc" id="modalBookDesc">Book description will appear here.</p>
+                            <p class="bookModal-publisher" id="modalBookPublisher">Publisher: <span
+                                    id="modalBookPublisherName">Publisher Name</span> </p>
+
+
+                            <input type="hidden" id="modalBookId" value="">
+                            <div class="bookModal-btn-container">
+                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn d-none">Read</a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
     <!-- FOOTER -->
     <footer class="text-light mt-5 py-5">

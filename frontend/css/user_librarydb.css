@@ -1,298 +1,503 @@
 @import url(root.css);
 
-*{
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-body{
-    background-color: var(--main-bg-color);
+body {
+  background-color: var(--main-bg-color);
 }
 
-main{
-    padding: 0 90px;
+main {
+  padding: 0 90px;
 }
 
-.topbar{
-    background-color: var(--main-color);
-    min-height: var(--topbar-height);
+.topbar {
+  background-color: var(--main-color);
+  min-height: var(--topbar-height);
 }
 
-.cardsColor{
-    background-color: var(--main-color);
-    color: var(--fcolor-secondary);
+.cardsColor {
+  background-color: var(--main-color);
+  color: var(--fcolor-secondary);
 }
 
 /*--books--*/
-.recCover, .eduCover, .noneduCover, .rsCover{ 
-    --bs-aspect-ratio: 133.33%; 
-    position: relative;
-    transition: transform .3s ease, box-shadow .3s ease;
+.recCover,
+.eduCover,
+.noneduCover,
+.rsCover {
+  --bs-aspect-ratio: 133.33%;
+  position: relative;
+  transition:
+    transform 0.3s ease,
+    box-shadow 0.3s ease;
 }
 
-.recCover::after, .eduCover::after, .noneduCover::after, .rsCover::after{
-    content: "";
-    position: absolute;
-    top: 0; 
-    bottom: 0; 
-    left: 0;
-    width: 7%;
-    z-index: 2; 
-    pointer-events: none;
+.recCover::after,
+.eduCover::after,
+.noneduCover::after,
+.rsCover::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 7%;
+  z-index: 2;
+  pointer-events: none;
 }
 
 .recCover::after {
-    background: var(--cc-book-rec);
+  background: var(--cc-book-rec);
 }
 
 .eduCover::after {
-    background: var(--cc-book-ed);
+  background: var(--cc-book-ed);
 }
 
 .noneduCover::after {
-    background: var(--cc-book-ne);
+  background: var(--cc-book-ne);
 }
 
 .rsCover::after {
-    background: var(--cc-book-ra);
+  background: var(--cc-book-ra);
 }
 
-.recCover:hover, .eduCover:hover, .noneduCover:hover, .rsCover:hover{
-    transform: translateY(-8px) scale(1.05);
-    position: relative;
-    background-color: #ffffff; /*the color white might change later on*/
+.recCover:hover,
+.eduCover:hover,
+.noneduCover:hover,
+.rsCover:hover {
+  transform: translateY(-8px) scale(1.05);
+  position: relative;
+  background-color: #ffffff; /*the color white might change later on*/
 }
 
-.textArea{
-    text-decoration: none;
-    color: var(--fcolor-main);
+.textArea {
+  text-decoration: none;
+  color: var(--fcolor-main);
 }
 
-#sidebar{
-    --bs-offcanvas-width: var(--sidebar-expand);  
-    background-color: var(--main-color) !important;
-    color: var(--main-bg-color);
+/* ---------- Book modal ---------- */
+.bookModal .modal-content {
+  background-color: var(--main-bg-color);
+  border: 0;
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
 }
 
-.logoContain{ 
-    height: var(--topbar-height); 
+.bookModal .modal-header {
+  background-color: var(--main-color);
 }
 
-.sideIcon{ 
-    width: 48px; 
-    height: 48px; 
-    flex: none; 
-    transition: background .2s; 
+.bookModal .modal-body {
+  padding: 40px 50px;
 }
 
-.sideIcon.bg-light img{ 
-    filter: invert(1); 
-}     
-
-.sideAct:hover .sideIcon:not(.bg-light){
-    background: rgba(255, 255, 255, .14); 
+.bookModal-cover {
+  max-height: 320px;
+  border-radius: 6px;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
 }
 
-footer{
-    background-color: var(--main-color);
+.bookModal-author {
+  color: var(--cc-qs-neutral);
+  font-weight: 600;
+  margin-bottom: 12px;;
 }
 
-.footerLogo{
-    width: 100%;
-    max-width: 350px;
+.bookModal-desc, .bookModal-publisher{
+  color: var(--fcolor-main);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  margin-top: 10px;
+  margin-bottom: 20px;
 }
 
-hr{
-    border-width:3px;
-    margin: 60px 10px;
+.bookGenre {
+  color: var(--fcolor-secondary);
+  background-color: var(--cc-dates);         
+  border-color: var(--fcolor-secondary);   
+  border-style: solid;
+  border-width: 1px;
+  border-radius: 32px;
+  padding: 3px 10px;
+  margin-bottom: 20px;
+}
+
+.bookModal hr {
+  margin: 10px 0;
+  border-width: 2px;
+}
+
+.bookModal-btn-container {
+  display: flex;
+  width: 100%;
+}
+
+.bookModal-btn {
+  display: inline-block;
+  background-color: var(--btn);
+  color: var(--fcolor-secondary);
+  padding: 8px 40px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.bookModal-btn:hover {
+  background-color: var(--cc-qs-neutral);
+  color: var(--fcolor-secondary);
+}
+
+.bookModal-btn:active {
+  transform: scale(0.97);
+}
+
+.modal-backdrop.show {
+  opacity: 0.7;
+}
+
+.bookModal .modal-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  margin-top: 0;            
+}
+
+#sidebar {
+  --bs-offcanvas-width: var(--sidebar-expand);
+  background-color: var(--main-color) !important;
+  color: var(--main-bg-color);
+}
+
+.logoContain {
+  height: var(--topbar-height);
+}
+
+.sideIcon {
+  width: 48px;
+  height: 48px;
+  flex: none;
+  transition: background 0.2s;
+}
+
+.sideIcon.bg-light img {
+  filter: invert(1);
+}
+
+.sideAct:hover .sideIcon:not(.bg-light) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+footer {
+  background-color: var(--main-color);
+}
+
+.footerLogo {
+  width: 100%;
+  max-width: 350px;
+}
+
+hr {
+  border-width: 3px;
+  margin: 60px 10px;
 }
 
 /* Library header */
-.libraryIcon{
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
+.libraryIcon {
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
 }
 
-.searchBox{
-    position: relative;
-    width: 380px;
-    max-width: 100%;
+.searchBox {
+  position: relative;
+  width: 380px;
+  max-width: 100%;
 }
 
-.searchBox i{
-    position: absolute;
-    top: 50%;
-    left: 14px;
-    transform: translateY(-50%);
-    color: var(--cc-qs-neutral);
-    pointer-events: none;
+.searchBox i {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  transform: translateY(-50%);
+  color: var(--cc-qs-neutral);
+  pointer-events: none;
 }
 
-.searchBox .form-control{
-    padding-left: 40px;
-    border: 1px solid var(--main-color);
-    border-radius: 999px;
-    background-color: var(--fcolor-secondary);
+.searchBox .form-control {
+  padding-left: 40px;
+  border: 1px solid var(--main-color);
+  border-radius: 999px;
+  background-color: var(--fcolor-secondary);
 }
 
-.searchBox .form-control:focus{
-    border-color: var(--btn);
-    box-shadow: 0 0 0 3px rgba(46, 78, 13, .2);
+.searchBox .form-control:focus {
+  border-color: var(--btn);
+  box-shadow: 0 0 0 3px rgba(46, 78, 13, 0.2);
 }
 
-.filterBtn{
-    background-color: var(--btn);
-    color: var(--fcolor-secondary);
-    border-radius: 16px;
-    padding: 6px 18px;
+.filterBtn {
+  background-color: var(--btn);
+  color: var(--fcolor-secondary);
+  border-radius: 16px;
+  padding: 6px 18px;
 }
 
 .filterBtn:hover,
 .filterBtn:focus,
-.filterBtn.show{
-    background-color: var(--cc-qs-neutral);
-    color: var(--fcolor-secondary);
+.filterBtn.show {
+  background-color: var(--cc-qs-neutral);
+  color: var(--fcolor-secondary);
 }
 
-
 /* --- New Arrivals Section --- */
+.newarrivals-item {
+  touch-action: pan-y; 
+}
+
 .new-arrivals-section {
-    background-color: var(--main-bg-color);
+  background-color: var(--main-bg-color);
 }
 
 .newarrivals-wrapper {
-    position: relative;
-    max-width: auto;
-    margin: 0 auto;
-    padding: 10px 0;
+  position: relative;
+  max-width: auto;
+  margin: 0 auto;
+  padding: 10px 0;
 }
 
 .newarrivals-card {
-    position: absolute;
-    bottom: 0;
-    left: 5%;
-    right: 5%;
-    max-width: auto;
-    height: 65%;
-    margin: 0 auto;
-    border-radius: 20px;
-    z-index: 0;
-    background: linear-gradient(180deg,  #f5ba72 0%, var(--cc-rec) 50%);
-    opacity: 0.5;
+  position: absolute;
+  bottom: 0;
+  left: 5%;
+  right: 5%;
+  max-width: auto;
+  height: 65%;
+  margin: 0 auto;
+  border-radius: 20px;
+  z-index: 0;
+  background: linear-gradient(180deg, #f5ba72 0%, var(--cc-rec) 50%);
+  opacity: 0.5;
 }
 
 .newarrivals-container {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-    min-height: 300px;
-    overflow: hidden;
-    margin-bottom: 20px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  min-height: 300px;
+  overflow: hidden;
+  margin-bottom: 20px;
 }
 
 .newarrivals-item {
-    position: relative;
-    width: 170px;
-    height: 240px;
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
-    margin: 0 -22px;
-    cursor: pointer;
-    will-change: transform, opacity;
+  position: relative;
+  width: 170px;
+  height: 240px;
+  transition:
+    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+    opacity 0.4s ease;
+  margin: 0 -22px;
+  cursor: pointer;
+  will-change: transform, opacity;
 }
 
 .newarrivals-item img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 6px;
-    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
 .newarrivals-controls {
-    display: none !important;
+  display: none !important;
 }
-
-
 
 /*--Recommendations--*/
 .recommendations-wrapper {
-    background-color: var(--cc-rec);
-    padding: 0 20px;
-    border-radius: 15px;
-    box-shadow: 0 1px 2px var(--fcolor-main);
-    position: relative;
-    max-width: auto;
-    margin: 0 auto;
+  background-color: var(--cc-rec);
+  padding: 0 20px;
+  border-radius: 15px;
+  box-shadow: 0 1px 2px var(--fcolor-main);
+  position: relative;
+  max-width: auto;
+  margin: 0 auto;
 }
 
 /*--media--*/
-
-@media (max-width: 767.98px){
-    main{
-        padding: 0 20px;
-    }
-
-    .searchBox{
-        width: 100%;
-    }
-
-    .searchForm{
-        flex: 1;
-    }
+@media (max-width: 480px) {
+  .bookRow > .col {
+    flex: 0 0 55%;
+    width: 55%;
+    max-width: 55%;
+  }
 }
 
-@media (min-width: 576px){ 
-    .libID{ 
-        border-top: 0; 
-        border-left: 1px solid rgba(246, 241, 231, .25); 
-    } 
+@media (max-width: 767.98px) {
+  main {
+    padding: 0 20px;
+  }
+
+  .searchBox {
+    width: 100%;
+  }
+
+  .searchForm {
+    flex: 1;
+  }
+
+  .bookRow {
+    flex-wrap: nowrap;
+    justify-content: flex-start !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-top: 12px;
+    padding-bottom: 16px;
+  }
+
+  .bookRow::-webkit-scrollbar {
+    display: none;
+  }
+
+  .bookRow > .col {
+    flex: 0 0 42%;
+    width: 42%;
+    max-width: 42%;
+    scroll-snap-align: start;
+  }
+
+  .bookModal .modal-dialog {
+    margin: 12px auto;
+    max-width: 88%;
+  }
+
+  .bookModal .modal-content {
+    border-radius: 16px;
+  }
+
+  .bookModal .modal-header {
+    padding: 8px 12px;
+  }
+
+  .bookModal .modal-body {
+    padding: 18px 20px 24px;
+    text-align: center;
+  }
+
+  .bookModal-cover {
+    max-height: 190px;
+  }
+
+  .bookModal .modal-title {
+    font-size: 1.5rem;          
+    margin-top: 6px;
+  }
+
+  .Bookisbn {
+    font-size: 0.8rem;
+    margin-bottom: 12px;
+  }
+
+  .bookModal-author {
+    font-size: 0.95rem;
+    margin-bottom: 8px;
+  }
+
+  .bookModal-desc,
+  .bookModal-publisher {
+    font-size: 0.85rem;
+    margin-top: 6px;
+    margin-bottom: 12px;
+  }
+
+  .bookGenre {
+    display: inline-block;
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+  }
+
+  .bookModal-btn-container {
+    justify-content: center;
+  }
+
+  .bookModal-btn {
+    padding: 8px 32px;
+  }
 }
 
-@media (min-width: 768px){
-    body{ 
-        padding-left: var(--sidebar-default); 
-    }
-
-    .topbar{
-        padding-left: var(--sidebar-default); 
-    }
-
-    #sidebar{
-        position: fixed;
-        top: 0; bottom: 0; left: 0;
-        z-index: 1045;                  
-        width: var(--sidebar-default);
-        overflow: hidden;
-        white-space: nowrap;
-        transition: width .25s ease, box-shadow .25s ease;
-    }
-
-    .sideText{
-        opacity: 0; 
-        transition: opacity .15s;
-    }
+@media (max-width: 768px) {
+  .newarrivals-item {
+    width: 90px;
+    height: 135px;
+    margin: 0 -12px;
+  }
 }
 
-@media (min-width: 768px) and (hover: hover){
-    #sidebar:hover{ 
-        width: var(--sidebar-expand); 
-        box-shadow: 6px 0 18px rgba(0, 0, 0, .35); 
-    }
-    
-    #sidebar:hover .sideText{ 
-        opacity: 1; 
-        transition-delay: .08s; 
-    }
+@media (min-width: 576px) {
+  .libID {
+    border-top: 0;
+    border-left: 1px solid rgba(246, 241, 231, 0.25);
+  }
 }
 
-    @media (max-width: 768px) {
-    .newarrivals-item {
-        width: 90px;
-        height: 135px;
-        margin: 0 -12px;
-    }
+@media (min-width: 768px) {
+  body {
+    padding-left: var(--sidebar-default);
+  }
+
+  .topbar {
+    padding-left: var(--sidebar-default);
+  }
+
+  #sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 1045;
+    width: var(--sidebar-default);
+    overflow: hidden;
+    white-space: nowrap;
+    transition:
+      width 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .sideText {
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+
+  .bookModal .modal-title {
+    margin-top: -60px;
+  }
 }
+
+@media (min-width: 768px) and (hover: hover) {
+  #sidebar:hover {
+    width: var(--sidebar-expand);
+    box-shadow: 6px 0 18px rgba(0, 0, 0, 0.35);
+  }
+
+  #sidebar:hover .sideText {
+    opacity: 1;
+    transition-delay: 0.08s;
+  }
+}
+
+@media (hover: hover) {
+  .newarrivals-item {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+}
+
+
+
