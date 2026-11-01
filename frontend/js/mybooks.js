@@ -22,8 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function applyColor(hex) {
         colorInput.value = hex;
-        previewCard.style.backgroundColor = hex;
-        previewCard.style.color = textColorFor(hex);
     }
 
     if (createModalEl && createForm) {
@@ -125,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         collectionsBtn.addEventListener('click', (e) => {
             e.preventDefault();
             const isAdded = collectionsBtn.classList.toggle('is-added');
-
+            
             if (isAdded) {
                 collectionsBtn.textContent = 'Remove From Collections';
                 collectionsBtn.style.backgroundColor = 'var(--btn-remove)';
@@ -133,7 +131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 collectionsBtn.textContent = 'Add To Collections';
                 collectionsBtn.style.backgroundColor = '';
             }
-
+            
             const bookId = document.getElementById('modalBookId').value;
             console.log(`Book ${bookId} collection status: ${isAdded}`);
         });
@@ -146,17 +144,17 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const isBookmarked = bookmarkBtn.classList.toggle('is-bookmarked');
             const icon = bookmarkBtn.querySelector('i');
-
+            
             if (icon) {
                 icon.className = isBookmarked ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
             }
-
+            
             const bookId = document.getElementById('modalBookId').value;
             console.log(`Book ${bookId} bookmark status: ${isBookmarked}`);
         });
     }
 
-    /* ---------- Books Modal ---------- */
+   /* ---------- Books Modal ---------- */
     window.openBookModal = function (d, imgSrc) {
         const setText = (id, value) => {
             const el = document.getElementById(id);
@@ -204,12 +202,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const card = e.target.closest('.book-trigger');
         if (!card) return;
 
-        e.preventDefault();
+        e.preventDefault();  
 
         const img = card.querySelector('img');
         window.openBookModal(card.dataset, img ? img.src : '');
     });
-
-
-
 });

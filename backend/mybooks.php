@@ -459,7 +459,7 @@
 
                 <div class="modal-footer border-0">
                     <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" id="saveCollectionBtn" class="btn btn-dark rounded-pill px-4">Create Collection</button>
+                    <button type="submit" id="saveCollectionBtn" class="btn btn-success rounded-pill px-4">Create Collection</button>
                 </div>
             </form>
         </div>
