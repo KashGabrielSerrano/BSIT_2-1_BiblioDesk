@@ -1,0 +1,508 @@
+/* Account Management page. Loads after userdb.css, which supplies the shared sidebar, topbar and footer styles. */
+
+:root{
+    --am-border: #1d1814;
+    --am-row-a: #f3e1d0;       /* darker cell tone */
+    --am-row-b: #fce9d9;       /* lighter cell tone */
+    --am-pill-approved: #3f7d1c;
+    --am-pill-denied: #8a3a3f;
+    --am-pill-pending: #c68a3a;
+    --am-tab-line: #3f7fb5;
+}
+
+.pageTitle{
+    font-weight: 800;
+    font-size: clamp(2rem, 4vw, 3.5rem);
+    color: var(--fcolor-main);
+}
+
+/* tabs */
+.amTabs{
+    border-bottom: 1px solid rgba(43, 36, 30, .6);
+}
+
+.amTabs .nav-link{
+    color: var(--fcolor-main);
+    font-weight: 600;
+    font-size: 1.15rem;
+    padding: .9rem 2.5rem;
+    border: 0;
+    border-bottom: 4px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+
+.amTabs .nav-link.active{
+    background: transparent;
+    color: var(--fcolor-main);
+    border-bottom-color: var(--am-tab-line);
+}
+
+.tabBadge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--am-border);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-left: .5rem;
+}
+
+.tabBadge.green{ background: var(--am-pill-approved); }
+.tabBadge.brown{ background: #8c6a4a; }
+.tabBadge.amber{ background: var(--am-pill-pending); }
+
+/* toolbar */
+.searchBox{
+    max-width: 640px;
+    border: 2px solid var(--am-border);
+    border-radius: 14px;
+    background: #fdf6ee;
+    padding: .7rem 1.25rem;
+    font-size: 1.15rem;
+}
+
+.searchBox:focus{
+    background: #fdf6ee;
+    border-color: var(--am-border);
+    box-shadow: 0 0 0 .2rem rgba(43, 36, 30, .15);
+}
+
+.toolBtn{
+    border: 2px solid var(--am-border);
+    border-radius: 12px;
+    background: #fdf6ee;
+    color: var(--fcolor-main);
+    font-size: 1.15rem;
+    padding: .6rem 1.4rem;
+}
+
+.toolBtn:hover{
+    background: var(--am-row-a);
+    border-color: var(--am-border);
+}
+
+.toolBtn.iconOnly{
+    padding: .55rem .7rem;
+}
+
+/* table */
+.amTableWrap{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+}
+
+.scrollHint{
+    display: none;
+    font-size: .8rem;
+    opacity: .7;
+    margin-bottom: .25rem;
+}
+
+.amTable{
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0 14px;
+    table-layout: fixed;
+}
+
+.amTable thead th{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    font-weight: 500;
+    text-align: center;
+    vertical-align: middle;
+    padding: 1.1rem .5rem;
+    line-height: 1.2;
+}
+
+.amTable thead th:first-child{
+    border-radius: 18px 0 0 18px;
+    text-align: left;
+    padding-left: 2.5rem;
+    width: 35%;
+}
+
+.amTable thead th:last-child{
+    border-radius: 0 18px 18px 0;
+}
+
+.amTable tbody td{
+    height: 124px;
+    vertical-align: middle;
+    text-align: center;
+    font-size: .8rem;
+    font-weight: 500;
+    border-top: 2px solid var(--am-border);
+    border-bottom: 2px solid var(--am-border);
+    border-left: 1px solid rgba(43, 36, 30, .35);
+    background: var(--am-row-b);
+    color: var(--fcolor-main);
+}
+
+.amTable tbody td:nth-child(odd){
+    background: var(--am-row-a);
+}
+
+.amTable tbody td:first-child{
+    border-left: 2px solid var(--am-border);
+    border-radius: 18px 0 0 18px;
+    text-align: left;
+    padding-left: 2.5rem;
+    font-size: 1rem;
+}
+
+.amTable tbody td:last-child{
+    border-right: 2px solid var(--am-border);
+    border-radius: 0 18px 18px 0;
+}
+
+.userAvatar{
+    width: 54px; height: 54px;
+    object-fit: cover;
+    flex: none;
+}
+
+.userName{
+    font-size: 1.3rem;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.userEmail{
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+/* five-column variant (no Date Joined): shading starts on the 2nd column */
+.amTable.fiveCol tbody td:nth-child(odd){
+    background: var(--am-row-b);
+}
+
+.amTable.fiveCol tbody td:nth-child(even){
+    background: var(--am-row-a);
+}
+
+/* status pills */
+.pill{
+    display: inline-block;
+    width: 100%;
+    max-width: 135px;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    padding: .55rem 1rem;
+    border: 2px solid var(--am-border);
+    border-radius: 50px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.pill.approved, .pill.active{ background: var(--am-pill-approved); }
+.pill.denied, .pill.banned, .pill.closed, .pill.none{ background: var(--am-pill-denied); }
+.pill.pending{ background: var(--am-pill-pending); }
+
+/* interactive states */
+.amTable tbody tr[hidden]{
+    display: none;
+}
+
+.toolBtn:disabled{
+    opacity: .45;
+    cursor: not-allowed;
+}
+
+.toolBtn.hasFilter{
+    background: var(--am-row-a);
+    box-shadow: inset 0 0 0 2px var(--am-pill-pending);
+}
+
+.filterMenu{
+    min-width: 250px;
+    border: 2px solid var(--am-border);
+    border-radius: 14px;
+    background: #fdf6ee;
+}
+
+.filterMenu .form-select{
+    border: 2px solid var(--am-border);
+    border-radius: 10px;
+    background-color: #fdf6ee;
+}
+
+.emptyRow td{
+    height: 90px;
+    font-size: 1rem;
+    border: 2px dashed rgba(43, 36, 30, .4);
+    border-radius: 18px;
+    background: transparent !important;
+}
+
+.amTabs .nav-link:focus-visible,
+.toolBtn:focus-visible{
+    outline: 3px solid var(--am-tab-line);
+    outline-offset: 2px;
+}
+
+#resultCount{
+    color: var(--fcolor-main);
+    opacity: .75;
+}
+
+/* shading set per cell so extra markup can never shift the pattern */
+.amTable tbody td.cA{ background: var(--am-row-a); }
+.amTable tbody td.cB{ background: var(--am-row-b); }
+
+/* clickable rows */
+.amTable tbody tr[data-id]{ cursor: pointer; }
+.amTable tbody tr[data-id]:hover td{ filter: brightness(.96); }
+.amTable tbody tr[data-id]:focus-visible{
+    outline: 3px solid var(--am-tab-line);
+    outline-offset: 2px;
+    border-radius: 18px;
+}
+
+/* pending-only controls: checkboxes + Approve/Deny replace the Active Status pill */
+.selectBox{ display: none; }
+.amTable.isPending .selectBox{ display: inline-flex; align-items: center; }
+
+.selectBox input{
+    width: 22px; height: 22px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: var(--am-pill-approved);
+}
+
+.rowActions{
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+}
+
+.amTable.isPending .rowActions{ display: flex; }
+.amTable.isPending .pillActive{ display: none; }
+
+.actBtn{
+    min-width: 104px;
+    padding: .45rem .95rem;
+    border: 2px solid rgba(0, 0, 0, .3);
+    border-radius: 50px;
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .02em;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .25);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.actBtn.approve{ background: var(--am-pill-approved); }
+.actBtn.deny{ background: var(--am-pill-denied); }
+.actBtn.approve::before{ content: "\2713\00a0"; }
+.actBtn.deny::before{ content: "\2715\00a0"; }
+
+.actBtn:hover{
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+}
+
+.actBtn:active{
+    transform: translateY(1px);
+    box-shadow: none;
+}
+.actBtn:focus-visible{ outline: 3px solid var(--am-tab-line); outline-offset: 2px; }
+
+/* bulk bar */
+.bulkBar{
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: .75rem;
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    border-radius: 14px;
+    padding: .6rem 1rem;
+    margin-bottom: .5rem;
+}
+
+.bulkBar[hidden]{ display: none; }
+
+.linkBtn{
+    background: none;
+    border: 0;
+    color: var(--fcolor-secondary);
+    text-decoration: underline;
+    padding: 0 .25rem;
+}
+
+/* edit account modal */
+.accountModal .modal-content{
+    border: 0;
+    border-radius: 24px;
+    background: var(--main-bg-color);
+    color: var(--fcolor-main);
+    overflow: hidden;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .35);
+}
+
+/* slim dark bar with only the close X, like the reference */
+.accountModal .modalBar{
+    background: var(--main-color);
+    justify-content: flex-end;
+    min-height: 48px;
+    padding: .6rem 1.25rem;
+    border-bottom: 0;
+}
+
+.accountModal .modalBar .btn-close{
+    margin: 0;
+    padding: .35rem;
+    opacity: .7;
+}
+
+.accountModal .modalBar .btn-close:hover{ opacity: 1; }
+
+/* header color follows the status picked in the dropdown */
+.accountModal .modalBar{ transition: background-color .25s ease; }
+.accountModal .modalBar.approved{ background: var(--am-pill-approved); }
+.accountModal .modalBar.pending{ background: var(--am-pill-pending); }
+.accountModal .modalBar.denied,
+.accountModal .modalBar.banned{ background: var(--am-pill-denied); }
+
+/* compact "Current status" pill inside the modal */
+.panelDetails .pill{
+    width: auto;
+    max-width: none;
+    min-width: 0;
+    padding: .3rem 1.1rem;
+    font-size: .8rem;
+}
+
+.accountModal .modal-footer{ border-top: 0; }
+
+.panelAvatar{ width: 72px; height: 72px; object-fit: cover; flex: none; }
+
+.panelDetails{
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: .35rem 1.25rem;
+}
+
+.panelDetails dt{ font-weight: 600; }
+.panelDetails dd{ margin: 0; }
+
+.amField{
+    border: 2px solid var(--am-border);
+    border-radius: 10px;
+    background-color: #fdf6ee;
+}
+
+.panelSummary{
+    background: #fdf6ee;
+    border: 2px dashed rgba(43, 36, 30, .45);
+    border-radius: 12px;
+    padding: .75rem 1rem;
+    font-size: .95rem;
+}
+
+/* .btn.saveBtn so it beats Bootstrap's .btn:disabled, which made it look washed out */
+.btn.saveBtn{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    border: 2px solid var(--am-border);
+    border-radius: 12px;
+    padding: .6rem 1.5rem;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.btn.saveBtn:hover{ background: #3a3027; color: var(--fcolor-secondary); }
+
+.btn.saveBtn:disabled{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    border-color: var(--am-border);
+    opacity: .4;
+    cursor: not-allowed;
+}
+
+/* Cancel and Save share one size */
+.accountModal .modal-footer .btn{
+    min-width: 130px;
+    padding: .6rem 1.5rem;
+    font-size: 1.05rem;
+}
+
+/* deny dialog */
+.denyModal .modal-content{
+    border: 2px solid var(--am-border);
+    border-radius: 18px;
+    background: #fdf6ee;
+    color: var(--fcolor-main);
+}
+
+/* toast */
+.amToast{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    border: 0;
+    border-radius: 14px;
+}
+
+.undoBtn{
+    color: #f2c98a;
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.undoBtn:hover{ color: #ffe2b8; }
+
+/* shared sidebar bottom (logout) */
+.sideBottom{
+    margin-top: auto;
+}
+
+@media (max-width: 767.98px){
+    /* tabs scroll sideways instead of wrapping */
+    .amTabs{ flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; }
+    .amTabs .nav-link{ padding: .75rem 1rem; font-size: 1rem; }
+
+    /* the table keeps fixed column widths and scrolls sideways */
+    .scrollHint{ display: block; }
+    .amTable{ min-width: 850px; border-spacing: 0 10px; }
+    .amTable thead th:nth-child(1){ width: 250px; padding-left: 1rem; }
+    .amTable thead th:nth-child(2){ width: 90px; }
+    .amTable thead th:nth-child(3){ width: 130px; }
+    .amTable thead th:nth-child(4){ width: 150px; }
+    .amTable thead th:nth-child(5){ width: 115px; }
+    .amTable thead th:nth-child(6){ width: 115px; }
+
+    /* five-column variant (librarianAccmanagement.php): remap the widths */
+    .amTable.fiveCol{ min-width: 760px; }
+    .amTable.fiveCol thead th:nth-child(2){ width: 130px; }
+    .amTable.fiveCol thead th:nth-child(3){ width: 150px; }
+    .amTable.fiveCol thead th:nth-child(4){ width: 115px; }
+    .amTable.fiveCol thead th:nth-child(5){ width: 115px; }
+    .amTable.fiveCol tbody td:nth-child(4){ padding: 0 .5rem; }
+
+    .amTable tbody td{ height: 100px; }
+    .amTable tbody td:first-child{ padding-left: 1rem; }
+    .amTable tbody td:nth-child(5),
+    .amTable tbody td:nth-child(6){ padding: 0 .5rem; }
+
+    .userAvatar{ width: 44px; height: 44px; }
+    .userName{ font-size: 1.05rem; }
+    .userEmail{ font-size: .9rem; }
+
+    /* smaller pills and buttons so Status and Active Status never overlap */
+    .pill{ padding: .4rem .5rem; font-size: .75rem; }
+    .actBtn{ min-width: 0; width: 100%; max-width: 95px; padding: .3rem .5rem; font-size: .72rem; }
+}
