@@ -72,7 +72,7 @@ main {
 .rsCover:hover {
   transform: translateY(-8px) scale(1.05);
   position: relative;
-  background-color: #ffffff; /*the color white might change later on*/
+  background-color: #ffffff; 
 }
 
 .textArea {
@@ -135,40 +135,58 @@ main {
 
 .bookModal-btn-container {
   display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   width: 100%;
+  flex-wrap: nowrap; 
 }
 
 .bookModal-btn-read,
-.bookModal-btn-addto,.bookModal-btn-bookmark {
-  display: flex;
+.bookModal-btn-addto, 
+.bookModal-btn-bookmark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fcolor-secondary);
+  padding: 8px 14px; 
   border-radius: 999px;
   font-weight: 700;
   text-decoration: none;
-  margin: 0 5px;
-  color: var(--fcolor-secondary);
+  white-space: nowrap;
+  font-size: 0.85rem; 
+  flex: 1; 
+  text-align: center;
 }
 
-.bookModal-btn-read {
+#modalBookRead {
   background-color: var(--btn-read);
-  padding: 8px 50px;
 }
 
-.bookModal-btn-addto{
+#modalBookAddToCollections {
   background-color: var(--btn-addto);
-  padding: 8px 20px;
+  white-space: normal; 
+  line-height: 1;
 }
 
-.bookModal-btn-bookmark{
+#modalBookBookmark {
   background-color: var(--btn-bookmark);
-  padding: 8px 20px;
+  flex: 0 0 auto; 
+  padding: 8px 14px;
+  white-space: nowrap;
 }
 
-.bookModal-btn:hover {
+.bookModal-btn-read:hover,
+.bookModal-btn-addto:hover,
+.bookModal-btn-bookmark:hover {
   background-color: var(--cc-qs-neutral);
   color: var(--fcolor-secondary);
 }
 
-.bookModal-btn:active {
+.bookModal-btn-read:active,
+.bookModal-btn-addto:active,
+.bookModal-btn-bookmark:active {
   transform: scale(0.97);
 }
 
@@ -441,12 +459,15 @@ hr {
 
   .bookModal-btn-container {
     justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    gap: 6px;
+    flex-wrap: nowrap;
   }
 
-  .bookModal-btn {
-    padding: 8px 32px;
+  .bookModal-btn-read,
+  .bookModal-btn-addto, 
+  .bookModal-btn-bookmark {
+    padding: 8px 10px;
+    font-size: 0.75rem; 
   }
 }
 
@@ -515,6 +536,3 @@ hr {
     transition: transform 0.3s ease, opacity 0.3s ease;
   }
 }
-
-
-
