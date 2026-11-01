@@ -35,6 +35,7 @@ rec = recommendations
     --topbar-height: 80px;
 
 /* Login, Registration, read, addto, bookmark */
+    --btn: #2E4E0D;
     --btn-read: #2E4E0D;
     --btn-addto: #b15024;
     --btn-bookmark: #5b5a9e;
