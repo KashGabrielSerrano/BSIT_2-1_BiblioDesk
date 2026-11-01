@@ -167,7 +167,7 @@ main {
 #modalBookAddToCollections {
   background-color: var(--btn-addto);
   white-space: normal; 
-  line-height: 1;
+  line-height: 1.5;
 }
 
 #modalBookBookmark {
