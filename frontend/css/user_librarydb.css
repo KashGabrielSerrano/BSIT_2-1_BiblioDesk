@@ -138,14 +138,29 @@ main {
   width: 100%;
 }
 
-.bookModal-btn {
-  display: inline-block;
-  background-color: var(--btn);
-  color: var(--fcolor-secondary);
-  padding: 8px 40px;
+.bookModal-btn-read,
+.bookModal-btn-addto,.bookModal-btn-bookmark {
+  display: flex;
   border-radius: 999px;
   font-weight: 700;
   text-decoration: none;
+  margin: 0 5px;
+  color: var(--fcolor-secondary);
+}
+
+.bookModal-btn-read {
+  background-color: var(--btn-read);
+  padding: 8px 50px;
+}
+
+.bookModal-btn-addto{
+  background-color: var(--btn-addto);
+  padding: 8px 20px;
+}
+
+.bookModal-btn-bookmark{
+  background-color: var(--btn-bookmark);
+  padding: 8px 20px;
 }
 
 .bookModal-btn:hover {
@@ -426,6 +441,8 @@ hr {
 
   .bookModal-btn-container {
     justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
   }
 
   .bookModal-btn {

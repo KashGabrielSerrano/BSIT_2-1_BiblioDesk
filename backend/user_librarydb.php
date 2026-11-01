@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>User Library</title>
+    <title>Bibliodesk - Library</title>
     <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
@@ -40,7 +40,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="#">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="mybooks.php">
                             <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                 <img src="../frontend/assets/icons/mybooks-default.png" alt="my books page" width="28">
                             </span>
@@ -317,7 +317,7 @@
                     <a href="#"
                         class="book-trigger d-block ratio noneduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
                         data-id="1" data-title="Book Title" data-author="Author Name" data-desc="Short description."
-                        data-isbn="978-1234567890" data-genre="Fiction" data-publisher="Publisher Name" data-allowed="0"
+                        data-isbn="978-1234567890" data-genre="Horror" data-publisher="Publisher Name" data-allowed="0"
                         data-hasfile="1">
                             <img src="../frontend/assets/temporary/temporaryimage_3.jpg"
                                 class="w-100 h-100 object-fit-cover" alt="">
@@ -445,7 +445,9 @@
 
                             <input type="hidden" id="modalBookId" value="">
                             <div class="bookModal-btn-container">
-                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn d-none">Read</a>
+                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">Read</a>
+                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none">Add To Collections</a>
+                                <a id="modalBookBookmark" href="#" class="bookModal-btn-bookmark d-none"> <i class="bi bi-bookmark"></i></a>
                             </div>
                         </div>
                     </div>

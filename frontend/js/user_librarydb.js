@@ -1,6 +1,43 @@
 document.addEventListener('DOMContentLoaded', () => {
-/* ---------- Books Modal ---------- */
-       window.openBookModal = function (d, imgSrc) {
+    /* ---------- Collections ---------- */
+    const collectionsBtn = document.getElementById('modalBookAddToCollections');
+    if (collectionsBtn) {
+        collectionsBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isAdded = collectionsBtn.classList.toggle('is-added');
+            
+            if (isAdded) {
+                collectionsBtn.textContent = 'Remove From Collections';
+                collectionsBtn.style.backgroundColor = 'var(--btn-remove)';
+            } else {
+                collectionsBtn.textContent = 'Add To Collections';
+                collectionsBtn.style.backgroundColor = '';
+            }
+            
+            const bookId = document.getElementById('modalBookId').value;
+            console.log(`Book ${bookId} collection status: ${isAdded}`);
+        });
+    }
+
+    /* ---------- Bookmark ---------- */
+    const bookmarkBtn = document.getElementById('modalBookBookmark');
+    if (bookmarkBtn) {
+        bookmarkBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const isBookmarked = bookmarkBtn.classList.toggle('is-bookmarked');
+            const icon = bookmarkBtn.querySelector('i');
+            
+            if (icon) {
+                icon.className = isBookmarked ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
+            }
+            
+            const bookId = document.getElementById('modalBookId').value;
+            console.log(`Book ${bookId} bookmark status: ${isBookmarked}`);
+        });
+    }
+
+    /* ---------- Books Modal ---------- */
+    window.openBookModal = function (d, imgSrc) {
         const setText = (id, value) => {
             const el = document.getElementById(id);
             if (el) el.textContent = value;
@@ -15,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
         setText('modalBookAuthor', 'By ' + (d.author || 'Unknown Author'));
         setText('modalBookDesc', d.desc || 'No description available.');
         setText('modalBookIsbn', 'ISBN: ' + (d.isbn || 'N/A'));
-        setText('modalBookGenre', d.genre || '');
         setText('modalBookPublisherName', d.publisher || 'Unknown');
 
         toggle('modalBookGenre', !!d.genre);
@@ -34,13 +70,16 @@ document.addEventListener('DOMContentLoaded', () => {
             read.classList.remove('d-none');
         }
 
+        if (collectionsBtn) collectionsBtn.classList.remove('d-none');
+        if (bookmarkBtn) bookmarkBtn.classList.remove('d-none');
+
         const modalElement = document.getElementById('bookDetailsModal');
         if (modalElement) {
             bootstrap.Modal.getOrCreateInstance(modalElement).show();
         }
     };
 
-/* ---------- Grid cards ---------- */
+    /* ---------- Grid cards ---------- */
     document.addEventListener('click', (e) => {
         const card = e.target.closest('.book-trigger');
         if (!card) return;
@@ -51,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.openBookModal(card.dataset, img ? img.src : '');
     });
 
-/* ---------- New Arrivals---------- */
+    /* ---------- New Arrivals ---------- */
     const container = document.getElementById('newarrivalsContainer');
     const prevBtn = document.getElementById('ccPrevBtn');
     const nextBtn = document.getElementById('ccNextBtn');
@@ -133,4 +172,3 @@ document.addEventListener('DOMContentLoaded', () => {
         updateActiveCenter();
     }
 });
-

@@ -34,8 +34,11 @@ rec = recommendations
     --sidebar-expand: 250px;
     --topbar-height: 80px;
 
-/* Login and Registration */
-    --btn: #2E4E0D;
+/* Login, Registration, read, addto, bookmark */
+    --btn-read: #2E4E0D;
+    --btn-addto: #b15024;
+    --btn-bookmark: #5b5a9e;
+    --btn-remove: #cf1818;
 
 /* OTP alerts */
     --alert-danger-bg: #FEF2F2;
