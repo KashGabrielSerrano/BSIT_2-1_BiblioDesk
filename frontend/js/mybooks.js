@@ -1,210 +1,146 @@
 document.addEventListener('DOMContentLoaded', () => {
-    /* ---------- Create Collection ---------- */
-    function textColorFor(hex) {
-        const h = hex.replace('#', '');
-        const r = parseInt(h.substr(0, 2), 16);
-        const g = parseInt(h.substr(2, 2), 16);
-        const b = parseInt(h.substr(4, 2), 16);
-        const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-        return luminance > 0.6 ? '#2C251D' : '#FFFFFF';
-    }
+    const bookModalEl = document.getElementById('bookDetailsModal');
+    if (!bookModalEl) return;
 
-    const createModalEl = document.getElementById('createCollectionModal');
-    const createForm = document.getElementById('createCollectionForm');
-    const nameInput = document.getElementById('collectionNameInput');
-    const colorInput = document.getElementById('collectionColorInput');
-    const customColor = document.getElementById('collectionCustomColor');
-    const swatchBox = document.getElementById('colorSwatches');
-    const previewCard = document.getElementById('collectionPreview');
-    const collectionsRow = document.getElementById('collectionsRow');
+    const bsModal = new bootstrap.Modal(bookModalEl);
+    
+    const modalImg = document.getElementById('modalBookImg');
+    const modalTitle = document.getElementById('modalBookTitle');
+    const modalAuthor = document.getElementById('modalBookAuthor');
+    const modalIsbn = document.getElementById('modalBookIsbn');
+    const modalGenre = document.getElementById('modalBookGenre');
+    const modalDesc = document.getElementById('modalBookDesc');
+    const modalPublisherName = document.getElementById('modalBookPublisherName');
+    const modalBookId = document.getElementById('modalBookId');
+    const modalReadBtn = document.getElementById('modalBookRead');
+    const modalAddToColl = document.getElementById('modalBookAddToCollections');
+    const modalBookmarkBtn = document.getElementById('modalBookBookmark');
+    const modalFavoriteBtn = document.getElementById('modalBookFavorite');
 
-    const DEFAULT_COLOR = '#87CEEB';
+    const csrfToken = window.csrfToken || '';
 
-    function applyColor(hex) {
-        colorInput.value = hex;
-    }
+    // Delegate click for all book triggers (.book-trigger)
+    document.body.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.book-trigger');
+        if (!trigger) return;
+        e.preventDefault();
 
-    if (createModalEl && createForm) {
+        const id = trigger.dataset.id || '';
+        const title = trigger.dataset.title || 'Untitled';
+        const author = trigger.dataset.author || 'Unknown Author';
+        const desc = trigger.dataset.desc || 'No description available.';
+        const isbn = trigger.dataset.isbn || 'N/A';
+        const genre = trigger.dataset.genre || 'General';
+        const publisher = trigger.dataset.publisher || 'N/A';
+        const hasFile = trigger.dataset.hasfile === '1';
+        const cover = trigger.dataset.cover || '../frontend/assets/icons/library-default.png';
 
-        swatchBox.addEventListener('click', (e) => {
-            const swatch = e.target.closest('.swatch[data-color]');
-            if (!swatch) return;
+        // Populate Modal Fields (Consistent with user_librarydb.php)
+        modalBookId.value = id;
+        if (modalTitle) modalTitle.textContent = title;
+        if (modalAuthor) modalAuthor.textContent = author;
+        if (modalDesc) modalDesc.textContent = desc;
+        if (modalIsbn) modalIsbn.textContent = 'ISBN: ' + isbn;
+        if (modalGenre) modalGenre.textContent = genre;
+        if (modalPublisherName) modalPublisherName.textContent = publisher;
+        if (modalImg) modalImg.src = cover;
 
-            swatchBox.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-            swatch.classList.add('active');
-            applyColor(swatch.dataset.color);
-        });
-
-        customColor.addEventListener('input', () => {
-            swatchBox.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-            customColor.closest('.swatch').classList.add('active');
-            customColor.closest('.swatch').style.setProperty('--swatch', customColor.value);
-            applyColor(customColor.value);
-        });
-
-        const rainbowSwatch = document.querySelector('.swatch-rainbow');
-        if (rainbowSwatch && customColor) {
-            rainbowSwatch.addEventListener('click', () => {
-                customColor.click(); 
-            });
+        // Reset default button visibility
+        if (hasFile && modalReadBtn) {
+            modalReadBtn.classList.remove('d-none');
+            modalReadBtn.href = `read_book.php?id=${id}`;
+            modalReadBtn.textContent = 'Read Now';
+        } else if (modalReadBtn) {
+            modalReadBtn.classList.add('d-none');
         }
 
-        nameInput.addEventListener('input', () => {
-            nameInput.classList.remove('is-invalid');
-            updatePreview();
-        });
+        if (modalAddToColl) modalAddToColl.classList.remove('d-none');
+        if (modalBookmarkBtn) modalBookmarkBtn.classList.remove('d-none');
+        if (modalFavoriteBtn) modalFavoriteBtn.classList.remove('d-none');
 
-        createForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Reset icons to outline state while fetching database status
+        updateBookmarkIcon(false);
+        updateFavoriteIcon(false);
 
-            const name = nameInput.value.trim();
-            const color = colorInput.value || DEFAULT_COLOR;
-
-            if (!name) {
-                nameInput.classList.add('is-invalid');
-                nameInput.focus();
-                return;
-            }
-
-            const addTrigger = document.querySelector('[data-bs-target="#createCollectionModal"]');
-            const addCol = addTrigger ? addTrigger.closest('.col') : null;
-            const row = collectionsRow || (addCol && addCol.parentElement);
-
-            if (!row) {
-                console.error('Collections row not found.');
-                return;
-            }
-
-            const col = document.createElement('div');
-            col.className = 'col';
-
-            const card = document.createElement('div');
-            card.className = 'collection-card ratio shadow position-relative';
-            card.style.backgroundColor = color;
-            card.style.color = textColorFor(color);
-
-            const textArea = document.createElement('div');
-            textArea.className = 'textArea';
-            const h3 = document.createElement('h3');
-            h3.className = 'h6 fw-bold mt-3 mb-0';
-            h3.textContent = name;
-            textArea.append(h3);
-
-            col.append(card, textArea);
-
-            if (addCol && addCol.parentElement === row) {
-                row.insertBefore(col, addCol);
-            } else {
-                row.appendChild(col);
-            }
-
-            bootstrap.Modal.getOrCreateInstance(createModalEl).hide();
-        });
-
-        createModalEl.addEventListener('hidden.bs.modal', () => {
-            createForm.reset();
-            nameInput.classList.remove('is-invalid');
-            swatchBox.querySelectorAll('.swatch').forEach(s => s.classList.remove('active'));
-            const first = swatchBox.querySelector('.swatch[data-color]');
-            if (first) first.classList.add('active');
-            customColor.closest('.swatch').style.setProperty('--swatch', '#ffffff');
-            applyColor(DEFAULT_COLOR);
-            updatePreview();
-        });
-
-        createModalEl.addEventListener('shown.bs.modal', () => nameInput.focus());
-
-        applyColor(DEFAULT_COLOR);
-    }
-
-    /* ---------- Collections ---------- */
-    const collectionsBtn = document.getElementById('modalBookAddToCollections');
-    if (collectionsBtn) {
-        collectionsBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isAdded = collectionsBtn.classList.toggle('is-added');
-            
-            if (isAdded) {
-                collectionsBtn.textContent = 'Remove From Collections';
-                collectionsBtn.style.backgroundColor = 'var(--btn-remove)';
-            } else {
-                collectionsBtn.textContent = 'Add To Collections';
-                collectionsBtn.style.backgroundColor = '';
-            }
-            
-            const bookId = document.getElementById('modalBookId').value;
-            console.log(`Book ${bookId} collection status: ${isAdded}`);
-        });
-    }
-
-    /* ---------- Bookmark ---------- */
-    const bookmarkBtn = document.getElementById('modalBookBookmark');
-    if (bookmarkBtn) {
-        bookmarkBtn.addEventListener('click', (e) => {
-            e.preventDefault();
-            const isBookmarked = bookmarkBtn.classList.toggle('is-bookmarked');
-            const icon = bookmarkBtn.querySelector('i');
-            
-            if (icon) {
-                icon.className = isBookmarked ? 'bi bi-bookmark-fill' : 'bi bi-bookmark';
-            }
-            
-            const bookId = document.getElementById('modalBookId').value;
-            console.log(`Book ${bookId} bookmark status: ${isBookmarked}`);
-        });
-    }
-
-   /* ---------- Books Modal ---------- */
-    window.openBookModal = function (d, imgSrc) {
-        const setText = (id, value) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = value;
-        };
-
-        const toggle = (id, show) => {
-            const el = document.getElementById(id);
-            if (el) el.classList.toggle('d-none', !show);
-        };
-
-        setText('modalBookTitle', d.title || 'Unknown Title');
-        setText('modalBookAuthor', 'By ' + (d.author || 'Unknown Author'));
-        setText('modalBookDesc', d.desc || 'No description available.');
-        setText('modalBookIsbn', 'ISBN: ' + (d.isbn || 'N/A'));
-        setText('modalBookPublisherName', d.publisher || 'Unknown');
-
-        toggle('modalBookGenre', !!d.genre);
-        toggle('modalBookPublisher', !!d.publisher);
-
-        const imgEl = document.getElementById('modalBookImg');
-        if (imgEl) imgEl.src = imgSrc || '';
-
-        const idEl = document.getElementById('modalBookId');
-        if (idEl) idEl.value = d.id || '';
-
-        const read = document.getElementById('modalBookRead');
-        if (read) {
-            read.href = 'javascript:void(0);';
-            read.onclick = () => alert('Reader backend coming soon!');
-            read.classList.remove('d-none');
+        // Fetch user state (Bookmark, Favorite, Reading Progress)
+        if (id) {
+            fetch(`mybooks_api.php?action=get_book_status&book_id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        updateBookmarkIcon(data.bookmarked);
+                        updateFavoriteIcon(data.favorited);
+                        
+                        if (hasFile && data.has_progress && modalReadBtn) {
+                            modalReadBtn.textContent = 'Continue Reading';
+                        }
+                    }
+                })
+                .catch(err => console.error("Error fetching book status:", err));
         }
 
-        if (collectionsBtn) collectionsBtn.classList.remove('d-none');
-        if (bookmarkBtn) bookmarkBtn.classList.remove('d-none');
-
-        const modalElement = document.getElementById('bookDetailsModal');
-        if (modalElement) {
-            bootstrap.Modal.getOrCreateInstance(modalElement).show();
-        }
-    };
-
-    /* ---------- Grid cards ---------- */
-    document.addEventListener('click', (e) => {
-        const card = e.target.closest('.book-trigger');
-        if (!card) return;
-
-        e.preventDefault();  
-
-        const img = card.querySelector('img');
-        window.openBookModal(card.dataset, img ? img.src : '');
+        bsModal.show();
     });
+
+    function updateBookmarkIcon(isBookmarked) {
+        if (!modalBookmarkBtn) return;
+        const icon = modalBookmarkBtn.querySelector('i');
+        if (icon) {
+            icon.className = isBookmarked ? 'bi bi-bookmark-fill fs-4 text-warning' : 'bi bi-bookmark fs-4';
+        }
+    }
+
+    function updateFavoriteIcon(isFavorited) {
+        if (!modalFavoriteBtn) return;
+        const icon = modalFavoriteBtn.querySelector('i');
+        if (icon) {
+            icon.className = isFavorited ? 'bi bi-heart-fill fs-4 text-danger' : 'bi bi-heart fs-4';
+        }
+    }
+
+    // Toggle Bookmark Event
+    if (modalBookmarkBtn) {
+        modalBookmarkBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const bookId = modalBookId.value;
+            if (!bookId) return;
+
+            const formData = new FormData();
+            formData.append('action', 'toggle_bookmark');
+            formData.append('book_id', bookId);
+            formData.append('csrf_token', csrfToken);
+
+            fetch('mybooks_api.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        updateBookmarkIcon(data.bookmarked);
+                    }
+                })
+                .catch(err => console.error("Error toggling bookmark:", err));
+        });
+    }
+
+    // Toggle Favorite Event
+    if (modalFavoriteBtn) {
+        modalFavoriteBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            const bookId = modalBookId.value;
+            if (!bookId) return;
+
+            const formData = new FormData();
+            formData.append('action', 'toggle_favorite');
+            formData.append('book_id', bookId);
+            formData.append('csrf_token', csrfToken);
+
+            fetch('../backend/user_librarydb_controller.php', { method: 'POST', body: formData })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        updateFavoriteIcon(data.favorited);
+                    }
+                })
+                .catch(err => console.error("Error toggling favorite:", err));
+        });
+    }
 });

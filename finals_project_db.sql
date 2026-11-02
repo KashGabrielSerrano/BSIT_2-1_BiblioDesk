@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Oct 29, 2026 at 09:54 AM
+-- Generation Time: Nov 02, 2026 at 05:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -138,6 +138,57 @@ CREATE TABLE `transaction_table` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `user_bookmarks`
+--
+
+CREATE TABLE `user_bookmarks` (
+  `User_ID` int(11) NOT NULL,
+  `Book_ID` int(11) NOT NULL,
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_favorites`
+--
+
+CREATE TABLE `user_favorites` (
+  `User_ID` int(11) NOT NULL,
+  `Book_ID` int(11) NOT NULL,
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_reading_history`
+--
+
+CREATE TABLE `user_reading_history` (
+  `User_ID` int(11) NOT NULL,
+  `Book_ID` int(11) NOT NULL,
+  `Last_Opened` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `user_reading_progress`
+--
+
+CREATE TABLE `user_reading_progress` (
+  `User_ID` int(11) NOT NULL,
+  `Book_ID` int(11) NOT NULL,
+  `Current_Page` int(11) NOT NULL DEFAULT 1,
+  `Total_Pages` int(11) NOT NULL DEFAULT 1,
+  `Is_Finished` tinyint(1) NOT NULL DEFAULT 0,
+  `Updated_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user_table`
 --
 
@@ -234,6 +285,35 @@ ALTER TABLE `transaction_table`
   ADD KEY `Book_ID` (`Book_ID`),
   ADD KEY `transaction_table_ibfk_3` (`Issued_By`),
   ADD KEY `transaction_table_ibfk_4` (`Received_By`);
+
+--
+-- Indexes for table `user_bookmarks`
+--
+ALTER TABLE `user_bookmarks`
+  ADD PRIMARY KEY (`User_ID`,`Book_ID`),
+  ADD KEY `fk_bookmarks_book` (`Book_ID`);
+
+--
+-- Indexes for table `user_favorites`
+--
+ALTER TABLE `user_favorites`
+  ADD PRIMARY KEY (`User_ID`,`Book_ID`),
+  ADD KEY `fk_favorites_book` (`Book_ID`);
+
+--
+-- Indexes for table `user_reading_history`
+--
+ALTER TABLE `user_reading_history`
+  ADD PRIMARY KEY (`User_ID`,`Book_ID`),
+  ADD KEY `fk_history_book` (`Book_ID`);
+
+--
+-- Indexes for table `user_reading_progress`
+--
+ALTER TABLE `user_reading_progress`
+  ADD PRIMARY KEY (`User_ID`,`Book_ID`),
+  ADD KEY `idx_progress_finished` (`User_ID`,`Is_Finished`),
+  ADD KEY `fk_progress_book` (`Book_ID`);
 
 --
 -- Indexes for table `user_table`
@@ -349,6 +429,34 @@ ALTER TABLE `transaction_table`
   ADD CONSTRAINT `transaction_table_ibfk_2` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `transaction_table_ibfk_3` FOREIGN KEY (`Issued_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL,
   ADD CONSTRAINT `transaction_table_ibfk_4` FOREIGN KEY (`Received_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `user_bookmarks`
+--
+ALTER TABLE `user_bookmarks`
+  ADD CONSTRAINT `fk_bookmarks_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_bookmarks_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_favorites`
+--
+ALTER TABLE `user_favorites`
+  ADD CONSTRAINT `fk_favorites_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_favorites_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_reading_history`
+--
+ALTER TABLE `user_reading_history`
+  ADD CONSTRAINT `fk_history_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_history_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_reading_progress`
+--
+ALTER TABLE `user_reading_progress`
+  ADD CONSTRAINT `fk_progress_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_progress_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_tokens`
