@@ -3,6 +3,8 @@ session_start();
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
+
 $con = connection();
 $so  = new SystemOperators();
 $user_ip = $so->getClientIP();
@@ -48,14 +50,13 @@ function verifyBookExists(mysqli $con, int $book_id): bool {
 }
 
 if ($action === 'save_progress') {
-    $book_id = intval($_POST['book_id'] ?? 0);
+    $book_id = max(0, intval($_POST['book_id'] ?? 0));
     $current_page = max(1, intval($_POST['current_page'] ?? 1));
     $total_pages = max(1, intval($_POST['total_pages'] ?? 1));
 
     if (!verifyBookExists($con, $book_id)) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Book not found or file missing.']);
-        exit();
+        sendResponse(false, 'Book not found or file missing.');
     }
 
     $is_finished = ($current_page >= $total_pages) ? 1 : 0;
@@ -67,16 +68,14 @@ if ($action === 'save_progress') {
     $stmt->execute();
     $stmt->close();
 
-    echo json_encode(['success' => true, 'is_finished' => (bool)$is_finished]);
-    exit();
+    sendResponse(true, 'Progress saved successfully.', ['is_finished' => (bool)$is_finished]);
 
 } elseif ($action === 'toggle_bookmark') {
-    $book_id = intval($_POST['book_id'] ?? 0);
+    $book_id = max(0, intval($_POST['book_id'] ?? 0));
 
     if (!verifyBookExists($con, $book_id)) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Book not found.']);
-        exit();
+        sendResponse(false, 'Book not found.');
     }
 
     $check = $con->prepare("SELECT Book_ID FROM user_bookmarks WHERE User_ID = ? AND Book_ID = ?");
@@ -99,16 +98,14 @@ if ($action === 'save_progress') {
         $bookmarked = true;
     }
 
-    echo json_encode(['success' => true, 'bookmarked' => $bookmarked]);
-    exit();
+    sendResponse(true, 'Bookmark status updated.', ['bookmarked' => $bookmarked]);
 
 } elseif ($action === 'toggle_favorite') {
-    $book_id = intval($_POST['book_id'] ?? 0);
+    $book_id = max(0, intval($_POST['book_id'] ?? 0));
 
     if (!verifyBookExists($con, $book_id)) {
         http_response_code(404);
-        echo json_encode(['success' => false, 'message' => 'Book not found.']);
-        exit();
+        sendResponse(false, 'Book not found.');
     }
 
     $check = $con->prepare("SELECT Book_ID FROM user_favorites WHERE User_ID = ? AND Book_ID = ?");
@@ -131,50 +128,41 @@ if ($action === 'save_progress') {
         $favorited = true;
     }
 
-    echo json_encode(['success' => true, 'favorited' => $favorited]);
-    exit();
+    sendResponse(true, 'Favorite status updated.', ['favorited' => $favorited]);
 
 } elseif ($action === 'get_book_status') {
-    $book_id = intval($_GET['book_id'] ?? 0);
+    $book_id = max(0, intval($_GET['book_id'] ?? 0));
 
-    // Bookmarks
-    $b_stmt = $con->prepare("SELECT Book_ID FROM user_bookmarks WHERE User_ID = ? AND Book_ID = ?");
-    $b_stmt->bind_param("ii", $user_id, $book_id);
-    $b_stmt->execute();
-    $bookmarked = $b_stmt->get_result()->num_rows > 0;
-    $b_stmt->close();
-
-    // Favorites
-    $f_stmt = $con->prepare("SELECT Book_ID FROM user_favorites WHERE User_ID = ? AND Book_ID = ?");
-    $f_stmt->bind_param("ii", $user_id, $book_id);
-    $f_stmt->execute();
-    $favorited = $f_stmt->get_result()->num_rows > 0;
-    $f_stmt->close();
-
-    // Reading Progress
-    $p_stmt = $con->prepare("SELECT Current_Page, Total_Pages, Is_Finished FROM user_reading_progress WHERE User_ID = ? AND Book_ID = ?");
-    $p_stmt->bind_param("ii", $user_id, $book_id);
-    $p_stmt->execute();
-    $prog = $p_stmt->get_result()->fetch_assoc();
-    $p_stmt->close();
-
-    $resume_page = 1;
-    $has_progress = false;
-    if ($prog && $prog['Current_Page'] > 1 && $prog['Is_Finished'] == 0) {
-        $resume_page = intval($prog['Current_Page']);
-        $has_progress = true;
+    if ($book_id <= 0) {
+        http_response_code(400);
+        sendResponse(false, 'Invalid Book ID.');
     }
 
-    echo json_encode([
-        'success' => true,
-        'bookmarked' => $bookmarked,
-        'favorited' => $favorited,
+    // Optimized Single SQL Query for Bookmark, Favorite, and Progress
+    $query = "SELECT 
+                (SELECT COUNT(1) FROM user_bookmarks WHERE User_ID = ? AND Book_ID = ?) AS is_bookmarked,
+                (SELECT COUNT(1) FROM user_favorites WHERE User_ID = ? AND Book_ID = ?) AS is_favorited,
+                p.Current_Page, p.Is_Finished
+              FROM (SELECT 1) AS dummy
+              LEFT JOIN user_reading_progress p ON p.User_ID = ? AND p.Book_ID = ?";
+              
+    $stmt = $con->prepare($query);
+    $stmt->bind_param("iiiiii", $user_id, $book_id, $user_id, $book_id, $user_id, $book_id);
+    $stmt->execute();
+    $row = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    $bookmarked   = !empty($row['is_bookmarked']);
+    $favorited    = !empty($row['is_favorited']);
+    $has_progress = (isset($row['Current_Page']) && $row['Current_Page'] !== null && (int)$row['Is_Finished'] === 0);
+
+    sendResponse(true, 'Status retrieved.', [
+        'bookmarked'   => $bookmarked,
+        'favorited'    => $favorited,
         'has_progress' => $has_progress,
-        'resume_page' => $resume_page
+        'resume_page'  => $has_progress ? (int)$row['Current_Page'] : 1
     ]);
-    exit();
 }
 
 http_response_code(400);
-echo json_encode(['success' => false, 'message' => 'Invalid action.']);
-exit();
+sendResponse(false, 'Invalid action.');

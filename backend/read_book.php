@@ -30,13 +30,13 @@ if (!$book || empty($book['Drive_Link'])) {
     exit("Book or digital file not found in system catalog.");
 }
 
-// Record Reading History (BEHAVIOR #1)
+// Record Reading History (STEP #1)
 $hist_stmt = $con->prepare("INSERT INTO user_reading_history (User_ID, Book_ID, Last_Opened) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE Last_Opened = NOW()");
 $hist_stmt->bind_param("ii", $user_id, $book_id);
 $hist_stmt->execute();
 $hist_stmt->close();
 
-// Fetch saved reading page progress if available (BEHAVIOR #2)
+// Fetch saved reading page progress if available (STEP #2)
 $prog_stmt = $con->prepare("SELECT Current_Page, Is_Finished FROM user_reading_progress WHERE User_ID = ? AND Book_ID = ?");
 $prog_stmt->bind_param("ii", $user_id, $book_id);
 $prog_stmt->execute();
@@ -226,7 +226,7 @@ function saveReadingProgress(page, total) {
         formData.append('total_pages', total);
         formData.append('csrf_token', csrfToken);
 
-        fetch('mybooks_api.php', {
+        fetch('../backend/user_librarydb_controller.php', {
             method: 'POST',
             body: formData
         }).catch(err => console.error("Failed to save progress:", err));

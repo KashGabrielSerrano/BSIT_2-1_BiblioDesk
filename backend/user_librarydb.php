@@ -18,19 +18,35 @@ if (!in_array($view, ['library', 'mybooks'], true)) {
     $view = 'library';
 }
 
-function getDriveDirectImageUrl(string $url): string {
-    $url = trim($url);
-    if (empty($url)) return '../frontend/assets/icons/library-default.png';
-    $file_id = '';
-    if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
-        $file_id = $matches[1];
-    } elseif (preg_match('/id=([a-zA-Z0-9_-]+)/', $url, $matches)) {
-        $file_id = $matches[1];
+$continue_reading_books = [];
+$bookmark_books         = [];
+$favorite_books         = [];
+$history_books          = [];
+
+$new_arrivals           = [];
+$recommendations        = [];
+$educational            = [];
+$non_educational        = [];
+$research               = [];
+
+/**
+ * Returns the public cover image URL (Supabase, external HTTP URL, or local fallback if Book Cover won't load).
+ *
+ * @param string|null $url
+ * @return string
+ */
+function getCoverImageUrl(?string $url): string {
+    $url = trim($url ?? '');
+    
+    if (empty($url)) {
+        return '../frontend/assets/icons/library-default.png';
     }
-    if (!empty($file_id)) {
-        return "https://drive.google.com/thumbnail?id=" . $file_id . "&sz=w500";
+    
+    if (filter_var($url, FILTER_VALIDATE_URL) || str_starts_with($url, '/')) {
+        return $url;
     }
-    return $url;
+
+    return '../' . ltrim($url, '/');
 }
 
 // ============================================================================
@@ -86,13 +102,13 @@ if ($view === 'mybooks') {
     $stmt->close();
 }
 
-function renderBookGrid(array $books) {
+function renderBookGrid(array $books): string {
     if (empty($books)) {
         return '<div class="col-12 py-4 text-center text-muted fs-6">No books in this section yet.</div>';
     }
     $html = '';
     foreach ($books as $b) {
-        $cover = !empty($b['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($b['Cover_Image'])) : '../frontend/assets/icons/library-default.png';
+        $cover = !empty($b['Cover_Image']) ? htmlspecialchars(getCoverImageUrl($b['Cover_Image'])) : '../frontend/assets/icons/library-default.png';
         $hasFile = (!empty($b['Drive_Link'])) ? '1' : '0';
         $title = htmlspecialchars($b['Title'] ?? 'Untitled');
         $author = htmlspecialchars($b['Author'] ?? 'Unknown Author');
@@ -139,39 +155,73 @@ function renderBookGrid(array $books) {
 // LIBRARY DATA FETCHING & RENDERING HELPERS
 // ============================================================================
 if ($view === 'library') {
-    $new_arrivals = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 7");
-    $recommendations = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Recommendation%' OR Category LIKE '%Recommend%' ORDER BY Book_ID DESC LIMIT 6");
-    $educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Educational%' ORDER BY Book_ID DESC LIMIT 6");
-    $non_educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Non-Educational%' ORDER BY Book_ID DESC LIMIT 6");
-    $research = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Research%' ORDER BY Book_ID DESC LIMIT 6");
+    // 1. Fetch recent books into memory in a single query
+    $query = "SELECT Book_ID, Title, Author, Description, ISBN, Category, Publisher, Cover_Image, Drive_Link 
+              FROM book_table 
+              ORDER BY Book_ID DESC 
+              LIMIT 50";
+    $result = $con->query($query);
 
-    if ($recommendations->num_rows === 0) {
-        $recommendations = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+    $all_books = [];
+    if ($result && $result->num_rows > 0) {
+        while ($row = $result->fetch_assoc()) {
+            $all_books[] = $row;
+        }
     }
-    if ($educational->num_rows === 0) {
-        $educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+
+    $new_arrivals = array_slice($all_books, 0, 7);
+
+    $recommendations_arr = [];
+    $educational_arr     = [];
+    $non_educational_arr = [];
+    $research_arr        = [];
+
+    foreach ($all_books as $book) {
+        $cat = $book['Category'] ?? '';
+
+        if (count($recommendations_arr) < 6 && stripos($cat, 'Recommend') !== false) {
+            $recommendations_arr[] = $book;
+        }
+        if (count($educational_arr) < 6 && stripos($cat, 'Educational') !== false && stripos($cat, 'Non-Educational') === false) {
+            $educational_arr[] = $book;
+        }
+        if (count($non_educational_arr) < 6 && stripos($cat, 'Non-Educational') !== false) {
+            $non_educational_arr[] = $book;
+        }
+        if (count($research_arr) < 6 && stripos($cat, 'Research') !== false) {
+            $research_arr[] = $book;
+        }
     }
-    if ($non_educational->num_rows === 0) {
-        $non_educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
-    }
-    if ($research->num_rows === 0) {
-        $research = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
-    }
+
+    $default_fallback = array_slice($all_books, 0, 6);
+
+    $recommendations = !empty($recommendations_arr) ? $recommendations_arr : $default_fallback;
+    $educational     = !empty($educational_arr)     ? $educational_arr     : $default_fallback;
+    $non_educational = !empty($non_educational_arr) ? $non_educational_arr : $default_fallback;
+    $research        = !empty($research_arr)        ? $research_arr        : $default_fallback;
 }
 
-function renderBookCard($row, $ratioClass = '') {
-    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+/**
+ * Render a single book card
+ * @param array<string, mixed> $row
+ * @param string $ratioClass
+ * @return string
+ */
+function renderBookCard(array $row, string $ratioClass = ''): string {
+    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getCoverImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
-    $bookId  = htmlspecialchars($row['Book_ID'] ?? '');
+    $bookId  = htmlspecialchars((string)($row['Book_ID'] ?? ''));
+    $title   = htmlspecialchars($row['Title'] ?? 'Untitled');
+    $author  = htmlspecialchars($row['Author'] ?? 'Unknown Author');
     
     return '
     <div class="col">
         <a href="#"
            class="book-trigger d-block ratio ' . $ratioClass . ' rounded-2 overflow-hidden shadow position-relative text-decoration-none"
            data-id="' . $bookId . '"
-           data-title="' . htmlspecialchars($row['Title'] ?? '') . '"
-           data-author="' . htmlspecialchars($row['Author'] ?? '') . '"
+           data-title="' . $title . '"
+           data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
            data-isbn="' . htmlspecialchars($row['ISBN'] ?? '') . '"
            data-genre="' . htmlspecialchars($row['Category'] ?? '') . '"
@@ -179,12 +229,12 @@ function renderBookCard($row, $ratioClass = '') {
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
            data-cover="' . $cover . '">
-            <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . htmlspecialchars($row['Title'] ?? '') . '">
+            <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . $title . '">
         </a>
         <a href="#" class="textArea text-decoration-none book-trigger"
            data-id="' . $bookId . '"
-           data-title="' . $bookId . '"
-           data-author="' . htmlspecialchars($row['Author'] ?? '') . '"
+           data-title="' . $title . '"
+           data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
            data-isbn="' . htmlspecialchars($row['ISBN'] ?? '') . '"
            data-genre="' . htmlspecialchars($row['Category'] ?? '') . '"
@@ -192,8 +242,8 @@ function renderBookCard($row, $ratioClass = '') {
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
            data-cover="' . $cover . '">
-            <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . htmlspecialchars($row['Title'] ?? 'Untitled') . '</h3>
-            <p class="small mb-3 text-muted text-truncate">' . htmlspecialchars($row['Author'] ?? 'Unknown Author') . '</p>
+            <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . $title . '</h3>
+            <p class="small mb-3 text-muted text-truncate">' . $author . '</p>
         </a>
     </div>';
 }
@@ -370,14 +420,14 @@ function renderBookCard($row, $ratioClass = '') {
                 <h2 class="fw-bold mb-4 display-5">NEW ARRIVALS</h2>
                 <div class="newarrivals-wrapper mx-auto">
                     <div class="newarrivals-container" id="newarrivalsContainer">
-                        <?php if ($new_arrivals && $new_arrivals->num_rows > 0): ?>
-                            <?php while ($row = $new_arrivals->fetch_assoc()): ?>
+                        <?php if (!empty($new_arrivals)): ?>
+                            <?php foreach ($new_arrivals as $row): ?>
                                 <?php
-                                    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+                                    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getCoverImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
                                     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
                                 ?>
                                 <div class="newarrivals-item book-trigger"
-                                     data-id="<?php echo htmlspecialchars($row['Book_ID'] ?? ''); ?>"
+                                     data-id="<?php echo htmlspecialchars((string)($row['Book_ID'] ?? '')); ?>"
                                      data-title="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>"
                                      data-author="<?php echo htmlspecialchars($row['Author'] ?? ''); ?>"
                                      data-desc="<?php echo htmlspecialchars($row['Description'] ?? ''); ?>"
@@ -387,9 +437,9 @@ function renderBookCard($row, $ratioClass = '') {
                                      data-allowed="1"
                                      data-hasfile="<?php echo !empty($drive) ? '1' : '0'; ?>"
                                      data-cover="<?php echo $cover; ?>">
-                                    <img src="<?php echo $cover; ?>" alt="<?php echo htmlspecialchars($row['Title']); ?>">
+                                    <img src="<?php echo $cover; ?>" alt="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>">
                                 </div>
-                            <?php endwhile; ?>
+                            <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
                 </div>
@@ -402,9 +452,9 @@ function renderBookCard($row, $ratioClass = '') {
                         <h2 class="h3 fw-semibold mb-0 mt-3">Recommendations</h2>
                     </div>
                     <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                        <?php while ($row = $recommendations->fetch_assoc()): ?>
+                        <?php foreach ($recommendations as $row): ?>
                             <?php echo renderBookCard($row, 'recCover'); ?>
-                        <?php endwhile; ?>
+                        <?php endforeach; ?>
                     </div>
                 </div>
             </section>
@@ -416,9 +466,9 @@ function renderBookCard($row, $ratioClass = '') {
                     <h2 class="h3 fw-semibold mb-0">Educational Books</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php while ($row = $educational->fetch_assoc()): ?>
+                    <?php foreach ($educational as $row): ?>
                         <?php echo renderBookCard($row, 'eduCover'); ?>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </div>
             </section>
             <hr class="my-5">
@@ -429,9 +479,9 @@ function renderBookCard($row, $ratioClass = '') {
                     <h2 class="h3 fw-semibold mb-0">Non-Educational Books</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php while ($row = $non_educational->fetch_assoc()): ?>
+                    <?php foreach ($non_educational as $row): ?>
                         <?php echo renderBookCard($row, 'noneduCover'); ?>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </div>
             </section>
             <hr class="my-5">
@@ -442,9 +492,9 @@ function renderBookCard($row, $ratioClass = '') {
                     <h2 class="h3 fw-semibold mb-0">Research Articles</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php while ($row = $research->fetch_assoc()): ?>
+                    <?php foreach ($research as $row): ?>
                         <?php echo renderBookCard($row, 'rsCover'); ?>
-                    <?php endwhile; ?>
+                    <?php endforeach; ?>
                 </div>
             </section>
         <?php endif; ?>

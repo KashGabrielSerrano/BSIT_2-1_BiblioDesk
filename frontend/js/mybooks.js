@@ -1,3 +1,40 @@
+// ============================================================================
+// CLIENT-SIDE MEMORY CACHE FOR BOOK STATUS
+// ============================================================================
+const bookStatusCache = new Map();
+
+/**
+ * Fetches book status with Client-Side Memory Caching
+ */
+async function getBookStatus(bookId) {
+    if (bookStatusCache.has(bookId)) {
+        return bookStatusCache.get(bookId);
+    }
+
+    try {
+        const response = await fetch(`../backend/user_librarydb_controller.php?action=get_book_status&book_id=${bookId}`);
+        const data = await response.json();
+
+        if (data.success) {
+            bookStatusCache.set(bookId, data);
+        }
+        return data;
+    } catch (err) {
+        console.error("Error fetching book status:", err);
+        return null;
+    }
+}
+
+/**
+ * Invalidate cache for a specific book ID when state changes
+ */
+function invalidateBookCache(bookId) {
+    bookStatusCache.delete(bookId);
+}
+
+// ============================================================================
+// MAIN EVENT LISTENERS & MODAL MANAGEMENT
+// ============================================================================
 document.addEventListener('DOMContentLoaded', () => {
     const bookModalEl = document.getElementById('bookDetailsModal');
     if (!bookModalEl) return;
@@ -35,7 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const hasFile = trigger.dataset.hasfile === '1';
         const cover = trigger.dataset.cover || '../frontend/assets/icons/library-default.png';
 
-        // Populate Modal Fields (Consistent with user_librarydb.php)
+        // 1. Populate Modal Fields (Instant UI update from data attributes)
         modalBookId.value = id;
         if (modalTitle) modalTitle.textContent = title;
         if (modalAuthor) modalAuthor.textContent = author;
@@ -58,28 +95,26 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalBookmarkBtn) modalBookmarkBtn.classList.remove('d-none');
         if (modalFavoriteBtn) modalFavoriteBtn.classList.remove('d-none');
 
-        // Reset icons to outline state while fetching database status
+        // Reset icons to outline state immediately
         updateBookmarkIcon(false);
         updateFavoriteIcon(false);
 
-        // Fetch user state (Bookmark, Favorite, Reading Progress)
-        if (id) {
-            fetch(`mybooks_api.php?action=get_book_status&book_id=${id}`)
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        updateBookmarkIcon(data.bookmarked);
-                        updateFavoriteIcon(data.favorited);
-                        
-                        if (hasFile && data.has_progress && modalReadBtn) {
-                            modalReadBtn.textContent = 'Continue Reading';
-                        }
-                    }
-                })
-                .catch(err => console.error("Error fetching book status:", err));
-        }
-
+        // 2. SHOW MODAL IMMEDIATELY
         bsModal.show();
+
+        // 3. FETCH STATUS ASYNCHRONOUSLY IN BACKGROUND
+        if (id) {
+            getBookStatus(id).then(data => {
+                if (data && data.success) {
+                    updateBookmarkIcon(data.bookmarked);
+                    updateFavoriteIcon(data.favorited);
+                    
+                    if (hasFile && data.has_progress && modalReadBtn) {
+                        modalReadBtn.textContent = 'Continue Reading';
+                    }
+                }
+            });
+        }
     });
 
     function updateBookmarkIcon(isBookmarked) {
@@ -110,10 +145,11 @@ document.addEventListener('DOMContentLoaded', () => {
             formData.append('book_id', bookId);
             formData.append('csrf_token', csrfToken);
 
-            fetch('mybooks_api.php', { method: 'POST', body: formData })
+            fetch('../backend/user_librarydb_controller.php', { method: 'POST', body: formData })
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        invalidateBookCache(bookId);
                         updateBookmarkIcon(data.bookmarked);
                     }
                 })
@@ -137,6 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
+                        invalidateBookCache(bookId);
                         updateFavoriteIcon(data.favorited);
                     }
                 })
