@@ -41,8 +41,7 @@ the 8 rows currently displayed -->
             <ul class="nav flex-column gap-3 pt-4">
 
                 <li class="nav-item">
-                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                       href="userdb.php">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="admindb_overview.php">
                         <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                             <img src="../frontend/assets/icons/ow-default.png" alt="Overview" width="28">
                         </span>
