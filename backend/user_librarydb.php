@@ -1,20 +1,173 @@
 <?php
 session_start();
-require_once "connection/config.php";
-require_once "helpers/SystemOperators.php";
+require_once __DIR__ . "/connection/config.php";
+require_once __DIR__ . "/helpers/SystemOperators.php";
+
+if (!isset($_SESSION['user_id'])) {
+    header("Location: login.php");
+    exit();
+}
 
 $con = connection();
 $so  = new SystemOperators();
+$user_id = (int)$_SESSION['user_id'];
+
+// Show either: 'library' or 'mybooks'
+$view = $_GET['view'] ?? 'library';
+if (!in_array($view, ['library', 'mybooks'], true)) {
+    $view = 'library';
+}
+
+function getDriveDirectImageUrl(string $url): string {
+    $url = trim($url);
+    if (empty($url)) return '../frontend/assets/icons/library-default.png';
+    $file_id = '';
+    if (preg_match('/\/d\/([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        $file_id = $matches[1];
+    } elseif (preg_match('/id=([a-zA-Z0-9_-]+)/', $url, $matches)) {
+        $file_id = $matches[1];
+    }
+    if (!empty($file_id)) {
+        return "https://drive.google.com/thumbnail?id=" . $file_id . "&sz=w500";
+    }
+    return $url;
+}
+
+// ============================================================================
+// MY BOOKS DATA FETCHING & RENDERING HELPERS
+// ============================================================================
+if ($view === 'mybooks') {
+    // 1. Fetch Continue Reading Books
+    $cont_query = "SELECT b.*, p.Current_Page, p.Total_Pages
+                    FROM user_reading_progress p
+                    JOIN book_table b ON p.Book_ID = b.Book_ID
+                    WHERE p.User_ID = ? AND p.Is_Finished = 0
+                    ORDER BY p.Updated_At DESC";
+    $stmt = $con->prepare($cont_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $continue_reading_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // 2. Fetch Bookmarks
+    $bm_query = "SELECT b.*
+                  FROM user_bookmarks bm
+                  JOIN book_table b ON bm.Book_ID = b.Book_ID
+                  WHERE bm.User_ID = ?
+                  ORDER BY bm.Created_At DESC";
+    $stmt = $con->prepare($bm_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $bookmark_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // 3. Fetch Favorites
+    $fav_query = "SELECT b.*
+                   FROM user_favorites f
+                  JOIN book_table b ON f.Book_ID = b.Book_ID
+                  WHERE f.User_ID = ?
+                  ORDER BY f.Created_At DESC";
+    $stmt = $con->prepare($fav_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $favorite_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+
+    // 4. Fetch History
+    $hist_query = "SELECT b.*, h.Last_Opened
+                    FROM user_reading_history h
+                   JOIN book_table b ON h.Book_ID = b.Book_ID
+                   WHERE h.User_ID = ?
+                   ORDER BY h.Last_Opened DESC";
+    $stmt = $con->prepare($hist_query);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    $history_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+}
+
+function renderBookGrid(array $books) {
+    if (empty($books)) {
+        return '<div class="col-12 py-4 text-center text-muted fs-6">No books in this section yet.</div>';
+    }
+    $html = '';
+    foreach ($books as $b) {
+        $cover = !empty($b['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($b['Cover_Image'])) : '../frontend/assets/icons/library-default.png';
+        $hasFile = (!empty($b['Drive_Link'])) ? '1' : '0';
+        $title = htmlspecialchars($b['Title'] ?? 'Untitled');
+        $author = htmlspecialchars($b['Author'] ?? 'Unknown Author');
+        $desc = htmlspecialchars($b['Description'] ?? '');
+        $isbn = htmlspecialchars($b['ISBN'] ?? 'N/A');
+        $genre = htmlspecialchars($b['Category'] ?? 'General');
+        $pub = htmlspecialchars($b['Publisher'] ?? 'N/A');
+        $book_id = (int)($b['Book_ID'] ?? 0);
+        $html .= '
+        <div class="col">
+            <a href="#" class="book-trigger d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
+                data-id="' . $book_id . '"
+                data-title="' . $title . '"
+                data-author="' . $author . '"
+                data-desc="' . $desc . '"
+                data-isbn="' . $isbn . '"
+                data-genre="' . $genre . '"
+                data-publisher="' . $pub . '"
+                data-allowed="1"
+                data-hasfile="' . $hasFile . '"
+                data-cover="' . $cover . '">
+                <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . $title . '">
+            </a>
+            <a href="#" class="textArea text-decoration-none book-trigger"
+                data-id="' . $book_id . '"
+                data-title="' . $title . '"
+                data-author="' . $author . '"
+                data-desc="' . $desc . '"
+                data-isbn="' . $isbn . '"
+                data-genre="' . $genre . '"
+                data-publisher="' . $pub . '"
+                data-allowed="1"
+                data-hasfile="' . $hasFile . '"
+                data-cover="' . $cover . '">
+                <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . $title . '</h3>
+                <p class="small mb-3 text-muted text-truncate">' . $author . '</p>
+            </a>
+        </div>';
+    }
+    return $html;
+}
+
+// ============================================================================
+// LIBRARY DATA FETCHING & RENDERING HELPERS
+// ============================================================================
+if ($view === 'library') {
+    $new_arrivals = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 7");
+    $recommendations = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Recommendation%' OR Category LIKE '%Recommend%' ORDER BY Book_ID DESC LIMIT 6");
+    $educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Educational%' ORDER BY Book_ID DESC LIMIT 6");
+    $non_educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Non-Educational%' ORDER BY Book_ID DESC LIMIT 6");
+    $research = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Research%' ORDER BY Book_ID DESC LIMIT 6");
+
+    if ($recommendations->num_rows === 0) {
+        $recommendations = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+    }
+    if ($educational->num_rows === 0) {
+        $educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+    }
+    if ($non_educational->num_rows === 0) {
+        $non_educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+    }
+    if ($research->num_rows === 0) {
+        $research = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6");
+    }
+}
 
 function renderBookCard($row, $ratioClass = '') {
-    $cover = !empty($row['Cover_Image']) ? htmlspecialchars($row['Cover_Image']) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
     $bookId  = htmlspecialchars($row['Book_ID'] ?? '');
     
     return '
     <div class="col">
-        <a href="read_book.php?id=' . $bookId . '"
+        <a href="#"
            class="book-trigger d-block ratio ' . $ratioClass . ' rounded-2 overflow-hidden shadow position-relative text-decoration-none"
            data-id="' . $bookId . '"
            data-title="' . htmlspecialchars($row['Title'] ?? '') . '"
@@ -28,25 +181,22 @@ function renderBookCard($row, $ratioClass = '') {
            data-cover="' . $cover . '">
             <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . htmlspecialchars($row['Title'] ?? '') . '">
         </a>
-        <a href="read_book.php?id=' . $bookId . '" class="textArea text-decoration-none">
-            <h3 class="h6 fw-bold mt-3 mb-0">' . htmlspecialchars($row['Title'] ?? 'Untitled') . '</h3>
-            <p class="small mb-3 text-muted">' . htmlspecialchars($row['Author'] ?? 'Unknown Author') . '</p>
+        <a href="#" class="textArea text-decoration-none book-trigger"
+           data-id="' . $bookId . '"
+           data-title="' . $bookId . '"
+           data-author="' . htmlspecialchars($row['Author'] ?? '') . '"
+           data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
+           data-isbn="' . htmlspecialchars($row['ISBN'] ?? '') . '"
+           data-genre="' . htmlspecialchars($row['Category'] ?? '') . '"
+           data-publisher="' . htmlspecialchars($row['Publisher'] ?? '') . '"
+           data-allowed="1"
+           data-hasfile="' . $hasFile . '"
+           data-cover="' . $cover . '">
+            <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . htmlspecialchars($row['Title'] ?? 'Untitled') . '</h3>
+            <p class="small mb-3 text-muted text-truncate">' . htmlspecialchars($row['Author'] ?? 'Unknown Author') . '</p>
         </a>
     </div>';
 }
-
-// Fetch categories from Database
-$new_arrivals = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 7");
-$recommendations = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Recommendation%' OR Category LIKE '%Recommend%' ORDER BY Book_ID DESC LIMIT 6");
-$educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Educational%' ORDER BY Book_ID DESC LIMIT 6");
-$non_educational = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Non-Educational%' ORDER BY Book_ID DESC LIMIT 6");
-$research = $con->query("SELECT * FROM book_table WHERE Category LIKE '%Research%' ORDER BY Book_ID DESC LIMIT 6");
-
-// Fallback: If category filters return nothing, get recent books
-if ($recommendations->num_rows === 0) { $recommendations = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6"); }
-if ($educational->num_rows === 0) { $educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6"); }
-if ($non_educational->num_rows === 0) { $non_educational = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6"); }
-if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_table ORDER BY Book_ID DESC LIMIT 6"); }
 ?>
 
 <!DOCTYPE html>
@@ -54,14 +204,13 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bibliodesk - Digital Library</title>
+    <title>BiblioDesk - <?php echo ($view === 'mybooks') ? 'My Books' : 'Digital Library'; ?></title>
     <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../frontend/css/user_librarydb.css">
+    <link rel="stylesheet" href="../frontend/css/<?php echo ($view === 'mybooks') ? 'mybooks.css' : 'user_librarydb.css'; ?>">
 </head>
 <body>
-
     <!-- SIDEBAR -->
     <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel" data-bs-scroll="true">
         <div class="offcanvas-header">
@@ -83,16 +232,16 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="mybooks.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light <?php echo ($view === 'mybooks') ? 'active' : ''; ?>" href="user_librarydb.php?view=mybooks" <?php echo ($view === 'mybooks') ? 'aria-current="page"' : ''; ?>>
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center <?php echo ($view === 'mybooks') ? 'bg-light' : ''; ?>">
                                 <img src="../frontend/assets/icons/mybooks-default.png" alt="my books page" width="28">
                             </span>
                             <span class="sideText">My Books</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php" aria-current="page">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light <?php echo ($view === 'library') ? 'active' : ''; ?>" href="user_librarydb.php?view=library" <?php echo ($view === 'library') ? 'aria-current="page"' : ''; ?>>
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center <?php echo ($view === 'library') ? 'bg-light' : ''; ?>">
                                 <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
                             </span>
                             <span class="sideText">Library</span>
@@ -125,104 +274,181 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
         </div>
     </header>
 
-    <main>
-        <!-- LIBRARY HEADER -->
-        <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-5 mb-4">
-            <div class="d-flex align-items-center gap-3">
-                <h1 class="fw-bold mb-0 p-1">Digital Library</h1>
+    <main class="container-fluid px-3 px-md-5 py-4">
+
+        <?php if ($view === 'mybooks'): ?>
+            <!-- ============================================================================ -->
+            <!-- VIEW: MY BOOKS                                                               -->
+            <!-- ============================================================================ -->
+            <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="fw-bold mb-0 p-1">My Books</h1>
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-3">
-                <form class="searchForm" role="search" onsubmit="return false;">
-                    <div class="searchBox">
-                        <i class="bi bi-search"></i>
-                        <input type="search" class="form-control" placeholder="Search" aria-label="Search library">
-                    </div>
-                </form>
-            </div>
-        </div>
-    <!-- NEW ARRIVALS -->
-    <section class="new-arrivals-section text-center py-5">
-        <h2 class="fw-bold mb-4 display-4">NEW ARRIVALS</h2>
-        <div class="newarrivals-wrapper mx-auto">
-            <div class="newarrivals-card"></div>
-            <div class="newarrivals-container" id="newarrivalsContainer">
-                <?php if ($new_arrivals && $new_arrivals->num_rows > 0): ?>
-                    <?php while ($row = $new_arrivals->fetch_assoc()): ?>
-                        <?php 
-                            $cover = !empty($row['Cover_Image']) ? htmlspecialchars($row['Cover_Image']) : '../frontend/assets/temporary/temporaryimage_1.jpg';
-                            $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
-                        ?>
-                        <div class="newarrivals-item" 
-                            data-id="<?php echo htmlspecialchars($row['Book_ID'] ?? ''); ?>"
-                            data-title="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>"
-                            data-author="<?php echo htmlspecialchars($row['Author'] ?? ''); ?>"
-                            data-desc="<?php echo htmlspecialchars($row['Description'] ?? ''); ?>"
-                            data-isbn="<?php echo htmlspecialchars($row['ISBN'] ?? ''); ?>"
-                            data-genre="<?php echo htmlspecialchars($row['Category'] ?? ''); ?>"
-                            data-publisher="<?php echo htmlspecialchars($row['Publisher'] ?? ''); ?>"
-                            data-allowed="1"
-                            data-hasfile="<?php echo !empty($drive) ? '1' : '0'; ?>"
-                            data-cover="<?php echo $cover; ?>">
-                            <img src="<?php echo $cover; ?>" alt="<?php echo htmlspecialchars($row['Title']); ?>">
+
+            <!-- Continue Reading -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Continue Reading</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php echo renderBookGrid($continue_reading_books); ?>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <!-- My Collections Section -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">My Collections</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center" id="collectionsRow">
+                    <div class="col">
+                        <a href="#" class="collection-card ratio shadow position-relative d-block rounded-2 overflow-hidden" style="background-color: #5bc0de;"></a>
+                        <div class="textArea">
+                            <h3 class="h6 fw-bold mt-3 mb-0">School Related</h3>
                         </div>
-                    <?php endwhile; ?>
-                <?php endif; ?>
-            </div>
-        </div>
-    </section>
-
-        <!-- RECOMMENDATIONS -->
-        <section class="recommendations-section">
-            <div class="recommendations-wrapper mx-auto">
-                <div class="d-flex justify-content-between align-items-baseline mt-3 mb-3">
-                    <h2 class="h3 fw-semibold mb-0 mt-3">Recommendations</h2>
+                    </div>
+                    <div class="col">
+                        <a href="#" class="collection-card ratio rounded-2 overflow-hidden shadow position-relative d-block text-white" style="background-color: #ce861a; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
+                            <div class="d-flex flex-column justify-content-center align-items-center">
+                                <i class="bi bi-plus-circle fs-1 mb-1"></i>
+                            </div>
+                        </a>
+                        <div class="textArea">
+                            <h3 class="h6 fw-bold mt-3 mb-0">+ Add Collections</h3>
+                        </div>
+                    </div>
                 </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 justify-content-center text-center">
-                    <?php while ($row = $recommendations->fetch_assoc()): ?>
-                        <?php echo renderBookCard($row, 'recCover'); ?>
-                    <?php endwhile; ?>
+            </section>
+            <hr class="my-5">
+
+            <!-- Bookmarks -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Bookmarks</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php echo renderBookGrid($bookmark_books); ?>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <!-- Favorites -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Favorites</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php echo renderBookGrid($favorite_books); ?>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <!-- History -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">History</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php echo renderBookGrid($history_books); ?>
+                </div>
+            </section>
+
+        <?php else: ?>
+            <!-- ============================================================================ -->
+            <!-- VIEW: DIGITAL LIBRARY                                                        -->
+            <!-- ============================================================================ -->
+            <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 mb-4">
+                <div class="d-flex align-items-center gap-3">
+                    <h1 class="fw-bold mb-0 p-1">Digital Library</h1>
                 </div>
             </div>
-        </section>
-        <hr>
 
-        <!-- EDUCATIONAL BOOKS -->
-        <section>
-            <div class="d-flex justify-content-between align-items-baseline mt-5 mb-3">
-                <h2 class="h3 fw-semibold mb-0">Educational Books</h2>
-            </div>
-            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                <?php while ($row = $educational->fetch_assoc()): ?>
-                    <?php echo renderBookCard($row, 'eduCover'); ?>
-                <?php endwhile; ?>
-            </div>
-        </section>
-        <hr>
+            <!-- NEW ARRIVALS -->
+            <section class="new-arrivals-section text-center py-4">
+                <h2 class="fw-bold mb-4 display-5">NEW ARRIVALS</h2>
+                <div class="newarrivals-wrapper mx-auto">
+                    <div class="newarrivals-container" id="newarrivalsContainer">
+                        <?php if ($new_arrivals && $new_arrivals->num_rows > 0): ?>
+                            <?php while ($row = $new_arrivals->fetch_assoc()): ?>
+                                <?php
+                                    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getDriveDirectImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+                                    $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
+                                ?>
+                                <div class="newarrivals-item book-trigger"
+                                     data-id="<?php echo htmlspecialchars($row['Book_ID'] ?? ''); ?>"
+                                     data-title="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>"
+                                     data-author="<?php echo htmlspecialchars($row['Author'] ?? ''); ?>"
+                                     data-desc="<?php echo htmlspecialchars($row['Description'] ?? ''); ?>"
+                                     data-isbn="<?php echo htmlspecialchars($row['ISBN'] ?? ''); ?>"
+                                     data-genre="<?php echo htmlspecialchars($row['Category'] ?? ''); ?>"
+                                     data-publisher="<?php echo htmlspecialchars($row['Publisher'] ?? ''); ?>"
+                                     data-allowed="1"
+                                     data-hasfile="<?php echo !empty($drive) ? '1' : '0'; ?>"
+                                     data-cover="<?php echo $cover; ?>">
+                                    <img src="<?php echo $cover; ?>" alt="<?php echo htmlspecialchars($row['Title']); ?>">
+                                </div>
+                            <?php endwhile; ?>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            </section>
 
-        <!-- NON-EDUCATIONAL BOOKS -->
-        <section>
-            <div class="d-flex justify-content-between align-items-baseline mt-5 mb-3">
-                <h2 class="h3 fw-semibold mb-0">Non-Educational Books</h2>
-            </div>
-            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                <?php while ($row = $non_educational->fetch_assoc()): ?>
-                    <?php echo renderBookCard($row, 'noneduCover'); ?>
-                <?php endwhile; ?>
-            </div>
-        </section>
-        <hr>
+            <!-- RECOMMENDATIONS -->
+            <section class="recommendations-section">
+                <div class="recommendations-wrapper mx-auto">
+                    <div class="d-flex justify-content-between align-items-baseline mt-3 mb-3">
+                        <h2 class="h3 fw-semibold mb-0 mt-3">Recommendations</h2>
+                    </div>
+                    <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                        <?php while ($row = $recommendations->fetch_assoc()): ?>
+                            <?php echo renderBookCard($row, 'recCover'); ?>
+                        <?php endwhile; ?>
+                    </div>
+                </div>
+            </section>
+            <hr class="my-5">
 
-        <!-- RESEARCH ARTICLES -->
-        <section>
-            <div class="d-flex justify-content-between align-items-baseline mt-5 mb-3">
-                <h2 class="h3 fw-semibold mb-0">Research Articles</h2>
-            </div>
-            <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                <?php while ($row = $research->fetch_assoc()): ?>
-                    <?php echo renderBookCard($row, 'rsCover'); ?>
-                <?php endwhile; ?>
-            </div>
-        </section>
+            <!-- EDUCATIONAL BOOKS -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Educational Books</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php while ($row = $educational->fetch_assoc()): ?>
+                        <?php echo renderBookCard($row, 'eduCover'); ?>
+                    <?php endwhile; ?>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <!-- NON-EDUCATIONAL BOOKS -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Non-Educational Books</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php while ($row = $non_educational->fetch_assoc()): ?>
+                        <?php echo renderBookCard($row, 'noneduCover'); ?>
+                    <?php endwhile; ?>
+                </div>
+            </section>
+            <hr class="my-5">
+
+            <!-- RESEARCH ARTICLES -->
+            <section>
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 class="h3 fw-semibold mb-0">Research Articles</h2>
+                </div>
+                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+                    <?php while ($row = $research->fetch_assoc()): ?>
+                        <?php echo renderBookCard($row, 'rsCover'); ?>
+                    <?php endwhile; ?>
+                </div>
+            </section>
+        <?php endif; ?>
+
     </main>
 
     <!-- BOOK DETAILS MODAL -->
@@ -235,7 +461,7 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
                 <div class="modal-body">
                     <div class="row align-items-center">
                         <div class="col-md-4 text-center mb-3 mb-md-0">
-                            <img id="modalBookImg" src="" alt="Cover" class="bookModal-cover img-fluid">
+                            <img id="modalBookImg" src="" alt="Cover" class="bookModal-cover img-fluid rounded">
                             <p class="Bookisbn mt-3" id="modalBookIsbn">ISBN: N/A</p>
                         </div>
                         <div class="col-md-8">
@@ -248,10 +474,16 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
                                 Publisher: <span id="modalBookPublisherName">Publisher Name</span>
                             </p>
                             <input type="hidden" id="modalBookId" value="">
-                            <div class="bookModal-btn-container">
+                            
+                            <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-4">
                                 <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">Read Now</a>
                                 <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none">Add To Collections</a>
-                                <a id="modalBookBookmark" href="#" class="bookModal-btn-bookmark d-none"><i class="bi bi-bookmark"></i></a>
+                                <button type="button" id="modalBookBookmark" class="btn border-0 p-2 d-none" aria-label="Bookmark">
+                                    <i class="bi bi-bookmark fs-4"></i>
+                                </button>
+                                <button type="button" id="modalBookFavorite" class="btn border-0 p-2 d-none" aria-label="Favorite">
+                                    <i class="bi bi-heart fs-4"></i>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -259,8 +491,59 @@ if ($research->num_rows === 0) { $research = $con->query("SELECT * FROM book_tab
             </div>
         </div>
     </div>
-    
+
+    <?php if ($view === 'mybooks'): ?>
+    <!-- COLLECTION MODAL -->
+    <div class="modal fade collectionModal" id="createCollectionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Create New Collection</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="createCollectionForm" novalidate>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="collectionNameInput" class="form-label fw-semibold">Collection Name</label>
+                            <input type="text" class="form-control" id="collectionNameInput" placeholder="School Related" maxlength="13" autocomplete="off" required>
+                            <div class="invalid-feedback">Enter a collection name.</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-0">
+                        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="saveCollectionBtn" class="btn btn-success rounded-pill px-4">Create Collection</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <?php endif; ?>
+
+    <!-- FOOTER -->
+    <footer class="text-light mt-5 py-5">
+        <div class="container">
+            <div class="row justify-content-around gy-4">
+                <div class="col-md-5">
+                    <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk logo" height="56" class="footerLogo">
+                    <ul class="list-unstyled lh-lg mt-3 ps-4">
+                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=terms">Terms of Use</a></li>
+                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=privacy">Privacy Policy</a></li>
+                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">More About BiblioDesk</a></li>
+                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">BiblioDesk Developers</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-5">
+                    <h2 class="h4 text-uppercase">Contact Us</h2>
+                    <p class="lh-lg">bibliodesk@gmail.com<br>bibliodesk.help@gmail.com</p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="../frontend/js/user_librarydb.js"></script>
+    <script>
+        window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
+    </script>
+    <script src="../frontend/js/mybooks.js"></script>
 </body>
 </html>

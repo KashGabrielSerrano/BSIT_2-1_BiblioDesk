@@ -2,6 +2,7 @@
 session_start();
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
+
 require_once __DIR__ . "/connection/config.php";
 require_once __DIR__ . "/helpers/SystemOperators.php";
 
@@ -29,6 +30,24 @@ if (!$book || empty($book['Drive_Link'])) {
     exit("Book or digital file not found in system catalog.");
 }
 
+// Record Reading History (BEHAVIOR #1)
+$hist_stmt = $con->prepare("INSERT INTO user_reading_history (User_ID, Book_ID, Last_Opened) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE Last_Opened = NOW()");
+$hist_stmt->bind_param("ii", $user_id, $book_id);
+$hist_stmt->execute();
+$hist_stmt->close();
+
+// Fetch saved reading page progress if available (BEHAVIOR #2)
+$prog_stmt = $con->prepare("SELECT Current_Page, Is_Finished FROM user_reading_progress WHERE User_ID = ? AND Book_ID = ?");
+$prog_stmt->bind_param("ii", $user_id, $book_id);
+$prog_stmt->execute();
+$prog_res = $prog_stmt->get_result()->fetch_assoc();
+$prog_stmt->close();
+
+$initial_page = 1;
+if ($prog_res && $prog_res['Is_Finished'] == 0 && $prog_res['Current_Page'] > 1) {
+    $initial_page = (int)$prog_res['Current_Page'];
+}
+
 // Generate single-use streaming token valid for 60 seconds
 $token = bin2hex(random_bytes(32));
 if (!isset($_SESSION['image_tokens'])) {
@@ -40,7 +59,9 @@ $_SESSION['image_tokens'][$token] = [
     'expires_at' => time() + 60
 ];
 
-// Persist the token and release the session lock so stream_pdf.php is not blocked
+// Session token for API & CSRF
+$csrf_token = $_SESSION['csrf_token'] ?? '';
+
 session_write_close();
 ?>
 <!DOCTYPE html>
@@ -159,13 +180,18 @@ session_write_close();
 
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 const authToken = <?php echo json_encode($token); ?>;
 const userEmail = <?php echo json_encode($user_email); ?>;
+const bookId = <?php echo json_encode($book_id); ?>;
+const initialSavedPage = <?php echo json_encode($initial_page); ?>;
+const csrfToken = <?php echo json_encode($csrf_token); ?>;
 
 let pdfDoc = null;
-let currentPage = 1;
+let currentPage = initialSavedPage;
 let isRendering = false;
-let pendingPage = null;   // page requested while another render was still running
+let pendingPage = null;
+let progressSaveTimeout = null;
 
 const canvas = document.getElementById('page-canvas');
 const ctx = canvas.getContext('2d');
@@ -185,14 +211,30 @@ function showLoadError(message) {
     loadingOverlay.replaceChildren();
     const p = document.createElement('p');
     p.style.color = '#e70808';
-    p.textContent = message;       // textContent - never inject server text as HTML
+    p.textContent = message;
     loadingOverlay.appendChild(p);
+}
+
+function saveReadingProgress(page, total) {
+    if (!pdfDoc) return;
+    clearTimeout(progressSaveTimeout);
+    progressSaveTimeout = setTimeout(() => {
+        const formData = new FormData();
+        formData.append('action', 'save_progress');
+        formData.append('book_id', bookId);
+        formData.append('current_page', page);
+        formData.append('total_pages', total);
+        formData.append('csrf_token', csrfToken);
+
+        fetch('mybooks_api.php', {
+            method: 'POST',
+            body: formData
+        }).catch(err => console.error("Failed to save progress:", err));
+    }, 1000); // 1-second debounce
 }
 
 async function loadDocument() {
     try {
-        // POST via fetch(): the browser never "navigates" to the PDF, so it can't
-        // become a download, and download managers (IDM) cannot replay a POST body.
         const res = await fetch('stream_pdf.php', {
             method: 'POST',
             credentials: 'same-origin',
@@ -203,27 +245,23 @@ async function loadDocument() {
             },
             body: new URLSearchParams({ token: authToken })
         });
-
         if (!res.ok) {
             throw new Error((await res.text()) || ('HTTP ' + res.status));
         }
-
-        // Hand the raw bytes straight to PDF.js - no second request, no URL to grab.
         const bin = atob((await res.text()).trim());
         const data = new Uint8Array(bin.length);
         for (let i = 0; i < bin.length; i++) {
             data[i] = bin.charCodeAt(i);
         }
         pdfDoc = await pdfjsLib.getDocument({ data: data }).promise;
-
         document.getElementById('total-pages').textContent = pdfDoc.numPages;
         pageInput.max = pdfDoc.numPages;
 
-        await renderPage(currentPage);
+        if (currentPage > pdfDoc.numPages) currentPage = 1;
 
+        await renderPage(currentPage);
         loadingOverlay.style.display = 'none';
         canvas.style.display = 'block';
-
         prevBtn.disabled = false;
         nextBtn.disabled = false;
         pageInput.disabled = false;
@@ -235,7 +273,7 @@ async function loadDocument() {
 
 async function renderPage(pageNum) {
     if (!pdfDoc) return;
-    if (isRendering) {            // don't drop the click - remember it and render when free
+    if (isRendering) {
         pendingPage = pageNum;
         return;
     }
@@ -245,17 +283,15 @@ async function renderPage(pageNum) {
         const viewport = page.getViewport({ scale: 1.5 });
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-
         await page.render({ canvasContext: ctx, viewport: viewport }).promise;
-
         if (userEmail) {
             ctx.font = '18px Arial';
             ctx.fillStyle = 'rgba(150, 150, 150, 0.35)';
             ctx.fillText(`Licensed to: ${userEmail}`, 20, canvas.height - 20);
         }
-
         currentPage = pageNum;
         pageInput.value = pageNum;
+        saveReadingProgress(pageNum, pdfDoc.numPages);
     } catch (err) {
         console.error("Render error:", err);
     } finally {
@@ -294,6 +330,7 @@ pageInput.addEventListener('keydown', (e) => {
         pageInput.blur();
     }
 });
+
 pageInput.addEventListener('change', handlePageInputChange);
 
 loadDocument();

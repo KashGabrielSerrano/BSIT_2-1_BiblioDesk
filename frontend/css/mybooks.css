@@ -80,7 +80,11 @@ main {
   color: var(--fcolor-main);
 }
 
-/* -- Book modal -- */
+/* ---------- Book modal ---------- */
+.bookModal .modal-dialog {
+  max-width: 800px;
+}
+
 .bookModal .modal-content {
   background-color: var(--main-bg-color);
   border: 0;
@@ -98,9 +102,12 @@ main {
 }
 
 .bookModal-cover {
-  max-height: 320px;
-  border-radius: 6px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 220px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .bookModal-author {
@@ -109,7 +116,16 @@ main {
   margin-bottom: 12px;
 }
 
-.bookModal-desc,
+.bookModal-desc {
+  color: var(--fcolor-main);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-height: 140px;
+  overflow-y: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
 .bookModal-publisher {
   color: var(--fcolor-main);
   font-size: 0.95rem;
