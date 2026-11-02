@@ -23,7 +23,7 @@
                 <nav aria-label="Main">
                     <ul class="nav flex-column gap-3 pt-4">
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="userdb.php" aria-current="page">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="userdb_overview.php" aria-current="page">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
                                     <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
                                 </span>
@@ -44,6 +44,22 @@
                                     <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
                                 </span>
                                 <span class="sideText">Library</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="contactsupport.php" aria-current="page">
+                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img src="../frontend/assets/icons/contact-default.png" alt="contact support page" width="28">
+                                </span>
+                                <span class="sideText">Contact Support</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="helpdesk.php">
+                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img src="../frontend/assets/icons/help-default.png" alt="helpdesk page" width="28">
+                                </span>
+                                <span class="sideText">Helpdesk</span>
                             </a>
                         </li>
                     </ul>
