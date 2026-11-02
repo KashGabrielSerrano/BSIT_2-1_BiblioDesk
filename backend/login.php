@@ -46,7 +46,7 @@ if (isset($_SESSION['user_id'])) {
     if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
         header("Location: admindb.php");
     } else {
-        header("Location: studentdb.php");
+        header("Location: userdb.php");
     }
     exit();
 }
