@@ -475,9 +475,9 @@
                         class="footerLogo">
                     <ul class="list-unstyled lh-lg mt-3 ps-4">
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
-                                href="terms.php">Terms of Use</a></li>
+                                href="terms_privacy.php?view=terms">Terms of Use</a></li>
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
-                                href="privacy.php">Privacy Policy</a></li>
+                                href="terms_privacy.php?view=privacy">Privacy Policy</a></li>
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
                                 href="#">More About BiblioDesk</a></li>
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
