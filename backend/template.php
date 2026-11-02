@@ -146,6 +146,15 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="Admin_librarian_help.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/help-default.png" alt="help center page" width="28">
+                            </span>
+                            <span class="sideText">Help Center</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="AdminAccManagedb.php">
                             <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                 <img src="../frontend/assets/icons/help-default.png" alt="accounts management page" width="28">
@@ -215,6 +224,15 @@
                                 <img src="../frontend/assets/icons/lib-default.png" alt="library management page" width="28">
                             </span>
                             <span class="sideText">Library Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="Admin_librarian_help.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/help-default.png" alt="help center page" width="28">
+                            </span>
+                            <span class="sideText">Help Center</span>
                         </a>
                     </li>
                     <li class="nav-item">
