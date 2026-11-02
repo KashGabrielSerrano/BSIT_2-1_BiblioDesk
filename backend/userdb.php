@@ -39,7 +39,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="librarydb.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                     <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
                                 </span>

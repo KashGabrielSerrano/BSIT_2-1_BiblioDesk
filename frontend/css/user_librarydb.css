@@ -81,6 +81,10 @@ main {
 }
 
 /* ---------- Book modal ---------- */
+.bookModal .modal-dialog {
+  max-width: 800px;
+}
+
 .bookModal .modal-content {
   background-color: var(--main-bg-color);
   border: 0;
@@ -98,18 +102,31 @@ main {
 }
 
 .bookModal-cover {
-  max-height: 320px;
-  border-radius: 6px;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.3);
+  width: 100%;
+  max-width: 220px;
+  height: 320px;
+  object-fit: cover;
+  border-radius: 0.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 .bookModal-author {
   color: var(--cc-qs-neutral);
   font-weight: 600;
-  margin-bottom: 12px;;
+  margin-bottom: 12px;
 }
 
-.bookModal-desc, .bookModal-publisher{
+.bookModal-desc {
+  color: var(--fcolor-main);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  max-height: 140px;
+  overflow-y: auto;
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.bookModal-publisher {
   color: var(--fcolor-main);
   font-size: 0.95rem;
   line-height: 1.6;
@@ -281,33 +298,32 @@ hr {
 }
 
 /* --- New Arrivals Section --- */
-.newarrivals-item {
-  touch-action: pan-y; 
-}
-
 .new-arrivals-section {
+  position: relative;
   background-color: var(--main-bg-color);
+  width: 100%;
+  padding: 40px 0;
 }
 
 .newarrivals-wrapper {
   position: relative;
-  max-width: auto;
+  width: 100%;
+  max-width: 1100px;
   margin: 0 auto;
-  padding: 10px 0;
+  padding: 20px 0;
 }
 
 .newarrivals-card {
   position: absolute;
-  bottom: 0;
-  left: 5%;
-  right: 5%;
-  max-width: auto;
-  height: 65%;
-  margin: 0 auto;
+  bottom: 10px;
+  left: 3%;
+  right: 3%;
+  height: 160px;
   border-radius: 20px;
   z-index: 0;
   background: linear-gradient(180deg, #f5ba72 0%, var(--cc-rec) 50%);
-  opacity: 0.5;
+  opacity: 0.6;
+  pointer-events: none;
 }
 
 .newarrivals-container {
@@ -316,20 +332,17 @@ hr {
   justify-content: center;
   align-items: center;
   z-index: 1;
-  min-height: 300px;
-  overflow: hidden;
-  margin-bottom: 20px;
+  min-height: 270px;
+  width: 100%;
 }
 
 .newarrivals-item {
   position: relative;
   width: 170px;
   height: 240px;
-  transition:
-    transform 0.4s cubic-bezier(0.25, 1, 0.5, 1),
-    opacity 0.4s ease;
   margin: 0 -22px;
   cursor: pointer;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.4s ease;
   will-change: transform, opacity;
 }
 
@@ -341,8 +354,12 @@ hr {
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
 }
 
-.newarrivals-controls {
-  display: none !important;
+.newarrivals-item:hover {
+  z-index: 10 !important;
+}
+
+.newarrivals-item:hover img {
+  transform: translateY(-8px);
 }
 
 /*--Recommendations--*/

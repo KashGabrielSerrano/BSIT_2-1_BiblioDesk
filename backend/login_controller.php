@@ -156,7 +156,7 @@ if ($action === 'login') {
     $clear_stmt->execute();
     $clear_stmt->close();
 
-    $redirect_url = ($user['Role'] === 'Librarian' || $user['Role'] === 'Admin') ? 'admindb.php' : 'studentdb.php';
+    $redirect_url = ($user['Role'] === 'Librarian' || $user['Role'] === 'Admin') ? 'admindb.php' : 'userdb.php';
     sendResponse(true, 'Login successful!', ['redirect' => $redirect_url]);
 }
 

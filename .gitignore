@@ -1,3 +1,4 @@
 backend/connection/config.php
 backend/helpers/SystemOperators.php
 admin_registration.php
+backend/supabase_upload_test.php
