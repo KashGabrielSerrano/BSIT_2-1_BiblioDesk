@@ -1,48 +1,48 @@
 <?php
+session_start();
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
 require_once __DIR__ . "/connection/config.php";
 require_once __DIR__ . "/helpers/SystemOperators.php";
 
-$con = connection();$so  = new SystemOperators();
+$con = connection();
+$so  = new SystemOperators();
 
 if (!isset($_SESSION['user_id'])) {
     header("Location: login.php");
     exit();
 }
 
-$book_id   = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$user_id   =$_SESSION['user_id'];
-$user_role =$_SESSION['role'] ?? 'Student';
+$book_id    = isset($_GET['id']) ? intval($_GET['id']) : 0;
+$user_id    = $_SESSION['user_id'];
+$user_role  = $_SESSION['role'] ?? 'Student';
+$user_email = $_SESSION['email'] ?? '';
 
-$stmt =$con->prepare("SELECT Title FROM book_table WHERE Book_ID = ?");
+// Fetch book details
+$stmt = $con->prepare("SELECT Title, Drive_Link FROM book_table WHERE Book_ID = ?");
 $stmt->bind_param("i", $book_id);
-$stmt->execute();$book = $stmt->get_result()->fetch_assoc();$stmt->close();
+$stmt->execute();
+$book = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
-if (!$book) {
-    exit("Book not found in system catalog.");
+if (!$book || empty($book['Drive_Link'])) {
+    exit("Book or digital file not found in system catalog.");
 }
 
-if ($user_role !== 'Admin') {
-    $auth_stmt =$con->prepare("SELECT Reservation_ID FROM reservation_table WHERE User_ID = ? AND Book_ID = ? AND Request_approval = 'Approved' UNION 
-                                SELECT Transaction_ID FROM transaction_table WHERE User_ID = ? AND Book_ID = ? AND Return_Date IS NULL
-                            ");
-    $auth_stmt->bind_param("iiii", $user_id,$book_id, $user_id,$book_id);
-    $auth_stmt->execute();$has_access = ($auth_stmt->get_result()->num_rows > 0);$auth_stmt->close();
-
-    if (!$has_access) {
-        header("Location: librarydb.php");
-        exit();
-    }
-}
+// Generate single-use streaming token valid for 60 seconds
 $token = bin2hex(random_bytes(32));
-if (!isset($_SESSION['image_tokens'])) {$_SESSION['image_tokens'] = [];
+if (!isset($_SESSION['image_tokens'])) {
+    $_SESSION['image_tokens'] = [];
 }
 $_SESSION['image_tokens'][$token] = [
     'user_id'    => $user_id,
     'book_id'    => $book_id,
-    'expires_at' => time() + 10
+    'expires_at' => time() + 60
 ];
-?>
 
+// Persist the token and release the session lock so stream_pdf.php is not blocked
+session_write_close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -133,19 +133,13 @@ $_SESSION['image_tokens'][$token] = [
             color: #ccc;
             font-size: 14px;
         }
-
         @media print {
-            body {
-            display: none !important;
+            body { display: none !important; }
+            #viewer-container, #page-canvas { display: none !important; }
         }
-        #viewer-container, #page-canvas {
-        display: none !important;
-        }
-}
     </style>
 </head>
 <body>
-
 <div id="viewer-toolbar">
     <button id="prev-btn" disabled>Previous</button>
     <span>Page: 
@@ -164,15 +158,14 @@ $_SESSION['image_tokens'][$token] = [
 </div>
 
 <script>
-
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-
 const authToken = <?php echo json_encode($token); ?>;
-const userEmail = <?php echo json_encode($_SESSION['email'] ?? ''); ?>;
+const userEmail = <?php echo json_encode($user_email); ?>;
 
 let pdfDoc = null;
 let currentPage = 1;
 let isRendering = false;
+let pendingPage = null;   // page requested while another render was still running
 
 const canvas = document.getElementById('page-canvas');
 const ctx = canvas.getContext('2d');
@@ -181,17 +174,6 @@ const prevBtn = document.getElementById('prev-btn');
 const nextBtn = document.getElementById('next-btn');
 const pageInput = document.getElementById('page-input');
 
-
-setInterval(() => {
-    const startTime = performance.now();
-    debugger; 
-    const endTime = performance.now();
-    if (endTime - startTime > 100) {
-        document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20%;">Developer Tools Detected. Session Interrupted.</h1>';
-        setTimeout(() => { window.location.href = 'librarydb.php'; }, 1500);
-    }
-}, 1000);
-
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
@@ -199,53 +181,72 @@ document.addEventListener('keydown', e => {
     }
 });
 
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('Screenshots are restricted on BiblioDesk LMS.');
-        alert('Screenshots are restricted on this platform.');
-    }
-});
+function showLoadError(message) {
+    loadingOverlay.replaceChildren();
+    const p = document.createElement('p');
+    p.style.color = '#e70808';
+    p.textContent = message;       // textContent - never inject server text as HTML
+    loadingOverlay.appendChild(p);
+}
 
 async function loadDocument() {
     try {
-        const pdfUrl = `stream_pdf.php?token=${authToken}`;
-        
-        pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+        // POST via fetch(): the browser never "navigates" to the PDF, so it can't
+        // become a download, and download managers (IDM) cannot replay a POST body.
+        const res = await fetch('stream_pdf.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'BiblioDeskReader'
+            },
+            body: new URLSearchParams({ token: authToken })
+        });
+
+        if (!res.ok) {
+            throw new Error((await res.text()) || ('HTTP ' + res.status));
+        }
+
+        // Hand the raw bytes straight to PDF.js - no second request, no URL to grab.
+        const bin = atob((await res.text()).trim());
+        const data = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+            data[i] = bin.charCodeAt(i);
+        }
+        pdfDoc = await pdfjsLib.getDocument({ data: data }).promise;
+
         document.getElementById('total-pages').textContent = pdfDoc.numPages;
         pageInput.max = pdfDoc.numPages;
 
-        // Render first page and remove loading overlay
         await renderPage(currentPage);
-        
+
         loadingOverlay.style.display = 'none';
         canvas.style.display = 'block';
-        
+
         prevBtn.disabled = false;
         nextBtn.disabled = false;
         pageInput.disabled = false;
     } catch (err) {
         console.error("Failed to load PDF document stream:", err);
-        loadingOverlay.innerHTML = '<p style="color:#e70808;">Failed to load document stream. Access token may be expired.</p>';
+        showLoadError('Failed to load document stream. Please go back and reopen the book.');
     }
 }
 
 async function renderPage(pageNum) {
-    if (isRendering || !pdfDoc) return;
+    if (!pdfDoc) return;
+    if (isRendering) {            // don't drop the click - remember it and render when free
+        pendingPage = pageNum;
+        return;
+    }
     isRendering = true;
-
     try {
         const page = await pdfDoc.getPage(pageNum);
         const viewport = page.getViewport({ scale: 1.5 });
-
         canvas.height = viewport.height;
         canvas.width = viewport.width;
 
-        const renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-        };
-
-        await page.render(renderContext).promise;
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
 
         if (userEmail) {
             ctx.font = '18px Arial';
@@ -253,40 +254,39 @@ async function renderPage(pageNum) {
             ctx.fillText(`Licensed to: ${userEmail}`, 20, canvas.height - 20);
         }
 
+        currentPage = pageNum;
         pageInput.value = pageNum;
     } catch (err) {
         console.error("Render error:", err);
     } finally {
         isRendering = false;
+        if (pendingPage !== null) {
+            const next = pendingPage;
+            pendingPage = null;
+            renderPage(next);
+        }
     }
 }
 
 prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderPage(currentPage);
-    }
+    const target = pendingPage ?? currentPage;
+    if (target > 1) renderPage(target - 1);
 });
 
 nextBtn.addEventListener('click', () => {
-    if (pdfDoc && currentPage < pdfDoc.numPages) {
-        currentPage++;
-        renderPage(currentPage);
-    }
+    const target = pendingPage ?? currentPage;
+    if (pdfDoc && target < pdfDoc.numPages) renderPage(target + 1);
 });
 
 function handlePageInputChange() {
     if (!pdfDoc) return;
     let targetPage = parseInt(pageInput.value, 10);
-
     if (isNaN(targetPage) || targetPage < 1) {
         targetPage = 1;
     } else if (targetPage > pdfDoc.numPages) {
         targetPage = pdfDoc.numPages;
     }
-
-    currentPage = targetPage;
-    renderPage(currentPage);
+    renderPage(targetPage);
 }
 
 pageInput.addEventListener('keydown', (e) => {
@@ -294,10 +294,9 @@ pageInput.addEventListener('keydown', (e) => {
         pageInput.blur();
     }
 });
-
 pageInput.addEventListener('change', handlePageInputChange);
-loadDocument();
 
+loadDocument();
 </script>
 </body>
 </html>
