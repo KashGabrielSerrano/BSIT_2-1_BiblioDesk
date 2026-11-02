@@ -31,7 +31,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="mybooks.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php?view=mybooks">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                     <img src="../frontend/assets/icons/mybooks-default.png" alt="my books page" width="28">
                                 </span>
@@ -39,7 +39,7 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php?view=library">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                     <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
                                 </span>
@@ -74,7 +74,7 @@
                         <span class="navbar-toggler-icon"></span>
                     </button>
 
-                    <a class="navbar-brand m-0" href="userdb.php">
+                    <a class="navbar-brand m-0" href="userdb_overview.php">
                         <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk" height="26">
                     </a>
                 </div>
@@ -85,7 +85,7 @@
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">4</span>
                     </button>
 
-                    <a href="userdb.php?tab=settings" aria-label="Open Settings">
+                    <a href="userdb_overview.php?tab=settings" aria-label="Open Settings">
                         <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
                     </a>
 
