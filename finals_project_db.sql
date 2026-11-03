@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 02, 2026 at 05:27 AM
+-- Generation Time: Nov 03, 2026 at 04:37 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -85,6 +85,23 @@ CREATE TABLE `login_attempts` (
   `ip_address` varchar(45) NOT NULL,
   `email_attempted` varchar(255) DEFAULT NULL,
   `attempt_time` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `report_table`
+--
+
+CREATE TABLE `report_table` (
+  `Report_ID` int(11) NOT NULL,
+  `Book_ID` int(11) NOT NULL,
+  `User_ID` int(11) NOT NULL,
+  `Issue_Type` varchar(50) NOT NULL,
+  `Description` text DEFAULT NULL,
+  `Status` enum('New','Reviewing','Forwarded','Resolved') NOT NULL DEFAULT 'New',
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Resolved_At` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -233,7 +250,10 @@ CREATE TABLE `user_tokens` (
 --
 ALTER TABLE `book_table`
   ADD PRIMARY KEY (`Book_ID`),
-  ADD UNIQUE KEY `ISBN` (`ISBN`);
+  ADD UNIQUE KEY `ISBN` (`ISBN`),
+  ADD KEY `idx_category` (`Category`),
+  ADD KEY `idx_is_digital` (`Is_digital`),
+  ADD KEY `idx_title` (`Title`);
 
 --
 -- Indexes for table `email_verifications`
@@ -259,6 +279,15 @@ ALTER TABLE `login_attempts`
   ADD PRIMARY KEY (`id`),
   ADD KEY `idx_ip_time` (`ip_address`,`attempt_time`),
   ADD KEY `idx_email_time` (`email_attempted`,`attempt_time`);
+
+--
+-- Indexes for table `report_table`
+--
+ALTER TABLE `report_table`
+  ADD PRIMARY KEY (`Report_ID`),
+  ADD KEY `idx_report_status` (`Status`,`Created_At`),
+  ADD KEY `fk_report_book` (`Book_ID`),
+  ADD KEY `fk_report_user` (`User_ID`);
 
 --
 -- Indexes for table `reservation_table`
@@ -291,21 +320,24 @@ ALTER TABLE `transaction_table`
 --
 ALTER TABLE `user_bookmarks`
   ADD PRIMARY KEY (`User_ID`,`Book_ID`),
-  ADD KEY `fk_bookmarks_book` (`Book_ID`);
+  ADD KEY `fk_bookmarks_book` (`Book_ID`),
+  ADD KEY `idx_user_bookmarks` (`User_ID`,`Created_At`);
 
 --
 -- Indexes for table `user_favorites`
 --
 ALTER TABLE `user_favorites`
   ADD PRIMARY KEY (`User_ID`,`Book_ID`),
-  ADD KEY `fk_favorites_book` (`Book_ID`);
+  ADD KEY `fk_favorites_book` (`Book_ID`),
+  ADD KEY `idx_user_favorites` (`User_ID`,`Created_At`);
 
 --
 -- Indexes for table `user_reading_history`
 --
 ALTER TABLE `user_reading_history`
   ADD PRIMARY KEY (`User_ID`,`Book_ID`),
-  ADD KEY `fk_history_book` (`Book_ID`);
+  ADD KEY `fk_history_book` (`Book_ID`),
+  ADD KEY `idx_user_history` (`User_ID`,`Last_Opened`);
 
 --
 -- Indexes for table `user_reading_progress`
@@ -313,7 +345,8 @@ ALTER TABLE `user_reading_history`
 ALTER TABLE `user_reading_progress`
   ADD PRIMARY KEY (`User_ID`,`Book_ID`),
   ADD KEY `idx_progress_finished` (`User_ID`,`Is_Finished`),
-  ADD KEY `fk_progress_book` (`Book_ID`);
+  ADD KEY `fk_progress_book` (`Book_ID`),
+  ADD KEY `idx_user_progress` (`User_ID`,`Is_Finished`,`Updated_At`);
 
 --
 -- Indexes for table `user_table`
@@ -358,6 +391,12 @@ ALTER TABLE `fine_table`
 --
 ALTER TABLE `login_attempts`
   MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `report_table`
+--
+ALTER TABLE `report_table`
+  MODIFY `Report_ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `reservation_table`
@@ -407,6 +446,13 @@ ALTER TABLE `fine_table`
   ADD CONSTRAINT `fine_table_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `fine_table_ibfk_3` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `fine_table_ibfk_4` FOREIGN KEY (`Collected_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
+
+--
+-- Constraints for table `report_table`
+--
+ALTER TABLE `report_table`
+  ADD CONSTRAINT `fk_report_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
+  ADD CONSTRAINT `fk_report_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `reservation_table`
