@@ -47,28 +47,8 @@ if (empty($_SESSION['csrf_token'])) {
     <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../frontend/css/librarymanagement.css">
-    <link rel="stylesheet" href="../frontend/css/librarianlog.css">
-    <link rel="stylesheet" href="../frontend/css/accountmgmt.css">
-    <style>
-        .topbar { padding-left: 0; }                         
-        #panel-catalog .searchBox {                          
-            border: 0; padding: 0; background: transparent; border-radius: 0; font-size: 1rem; max-width: 380px;
-        }
-        .catalogTable { --bs-table-bg: var(--fcolor-secondary); }
-        .catalogThumb { width: 40px; height: 50px; object-fit: cover; }
-        .subTabs .nav-link {
-            color: var(--fcolor-main); font-weight: 600; border: 2px solid var(--am-border);
-            border-radius: 50px; padding: .4rem 1.1rem;
-        }
-        .subTabs .nav-link.active { background: var(--main-color); color: var(--fcolor-secondary); }
-        .subTabs .tabBadge { width: 24px; height: 24px; font-size: .7rem; }
-        .pill.suspended { background: var(--am-pill-denied); }
-        .acctActions { display: flex; flex-direction: column; align-items: center; gap: .5rem; }
-        .btnReset { background: transparent; cursor: pointer; }
-        .emptyRow td { text-align: center; }
-        .sideAct[data-main-tab] { cursor: pointer; }
-    </style>
+    <!-- Librarian page styles: ONE file. It @imports root.css (colors/sizes) itself. Must load AFTER Bootstrap. -->
+    <link rel="stylesheet" href="../frontend/css/librarian.css">
 </head>
 
 <body>
@@ -280,7 +260,7 @@ if (empty($_SESSION['csrf_token'])) {
                         <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
                             <form class="searchForm flex-grow-1" role="search" onsubmit="return false;"
                                 style="min-width: 200px;">
-                                <div class="searchBox w-100">
+                                <div class="catalogSearchBox w-100">
                                     <i class="bi bi-search"></i>
                                     <input type="search" id="catalogSearch" class="form-control rounded-3 py-2"
                                         placeholder="Search title, author, ISBN, category" aria-label="Search library"
@@ -340,7 +320,7 @@ if (empty($_SESSION['csrf_token'])) {
             </ul>
 
             <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-2">
-                <input type="search" id="accountSearch" class="form-control searchBox flex-grow-1"
+                <input type="search" id="accountSearch" class="form-control accountSearchBox flex-grow-1"
                     placeholder="Search name, email, student no., department" aria-label="Search account"
                     autocomplete="off">
                 <select id="accountStatusFilter" class="form-select w-auto" aria-label="Filter by status">
