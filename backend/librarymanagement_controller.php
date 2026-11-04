@@ -655,8 +655,8 @@ function handle_delete_book(mysqli $con): void {
 
     $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
 
-    // NOTE: FK constraints CASCADE to bookmarks, favorites, reading progress/history,
-    // reservations, transactions and fines for this book.
+    // NOTE: FK constraints CASCADE to bookmarks, favorites, reading progress/history and
+    // reports for this book (no loan / fine / reservation tables exist anymore).
     $stmt = $con->prepare('DELETE FROM book_table WHERE Book_ID = ?');
     $stmt->bind_param('i', $book_id);
     $stmt->execute();

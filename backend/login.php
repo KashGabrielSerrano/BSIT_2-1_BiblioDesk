@@ -44,7 +44,7 @@ $so->checkRememberMe($con);
 // Redirect to dashboard if logged in
 if (isset($_SESSION['user_id'])) {
     if (isset($_SESSION['role']) && ($_SESSION['role'] === 'Librarian' || $_SESSION['role'] === 'Admin')) {
-        header("Location: admindb.php");
+        header("Location: librarymanagement.php");
     } else {
         header("Location: userdb_overview.php");
     }

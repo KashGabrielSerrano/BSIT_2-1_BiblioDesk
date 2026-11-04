@@ -344,7 +344,7 @@
     async function deleteBook(bookId, title) {
         const ok = await confirmAction({
             title: 'Delete this book?',
-            message: `“${title}” will be removed from the catalog. This also removes its bookmarks, reading history, reservations and any loan or fine records. This cannot be undone.`,
+            message: `“${title}” will be removed from the catalog, along with its bookmarks, favorites, reading history and any reports filed about it. Its cover and PDF are also deleted from storage. This cannot be undone.`,
             confirmLabel: 'Delete'
         });
         if (!ok) return;
