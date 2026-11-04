@@ -210,8 +210,12 @@ if (empty($_SESSION['csrf_token'])) {
                                 </div>
                                 <div class="form-group col-md-6 text-white fw-semibold">
                                     <label class="form-label" for="addCategory">Category:</label>
-                                    <input type="text" id="addCategory" name="category" class="form-control"
-                                        maxlength="100" list="categoryOptions" placeholder="Pick or type a category">
+                                    <select id="addCategory" name="category" class="form-select" required>
+                                        <option value="" selected disabled>Select a category</option>
+                                        <option value="Educational">Educational</option>
+                                        <option value="Non-Educational">Non-Educational</option>
+                                        <option value="Research Articles">Research Articles</option>
+                                    </select>
                                 </div>
                                 <div class="form-group col-md-6 text-white fw-semibold">
                                     <label class="form-label" for="addIsDigital">Digital Access:</label>
@@ -488,14 +492,6 @@ if (empty($_SESSION['csrf_token'])) {
     <!-- 6. MODALS & TOAST CONTAINERS                                               -->
     <!-- ========================================================================== -->
 
-    <!-- Category suggestions (user_librarydb.php groups shelves by these keywords) -->
-    <datalist id="categoryOptions">
-        <option value="Recommendations"></option>
-        <option value="Educational"></option>
-        <option value="Non-Educational"></option>
-        <option value="Research Articles"></option>
-    </datalist>
-
     <!-- EDIT BOOK MODAL -->
     <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
@@ -527,8 +523,12 @@ if (empty($_SESSION['csrf_token'])) {
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="editCategory">Category</label>
-                                <input type="text" id="editCategory" name="category" class="form-control" maxlength="100"
-                                    list="categoryOptions">
+                                <select id="editCategory" name="category" class="form-select" required>
+                                    <option value="" disabled>Select a category</option>
+                                    <option value="Educational">Educational</option>
+                                    <option value="Non-Educational">Non-Educational</option>
+                                    <option value="Research Articles">Research Articles</option>
+                                </select>
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-semibold" for="editIsDigital">Digital Access</label>

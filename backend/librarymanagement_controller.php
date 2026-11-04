@@ -19,6 +19,9 @@ const DRIVE_LINK_ALLOWED_HOSTS = ['fqwxstfflwbkmajqdjog.supabase.co'];
 const REPORT_STATUSES  = ['New', 'Reviewing', 'Forwarded', 'Resolved'];
 const ACCOUNT_STATUSES = ['Active', 'Suspended', 'Pending'];
 
+// Must match the book_table.Category ENUM and the dropdowns in librarymanagement.php.
+const BOOK_CATEGORIES  = ['Educational', 'Non-Educational', 'Research Articles'];
+
 // sendResponse() is declared in section 2; top-level functions are hoisted, so it is callable here.
 set_exception_handler(function (Throwable $e): void {
     error_log('librarymanagement_controller bootstrap error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
@@ -355,6 +358,9 @@ function read_book_input(bool $has_pdf_upload = false): array {
     if ($d['title'] === '')       return [$d, 'Title is required.'];
     if ($d['author'] === '')      return [$d, 'Author is required.'];
     if ($d['description'] === '') return [$d, 'Description is required.'];
+    if (!in_array($d['category'], BOOK_CATEGORIES, true)) {
+        return [$d, 'Please choose a category: ' . implode(', ', BOOK_CATEGORIES) . '.'];
+    }
 
     $limits = ['title' => 255, 'author' => 255, 'isbn' => 20, 'publisher' => 150, 'category' => 100, 'cover_image' => 255, 'drive_link' => 255];
     foreach ($limits as $field => $max) {
@@ -389,7 +395,8 @@ function read_book_input(bool $has_pdf_upload = false): array {
     }
 
     // Optional columns: empty string -> NULL (ISBN has a UNIQUE index, so '' would collide).
-    foreach (['isbn', 'publisher', 'category', 'cover_image', 'drive_link'] as $nullable) {
+    // Category is not listed: it is required and already validated against BOOK_CATEGORIES.
+    foreach (['isbn', 'publisher', 'cover_image', 'drive_link'] as $nullable) {
         if ($d[$nullable] === '') {
             $d[$nullable] = null;
         }

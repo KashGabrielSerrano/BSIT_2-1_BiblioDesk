@@ -308,6 +308,9 @@
                 .forEach((name) => {
                     form.elements[name].value = book[name] ?? '';
                 });
+            // A legacy free-text category that is not in the dropdown leaves the select blank:
+            // fall back to the placeholder so the librarian is prompted to pick a valid one.
+            if (form.elements.category.selectedIndex < 0) form.elements.category.value = '';
             syncDigitalRequired(form);
             bootstrap.Modal.getOrCreateInstance($('editBookModal')).show();
         } catch (err) {

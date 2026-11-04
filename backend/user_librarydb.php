@@ -49,6 +49,28 @@ function getCoverImageUrl(?string $url): string {
     return '../' . ltrim($url, '/');
 }
 
+/**
+ * Latest books of ONE category (exact match).
+ * Each shelf has its own query, so a shelf never borrows books from another category, and an older
+ * book is never crowded out of its shelf by newer books of a different category.
+ *
+ * @return array<int, array<string, mixed>>
+ */
+function fetchShelf(mysqli $con, string $category, int $limit = 6): array {
+    $stmt = $con->prepare(
+        "SELECT Book_ID, Title, Author, Description, ISBN, Category, Publisher, Cover_Image, Drive_Link
+           FROM book_table
+          WHERE Category = ?
+          ORDER BY Book_ID DESC
+          LIMIT ?"
+    );
+    $stmt->bind_param("si", $category, $limit);
+    $stmt->execute();
+    $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
+    return $rows;
+}
+
 // ============================================================================
 // MY BOOKS DATA FETCHING & RENDERING HELPERS
 // ============================================================================
@@ -171,34 +193,19 @@ if ($view === 'library') {
 
     $new_arrivals = array_slice($all_books, 0, 7);
 
+    // Recommendations: legacy keyword match, otherwise simply the newest books.
     $recommendations_arr = [];
-    $educational_arr     = [];
-    $non_educational_arr = [];
-    $research_arr        = [];
-
     foreach ($all_books as $book) {
-        $cat = $book['Category'] ?? '';
-
-        if (count($recommendations_arr) < 6 && stripos($cat, 'Recommend') !== false) {
+        if (count($recommendations_arr) < 6 && stripos($book['Category'] ?? '', 'Recommend') !== false) {
             $recommendations_arr[] = $book;
         }
-        if (count($educational_arr) < 6 && stripos($cat, 'Educational') !== false && stripos($cat, 'Non-Educational') === false) {
-            $educational_arr[] = $book;
-        }
-        if (count($non_educational_arr) < 6 && stripos($cat, 'Non-Educational') !== false) {
-            $non_educational_arr[] = $book;
-        }
-        if (count($research_arr) < 6 && stripos($cat, 'Research') !== false) {
-            $research_arr[] = $book;
-        }
     }
+    $recommendations = !empty($recommendations_arr) ? $recommendations_arr : array_slice($all_books, 0, 6);
 
-    $default_fallback = array_slice($all_books, 0, 6);
-
-    $recommendations = !empty($recommendations_arr) ? $recommendations_arr : $default_fallback;
-    $educational     = !empty($educational_arr)     ? $educational_arr     : $default_fallback;
-    $non_educational = !empty($non_educational_arr) ? $non_educational_arr : $default_fallback;
-    $research        = !empty($research_arr)        ? $research_arr        : $default_fallback;
+    // Category shelves: exact match only. An empty shelf stays empty (no fallback to other categories).
+    $educational     = fetchShelf($con, 'Educational');
+    $non_educational = fetchShelf($con, 'Non-Educational');
+    $research        = fetchShelf($con, 'Research Articles');
 }
 
 /**
@@ -246,6 +253,21 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
             <p class="small mb-3 text-muted text-truncate">' . $author . '</p>
         </a>
     </div>';
+}
+
+/**
+ * Render a whole shelf of book cards, or an empty-state message when the category has no books.
+ * @param array<int, array<string, mixed>> $books
+ */
+function renderShelf(array $books, string $ratioClass): string {
+    if (empty($books)) {
+        return '<div class="col-12 py-4 text-center text-muted fs-6">No books in this section yet.</div>';
+    }
+    $html = '';
+    foreach ($books as $row) {
+        $html .= renderBookCard($row, $ratioClass);
+    }
+    return $html;
 }
 ?>
 
@@ -482,9 +504,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
                     <h2 class="h3 fw-semibold mb-0">Educational Books</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php foreach ($educational as $row): ?>
-                        <?php echo renderBookCard($row, 'eduCover'); ?>
-                    <?php endforeach; ?>
+                    <?php echo renderShelf($educational, 'eduCover'); ?>
                 </div>
             </section>
             <hr class="my-5">
@@ -495,9 +515,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
                     <h2 class="h3 fw-semibold mb-0">Non-Educational Books</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php foreach ($non_educational as $row): ?>
-                        <?php echo renderBookCard($row, 'noneduCover'); ?>
-                    <?php endforeach; ?>
+                    <?php echo renderShelf($non_educational, 'noneduCover'); ?>
                 </div>
             </section>
             <hr class="my-5">
@@ -508,9 +526,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
                     <h2 class="h3 fw-semibold mb-0">Research Articles</h2>
                 </div>
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php foreach ($research as $row): ?>
-                        <?php echo renderBookCard($row, 'rsCover'); ?>
-                    <?php endforeach; ?>
+                    <?php echo renderShelf($research, 'rsCover'); ?>
                 </div>
             </section>
         <?php endif; ?>
