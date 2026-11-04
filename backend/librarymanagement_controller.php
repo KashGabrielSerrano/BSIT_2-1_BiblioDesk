@@ -483,11 +483,22 @@ try {
     /* ---- Role authorization ----
      * DEV BYPASS: role lock is disabled so the page can be tested directly in the browser.
      * Re-enable before deployment!!!  Roles in the session are 'Student' | 'Librarian' | 'Admin'.
-     *
-     * if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Librarian', 'Admin'], true)) {
-     *     sendResponse(false, 'Librarian access required. Please log in.', [], 403);
-     * }
      */
+    if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Librarian', 'Admin'], true)) {
+          sendResponse(false, 'Librarian access required. Please log in.', [], 403);
+    }
+
+    $auth_user_id = (int)$_SESSION['user_id'];
+    $auth_stmt = $con->prepare("SELECT Role, Account_Status FROM user_table WHERE User_ID = ? LIMIT 1");
+    $auth_stmt->bind_param("i", $auth_user_id);
+    $auth_stmt->execute();
+    $auth_res = $auth_stmt->get_result()->fetch_assoc();
+    $auth_stmt->close();
+
+    if (!$auth_res || !in_array($auth_res['Role'], ['Librarian', 'Admin'], true) || $auth_res['Account_Status'] !== 'Active') {
+        sendResponse(false, 'Access denied. Active Librarian or Admin status required.', [], 403);
+    }
+     
 
     /* ---- CSRF validation for every state-changing (POST) request ---- */
     if ($method === 'POST') {
@@ -736,7 +747,6 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
 function handle_update_account_status(mysqli $con): void {
     $user_id = (int)gv($_POST, 'user_id');
     $status  = gv($_POST, 'status');
-
     if ($user_id <= 0 || !in_array($status, ACCOUNT_STATUSES, true)) {
         sendResponse(false, 'Invalid account or status.', [], 400);
     }
@@ -745,7 +755,15 @@ function handle_update_account_status(mysqli $con): void {
     if (!$current) {
         sendResponse(false, 'Student account not found.', [], 404);
     }
-    if ($current[0]['Account_Status'] === $status) {
+
+    $current_status = $current[0]['Account_Status'];
+
+    // Prevent activating pending accounts directly without email OTP verification
+    if ($current_status === 'Pending' && $status === 'Active') {
+        sendResponse(false, 'Pending accounts must complete email verification to become active.', [], 422);
+    }
+
+    if ($current_status === $status) {
         sendResponse(true, "Account is already {$status}.");
     }
 
@@ -754,7 +772,7 @@ function handle_update_account_status(mysqli $con): void {
     $stmt->execute();
     $stmt->close();
 
-    // A suspended student must not be able to resume through a "remember me" token.
+    // Invalidate active session tokens when suspended
     if ($status === 'Suspended') {
         $del = $con->prepare('DELETE FROM user_tokens WHERE user_id = ?');
         $del->bind_param('i', $user_id);

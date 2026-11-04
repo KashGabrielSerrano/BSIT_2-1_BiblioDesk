@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 03, 2026 at 04:37 AM
+-- Generation Time: Nov 04, 2026 at 12:32 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -36,7 +36,7 @@ CREATE TABLE `book_table` (
   `Author` varchar(255) NOT NULL,
   `ISBN` varchar(20) DEFAULT NULL,
   `Publisher` varchar(150) DEFAULT NULL,
-  `Category` varchar(100) DEFAULT NULL,
+  `Category` enum('Educational','Non-Educational','Research Articles') NOT NULL DEFAULT 'Educational',
   `Is_digital` enum('Yes','No') NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -53,25 +53,8 @@ CREATE TABLE `email_verifications` (
   `Expires_At` timestamp NOT NULL DEFAULT current_timestamp(),
   `Is_Used` tinyint(1) NOT NULL DEFAULT 0,
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
-  `Attempts` int(11) NOT NULL DEFAULT 0
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `fine_table`
---
-
-CREATE TABLE `fine_table` (
-  `Fine_ID` int(11) NOT NULL,
-  `Transaction_ID` int(11) NOT NULL,
-  `User_ID` int(11) NOT NULL,
-  `Book_ID` int(11) NOT NULL,
-  `Reservation_ID` int(11) DEFAULT NULL,
-  `Fine_amount` decimal(10,2) NOT NULL DEFAULT 0.00,
-  `Payment_status` varchar(50) DEFAULT 'Unpaid',
-  `Date_Paid` datetime DEFAULT NULL,
-  `Collected_By` int(11) DEFAULT NULL
+  `Attempts` int(11) NOT NULL DEFAULT 0,
+  `ip_address` varchar(45) NOT NULL DEFAULT '0.0.0.0'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -102,54 +85,6 @@ CREATE TABLE `report_table` (
   `Status` enum('New','Reviewing','Forwarded','Resolved') NOT NULL DEFAULT 'New',
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
   `Resolved_At` datetime DEFAULT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `reservation_table`
---
-
-CREATE TABLE `reservation_table` (
-  `Reservation_ID` int(11) NOT NULL,
-  `User_ID` int(11) NOT NULL,
-  `Book_ID` int(11) NOT NULL,
-  `Reservation_Date` date NOT NULL,
-  `Reservation_Time` time NOT NULL,
-  `Weekly_reserve_count` int(11) DEFAULT 0,
-  `Request_approval` varchar(50) DEFAULT 'Pending'
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `system_settings`
---
-
-CREATE TABLE `system_settings` (
-  `Setting_ID` int(11) NOT NULL,
-  `Setting_Key` varchar(100) NOT NULL,
-  `Setting_Value` varchar(255) NOT NULL,
-  `Description` varchar(255) DEFAULT NULL,
-  `Updated_By` int(11) DEFAULT NULL,
-  `Updated_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `transaction_table`
---
-
-CREATE TABLE `transaction_table` (
-  `Transaction_ID` int(11) NOT NULL,
-  `User_ID` int(11) NOT NULL,
-  `Book_ID` int(11) NOT NULL,
-  `Issue_Date` date NOT NULL,
-  `Due_Date` date NOT NULL,
-  `Return_Date` date DEFAULT NULL,
-  `Issued_By` int(11) DEFAULT NULL,
-  `Received_By` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -216,11 +151,9 @@ CREATE TABLE `user_table` (
   `Department` varchar(255) DEFAULT NULL,
   `Birthday` varchar(255) DEFAULT NULL,
   `User_QR_Code` varchar(255) DEFAULT NULL,
-  `Weekly_reserve_Count` int(11) DEFAULT 0,
   `Email` varchar(255) NOT NULL,
   `Password` varchar(255) NOT NULL,
   `Role` enum('Student','Admin','Librarian') NOT NULL DEFAULT 'Student',
-  `Max_Borrow_Limit` int(11) DEFAULT 3,
   `Account_Status` enum('Pending','Active','Suspended') NOT NULL DEFAULT 'Pending',
   `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -260,17 +193,8 @@ ALTER TABLE `book_table`
 --
 ALTER TABLE `email_verifications`
   ADD PRIMARY KEY (`Verification_ID`),
-  ADD KEY `User_ID` (`User_ID`);
-
---
--- Indexes for table `fine_table`
---
-ALTER TABLE `fine_table`
-  ADD PRIMARY KEY (`Fine_ID`),
-  ADD KEY `Transaction_ID` (`Transaction_ID`),
   ADD KEY `User_ID` (`User_ID`),
-  ADD KEY `Book_ID` (`Book_ID`),
-  ADD KEY `fine_table_ibfk_4` (`Collected_By`);
+  ADD KEY `idx_user_ip_time` (`User_ID`,`ip_address`,`Created_At`);
 
 --
 -- Indexes for table `login_attempts`
@@ -288,32 +212,6 @@ ALTER TABLE `report_table`
   ADD KEY `idx_report_status` (`Status`,`Created_At`),
   ADD KEY `fk_report_book` (`Book_ID`),
   ADD KEY `fk_report_user` (`User_ID`);
-
---
--- Indexes for table `reservation_table`
---
-ALTER TABLE `reservation_table`
-  ADD PRIMARY KEY (`Reservation_ID`),
-  ADD KEY `User_ID` (`User_ID`),
-  ADD KEY `Book_ID` (`Book_ID`);
-
---
--- Indexes for table `system_settings`
---
-ALTER TABLE `system_settings`
-  ADD PRIMARY KEY (`Setting_ID`),
-  ADD UNIQUE KEY `Setting_Key` (`Setting_Key`),
-  ADD KEY `Updated_By` (`Updated_By`);
-
---
--- Indexes for table `transaction_table`
---
-ALTER TABLE `transaction_table`
-  ADD PRIMARY KEY (`Transaction_ID`),
-  ADD KEY `User_ID` (`User_ID`),
-  ADD KEY `Book_ID` (`Book_ID`),
-  ADD KEY `transaction_table_ibfk_3` (`Issued_By`),
-  ADD KEY `transaction_table_ibfk_4` (`Received_By`);
 
 --
 -- Indexes for table `user_bookmarks`
@@ -381,12 +279,6 @@ ALTER TABLE `email_verifications`
   MODIFY `Verification_ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `fine_table`
---
-ALTER TABLE `fine_table`
-  MODIFY `Fine_ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
 -- AUTO_INCREMENT for table `login_attempts`
 --
 ALTER TABLE `login_attempts`
@@ -397,24 +289,6 @@ ALTER TABLE `login_attempts`
 --
 ALTER TABLE `report_table`
   MODIFY `Report_ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `reservation_table`
---
-ALTER TABLE `reservation_table`
-  MODIFY `Reservation_ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `system_settings`
---
-ALTER TABLE `system_settings`
-  MODIFY `Setting_ID` int(11) NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `transaction_table`
---
-ALTER TABLE `transaction_table`
-  MODIFY `Transaction_ID` int(11) NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `user_table`
@@ -439,42 +313,11 @@ ALTER TABLE `email_verifications`
   ADD CONSTRAINT `fk_email_verifications_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 
 --
--- Constraints for table `fine_table`
---
-ALTER TABLE `fine_table`
-  ADD CONSTRAINT `fine_table_ibfk_1` FOREIGN KEY (`Transaction_ID`) REFERENCES `transaction_table` (`Transaction_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fine_table_ibfk_2` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fine_table_ibfk_3` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `fine_table_ibfk_4` FOREIGN KEY (`Collected_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
-
---
 -- Constraints for table `report_table`
 --
 ALTER TABLE `report_table`
   ADD CONSTRAINT `fk_report_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_report_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
-
---
--- Constraints for table `reservation_table`
---
-ALTER TABLE `reservation_table`
-  ADD CONSTRAINT `reservation_table_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `reservation_table_ibfk_2` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE;
-
---
--- Constraints for table `system_settings`
---
-ALTER TABLE `system_settings`
-  ADD CONSTRAINT `system_settings_ibfk_1` FOREIGN KEY (`Updated_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
-
---
--- Constraints for table `transaction_table`
---
-ALTER TABLE `transaction_table`
-  ADD CONSTRAINT `transaction_table_ibfk_1` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `transaction_table_ibfk_2` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
-  ADD CONSTRAINT `transaction_table_ibfk_3` FOREIGN KEY (`Issued_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL,
-  ADD CONSTRAINT `transaction_table_ibfk_4` FOREIGN KEY (`Received_By`) REFERENCES `user_table` (`User_ID`) ON DELETE SET NULL;
 
 --
 -- Constraints for table `user_bookmarks`

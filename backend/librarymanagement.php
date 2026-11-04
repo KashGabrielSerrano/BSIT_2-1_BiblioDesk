@@ -21,12 +21,12 @@ session_start();
 /* ---- Role authorization BYPASS (WAG GAGALAWIN TO KUKURITIN KO KAYO) ----
  * DEV BYPASS: role lock disabled so this page can be opened directly while testing.
  * Re-enable before deployment. Roles in the session are 'Student' | 'Librarian' | 'Admin'.
- *
- * if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Librarian', 'Admin'], true)) {
- *     header('Location: login.php');
- *     exit();
- * }
  */
+if (!isset($_SESSION['user_id']) || !in_array($_SESSION['role'] ?? '', ['Librarian', 'Admin'], true)) {
+    header('Location: login.php');
+    exit();
+ }
+ 
 
 /* ---- CSRF token ----
  * The controller enforces CSRF on every POST. If login is bypassed, there may be no token yet. */
