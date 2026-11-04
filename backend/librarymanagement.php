@@ -226,12 +226,20 @@ if (empty($_SESSION['csrf_token'])) {
                                         required maxlength="5000" placeholder="Enter book summary..."></textarea>
                                 </div>
                                 <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addCover">Cover Image URL:</label>
+                                    <label class="form-label" for="addCoverFile">Cover Image:</label>
+                                    <input type="file" id="addCoverFile" name="cover_file" class="form-control mb-2"
+                                        accept="image/jpeg,image/png,image/webp">
+                                    <div class="form-text text-white-50 mb-2">JPG, PNG or WEBP, up to 5 MB. Or paste an image URL instead:</div>
+                                    <label class="visually-hidden" for="addCover">Cover Image URL</label>
                                     <input type="text" id="addCover" name="cover_image" class="form-control"
                                         maxlength="255" placeholder="https://.../cover.jpg">
                                 </div>
                                 <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addDrive">PDF Document URL (https):</label>
+                                    <label class="form-label" for="addPdfFile">PDF Document:</label>
+                                    <input type="file" id="addPdfFile" name="pdf_file" class="form-control mb-2"
+                                        accept="application/pdf,.pdf">
+                                    <div class="form-text text-white-50 mb-2">PDF, up to 20 MB. Or paste a Supabase https link instead:</div>
+                                    <label class="visually-hidden" for="addDrive">PDF Document URL (https)</label>
                                     <input type="url" id="addDrive" name="drive_link" class="form-control"
                                         maxlength="255" required
                                         placeholder="https://<project>.supabase.co/storage/v1/object/public/...pdf">
@@ -535,11 +543,19 @@ if (empty($_SESSION['csrf_token'])) {
                                     maxlength="5000"></textarea>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editCover">Cover Image URL</label>
+                                <label class="form-label fw-semibold" for="editCoverFile">Cover Image</label>
+                                <input type="file" id="editCoverFile" name="cover_file" class="form-control mb-2"
+                                    accept="image/jpeg,image/png,image/webp">
+                                <div class="form-text mb-2">Choose a file to replace the current cover (JPG, PNG or WEBP, up to 5 MB), or edit the URL below.</div>
+                                <label class="visually-hidden" for="editCover">Cover Image URL</label>
                                 <input type="text" id="editCover" name="cover_image" class="form-control" maxlength="255">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editDrive">PDF Document URL (https)</label>
+                                <label class="form-label fw-semibold" for="editPdfFile">PDF Document</label>
+                                <input type="file" id="editPdfFile" name="pdf_file" class="form-control mb-2"
+                                    accept="application/pdf,.pdf">
+                                <div class="form-text mb-2">Choose a file to replace the current PDF (up to 20 MB), or edit the https link below.</div>
+                                <label class="visually-hidden" for="editDrive">PDF Document URL (https)</label>
                                 <input type="url" id="editDrive" name="drive_link" class="form-control" maxlength="255" required>
                             </div>
                         </div>

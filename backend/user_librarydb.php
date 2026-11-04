@@ -542,6 +542,21 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
                             <input type="hidden" id="modalBookId" value="">
                             
                             <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-4">
+                                <button type="button" id="modalBookShare" class="btn border-0 p-2 d-none order-last" aria-label="Share link to this book">
+                                    <i class="bi bi-share fs-4"></i>
+                                </button>
+                                <div id="modalSharePanel" class="d-none order-last w-100 mt-2">
+                                    <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
+                                        <div id="modalShareQr" class="bg-white p-2 rounded d-inline-block"></div>
+                                        <div class="flex-grow-1 w-100">
+                                            <label class="small mb-1" for="modalShareLink">Link back to this book (readers need to be logged in)</label>
+                                            <div class="input-group input-group-sm">
+                                                <input type="text" id="modalShareLink" class="form-control" readonly>
+                                                <button type="button" id="modalShareCopy" class="btn btn-outline-light">Copy</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                                 <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">Read Now</a>
                                 <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none">Add To Collections</a>
                                 <button type="button" id="modalBookBookmark" class="btn border-0 p-2 d-none" aria-label="Bookmark">
@@ -611,5 +626,54 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
     </script>
     <script src="../frontend/js/mybooks.js"></script>
+    <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        // Share panel in the book details modal: link back to the book + QR code.
+        (() => {
+            const modal    = document.getElementById('bookDetailsModal');
+            if (!modal) return;
+            const shareBtn = document.getElementById('modalBookShare');
+            const panel    = document.getElementById('modalSharePanel');
+            const qrBox    = document.getElementById('modalShareQr');
+            const linkBox  = document.getElementById('modalShareLink');
+            const copyBtn  = document.getElementById('modalShareCopy');
+            const readBtn  = document.getElementById('modalBookRead');
+            const idInput  = document.getElementById('modalBookId');
+
+            // Only books with a readable file get a link-back; also start closed on every open.
+            modal.addEventListener('show.bs.modal', () => {
+                panel.classList.add('d-none');
+                shareBtn.classList.toggle('d-none', readBtn.classList.contains('d-none'));
+            });
+
+            shareBtn.addEventListener('click', () => {
+                const id = idInput.value;
+                if (!id) return;
+                // Resolved against this page's URL, so it stays correct under any folder or port.
+                const url = new URL('read_book.php?id=' + encodeURIComponent(id), window.location.href).href;
+                linkBox.value = url;
+                qrBox.replaceChildren();
+                if (typeof QRCode !== 'undefined') {
+                    new QRCode(qrBox, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
+                    qrBox.classList.remove('d-none');
+                } else {
+                    qrBox.classList.add('d-none'); // QR library did not load: the link still works
+                }
+                panel.classList.toggle('d-none');
+            });
+
+            copyBtn.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(linkBox.value);
+                } catch {
+                    linkBox.select();
+                    document.execCommand('copy');
+                }
+                copyBtn.textContent = 'Copied';
+                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+            });
+        })();
+    </script>
 </body>
 </html>

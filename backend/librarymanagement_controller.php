@@ -13,7 +13,8 @@ header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
 header('Cache-Control: no-store');
 
-const DRIVE_LINK_ALLOWED_HOSTS = [];
+// Only files hosted on our own Supabase project may be linked as a PDF.
+const DRIVE_LINK_ALLOWED_HOSTS = ['fqwxstfflwbkmajqdjog.supabase.co'];
 
 const REPORT_STATUSES  = ['New', 'Reviewing', 'Forwarded', 'Resolved'];
 const ACCOUNT_STATUSES = ['Active', 'Suspended', 'Pending'];
@@ -21,7 +22,7 @@ const ACCOUNT_STATUSES = ['Active', 'Suspended', 'Pending'];
 // sendResponse() is declared in section 2; top-level functions are hoisted, so it is callable here.
 set_exception_handler(function (Throwable $e): void {
     error_log('librarymanagement_controller bootstrap error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
-    sendResponse(false, 'A server error occurred. Please try again.', [], 500);
+    sendResponse(false, 'A server error occurred. Please try again.', local_debug($e), 500);
 });
 
 $con = connection();
@@ -38,6 +39,18 @@ $user_ip = $so->getClientIP();
 /* ========================================================================== */
 
 /* ----- response ---------------------------------------------------------- */
+
+/**
+ * NOTE: on a loopback request (localhost) the real exception is added to the JSON as `debug`.
+ * Remote requests never get it. Safe to delete together with the two call sites below.
+ */
+function local_debug(Throwable $e): array {
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    if ($ip !== '127.0.0.1' && $ip !== '::1') {
+        return [];
+    }
+    return ['debug' => get_class($e) . ': ' . $e->getMessage() . ' @ ' . basename($e->getFile()) . ':' . $e->getLine()];
+}
 
 function sendResponse(bool $success, string $message, array $extra = [], int $status = 200): void {
     if (ob_get_length()) {
@@ -106,6 +119,195 @@ function enc(SystemOperators $so, $value): string {
     return is_string($out) ? $out : '';
 }
 
+/* ----- Supabase Storage (plain file_get_contents, no cURL) ---------------- *
+ * SUPABASE_URL / SUPABASE_SERVICE_KEY / bucket names live in connection/config.php
+ * (gitignored). The service key never leaves the server.                      */
+
+function supabase_ready(): bool {
+    return defined('SUPABASE_URL') && defined('SUPABASE_SERVICE_KEY')
+        && SUPABASE_URL !== '' && SUPABASE_SERVICE_KEY !== '';
+}
+
+/** @return array{0: int, 1: string} [http status (0 = no response), response body] */
+function supabase_request(string $method, string $path, ?string $body = null, ?string $contentType = null): array {
+    $headers = [
+        'Authorization: Bearer ' . SUPABASE_SERVICE_KEY,
+        'apikey: ' . SUPABASE_SERVICE_KEY,
+    ];
+    if ($contentType !== null) {
+        $headers[] = 'Content-Type: ' . $contentType;
+    }
+
+    $opts = ['http' => [
+        'method'        => $method,
+        'header'        => implode("\r\n", $headers),
+        'timeout'       => 60,
+        'ignore_errors' => true,   // otherwise 4xx/5xx returns false with no body
+    ]];
+    if ($body !== null) {
+        $opts['http']['content'] = $body;
+    }
+
+    $resp = @file_get_contents(
+        rtrim(SUPABASE_URL, '/') . '/storage/v1/' . ltrim($path, '/'),
+        false,
+        stream_context_create($opts)
+    );
+
+    $resp_headers = function_exists('http_get_last_response_headers')
+        ? (http_get_last_response_headers() ?? [])
+        : ($http_response_header ?? []);
+
+    $status = 0;
+    foreach ($resp_headers as $h) {              // last status line wins (redirects)
+        if (preg_match('#^HTTP/\S+\s+(\d{3})#', $h, $m)) {
+            $status = (int)$m[1];
+        }
+    }
+    return [$status, $resp === false ? '' : $resp];
+}
+
+function upload_rules(string $kind): array {
+    if ($kind === 'cover') {
+        return [
+            'bucket' => defined('SUPABASE_BUCKET_COVERS') ? SUPABASE_BUCKET_COVERS : 'book-covers',
+            'max'    => 5 * 1024 * 1024,
+            'mimes'  => ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'],
+            'label'  => 'Cover image',
+            'hint'   => 'JPG, PNG or WEBP up to 5 MB',
+        ];
+    }
+    return [
+        'bucket' => defined('SUPABASE_BUCKET_PDFS') ? SUPABASE_BUCKET_PDFS : 'pdf-books',
+        'max'    => 20 * 1024 * 1024,
+        'mimes'  => ['application/pdf' => 'pdf'],
+        'label'  => 'PDF',
+        'hint'   => 'PDF up to 20 MB',
+    ];
+}
+
+/** True when the form actually sent something in this file field (including failed uploads). */
+function has_upload(string $field): bool {
+    return isset($_FILES[$field]) && is_array($_FILES[$field])
+        && ($_FILES[$field]['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE;
+}
+
+function supabase_public_url(string $bucket, string $name): string {
+    return rtrim(SUPABASE_URL, '/') . '/storage/v1/object/public/' . $bucket . '/' . $name;
+}
+
+/** Map one of OUR public URLs back to [bucket, object]; anything else returns null (never deleted). */
+function supabase_object_from_url($url): ?array {
+    if (!supabase_ready() || !is_string($url) || $url === '') {
+        return null;
+    }
+    $prefix = rtrim(SUPABASE_URL, '/') . '/storage/v1/object/public/';
+    if (strncmp($url, $prefix, strlen($prefix)) !== 0) {
+        return null;
+    }
+    if (!preg_match('#^([A-Za-z0-9_\-]+)/([A-Za-z0-9_.\-]+)$#', substr($url, strlen($prefix)), $m)) {
+        return null;
+    }
+    if (!in_array($m[1], [upload_rules('cover')['bucket'], upload_rules('pdf')['bucket']], true)) {
+        return null;
+    }
+    return [$m[1], $m[2]];
+}
+
+/**
+ * Validate one uploaded file for real (size, sniffed MIME, magic bytes), then store it in Supabase
+ * under a random server-side name.
+ * @return array{0: ?string, 1: ?string} [public_url, error_message]
+ */
+function supabase_upload(string $field, string $kind): array {
+    $rules = upload_rules($kind);
+    $label = $rules['label'];
+    $f     = $_FILES[$field] ?? null;
+
+    if (!is_array($f) || !is_int($f['error'] ?? null) || !is_string($f['tmp_name'] ?? null)) {
+        return [null, "{$label} upload was invalid."];
+    }
+    if ($f['error'] === UPLOAD_ERR_INI_SIZE || $f['error'] === UPLOAD_ERR_FORM_SIZE) {
+        return [null, "{$label} is larger than the server allows ({$rules['hint']})."];
+    }
+    if ($f['error'] !== UPLOAD_ERR_OK) {
+        return [null, "{$label} could not be uploaded (error code {$f['error']})."];
+    }
+    if (!supabase_ready()) {
+        return [null, 'File storage is not configured on the server.'];
+    }
+    if (!is_uploaded_file($f['tmp_name'])) {
+        return [null, "{$label} upload was invalid."];
+    }
+
+    $size = filesize($f['tmp_name']);
+    if ($size === false || $size <= 0) {
+        return [null, "{$label} is empty."];
+    }
+    if ($size > $rules['max']) {
+        return [null, "{$label} is too large ({$rules['hint']})."];
+    }
+
+    $mime = (new finfo(FILEINFO_MIME_TYPE))->file($f['tmp_name']);
+    if (!is_string($mime) || !isset($rules['mimes'][$mime])) {
+        return [null, "{$label} must be: {$rules['hint']}."];
+    }
+
+    if ($kind === 'pdf') {
+        $fh   = fopen($f['tmp_name'], 'rb');
+        $head = $fh ? fread($fh, 5) : '';
+        if ($fh) {
+            fclose($fh);
+        }
+        if ($head !== '%PDF-') {
+            return [null, 'That file is not a valid PDF.'];
+        }
+    } elseif (@getimagesize($f['tmp_name']) === false) {
+        return [null, 'That file is not a valid image.'];
+    }
+
+    $data = file_get_contents($f['tmp_name']);
+    if ($data === false) {
+        return [null, "{$label} could not be read."];
+    }
+
+    $name = bin2hex(random_bytes(16)) . '.' . $rules['mimes'][$mime];
+    [$status, $resp] = supabase_request('POST', 'object/' . $rules['bucket'] . '/' . $name, $data, $mime);
+    unset($data);
+
+    if ($status !== 200 && $status !== 201) {
+        error_log("Supabase upload failed (HTTP {$status}) for {$rules['bucket']}/{$name}: " . substr($resp, 0, 300));
+        return [null, 'The file could not be stored. Please try again.'];
+    }
+    return [supabase_public_url($rules['bucket'], $name), null];
+}
+
+/**
+ * Best-effort delete of stored files, skipping anything that is not ours or that another
+ * book row still points to. Failures are logged, never shown to the user.
+ */
+function release_stored_files(mysqli $con, array $urls, int $except_book_id = 0): void {
+    foreach (array_unique(array_filter($urls)) as $url) {
+        $obj = supabase_object_from_url($url);
+        if ($obj === null) {
+            continue;
+        }
+        $in_use = db_all(
+            $con,
+            'SELECT 1 FROM book_table WHERE (Cover_Image = ? OR Drive_Link = ?) AND Book_ID <> ? LIMIT 1',
+            'ssi',
+            [$url, $url, $except_book_id]
+        );
+        if ($in_use) {
+            continue;
+        }
+        [$status, $resp] = supabase_request('DELETE', 'object/' . $obj[0] . '/' . $obj[1]);
+        if ($status !== 200 && $status !== 204 && $status !== 404) {
+            error_log("Supabase delete failed (HTTP {$status}) for {$obj[0]}/{$obj[1]}: " . substr($resp, 0, 300));
+        }
+    }
+}
+
 /* ----- book input readers & validation ----------------------------------- */
 
 function drive_host_allowed(string $host): bool {
@@ -131,7 +333,7 @@ function valid_cover(string $v): bool {
 }
 
 /** @return array{0: array, 1: ?string} [data, error] */
-function read_book_input(): array {
+function read_book_input(bool $has_pdf_upload = false): array {
     $d = [
         'title'       => gv($_POST, 'title'),
         'author'      => gv($_POST, 'author'),
@@ -143,6 +345,12 @@ function read_book_input(): array {
         'drive_link'  => gv($_POST, 'drive_link'),
         'is_digital'  => gv($_POST, 'is_digital') ?: 'Yes',
     ];
+
+    // A PDF uploaded with this request replaces any typed link and makes the book digital.
+    if ($has_pdf_upload) {
+        $d['drive_link'] = '';
+        $d['is_digital'] = 'Yes';
+    }
 
     if ($d['title'] === '')       return [$d, 'Title is required.'];
     if ($d['author'] === '')      return [$d, 'Author is required.'];
@@ -176,8 +384,8 @@ function read_book_input(): array {
             || !drive_host_allowed($host)) {
             return [$d, 'PDF link must be a valid https URL (Supabase Storage public URL).'];
         }
-    } elseif ($d['is_digital'] === 'Yes') {
-        return [$d, 'A PDF link is required for digital books.'];
+    } elseif ($d['is_digital'] === 'Yes' && !$has_pdf_upload) {
+        return [$d, 'Upload a PDF or provide a PDF link for digital books.'];
     }
 
     // Optional columns: empty string -> NULL (ISBN has a UNIQUE index, so '' would collide).
@@ -187,6 +395,31 @@ function read_book_input(): array {
         }
     }
     return [$d, null];
+}
+
+/**
+ * Store any cover / PDF uploaded with the request and write the resulting public URLs into $d.
+ * On a failed upload, files stored earlier in this same request are removed and the request ends.
+ * @return string[] URLs created by this request (so the caller can roll back if the DB write fails)
+ */
+function process_book_uploads(mysqli $con, array &$d): array {
+    $uploaded = [];
+    foreach ([['cover_file', 'cover', 'cover_image'], ['pdf_file', 'pdf', 'drive_link']] as [$field, $kind, $col]) {
+        if (!has_upload($field)) {
+            continue;
+        }
+        [$url, $upload_err] = supabase_upload($field, $kind);
+        if ($upload_err !== null) {
+            release_stored_files($con, $uploaded);
+            sendResponse(false, $upload_err, [], 422);
+        }
+        $d[$col]    = $url;
+        $uploaded[] = $url;
+    }
+    if (has_upload('pdf_file')) {
+        $d['is_digital'] = 'Yes';
+    }
+    return $uploaded;
 }
 
 /* ----- row mappers ------------------------------------------------------- */
@@ -211,6 +444,14 @@ function book_row(array $r): array {
 /* ========================================================================== */
 
 try {
+    /* ---- Oversized upload guard ----
+     * A body larger than post_max_size arrives with empty $_POST and $_FILES, which would otherwise
+     * be reported as an invalid action / CSRF failure. */
+    if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && empty($_POST) && empty($_FILES)
+        && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+        sendResponse(false, 'The upload is larger than the server allows. Try a smaller file.', [], 413);
+    }
+
     /* ---- Action whitelists ---- */
     $read_actions  = ['get_catalog', 'get_book', 'get_accounts', 'get_reports'];
     $write_actions = ['add_book', 'update_book', 'delete_book', 'update_account_status'];
@@ -263,7 +504,7 @@ try {
     }
 } catch (Throwable $e) {
     error_log('librarymanagement_controller error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
-    sendResponse(false, 'A server error occurred. Please try again.', [], 500);
+    sendResponse(false, 'A server error occurred. Please try again.', local_debug($e), 500);
 }
 
 /* ========================================================================== */
@@ -316,10 +557,12 @@ function handle_get_book(mysqli $con): void {
 }
 
 function handle_add_book(mysqli $con): void {
-    [$d, $err] = read_book_input();
+    [$d, $err] = read_book_input(has_upload('pdf_file'));
     if ($err !== null) {
         sendResponse(false, $err, [], 422);
     }
+
+    $uploaded = process_book_uploads($con, $d);
 
     try {
         $stmt = $con->prepare(
@@ -335,6 +578,7 @@ function handle_add_book(mysqli $con): void {
         $new_id = $con->insert_id;
         $stmt->close();
     } catch (mysqli_sql_exception $e) {
+        release_stored_files($con, $uploaded); // DB write failed: do not leave orphan files behind
         if ((int)$e->getCode() === 1062) {
             sendResponse(false, 'A book with this ISBN already exists.', [], 409);
         }
@@ -349,14 +593,17 @@ function handle_update_book(mysqli $con): void {
     if ($book_id <= 0) {
         sendResponse(false, 'Invalid book ID.', [], 400);
     }
-    if (!db_all($con, 'SELECT 1 FROM book_table WHERE Book_ID = ?', 'i', [$book_id])) {
+    $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
+    if (!$old) {
         sendResponse(false, 'Book not found.', [], 404);
     }
 
-    [$d, $err] = read_book_input();
+    [$d, $err] = read_book_input(has_upload('pdf_file'));
     if ($err !== null) {
         sendResponse(false, $err, [], 422);
     }
+
+    $uploaded = process_book_uploads($con, $d);
 
     try {
         $stmt = $con->prepare(
@@ -373,11 +620,22 @@ function handle_update_book(mysqli $con): void {
         $stmt->execute();
         $stmt->close();
     } catch (mysqli_sql_exception $e) {
+        release_stored_files($con, $uploaded); // DB write failed: do not leave orphan files behind
         if ((int)$e->getCode() === 1062) {
             sendResponse(false, 'Another book already uses this ISBN.', [], 409);
         }
         throw $e;
     }
+
+    // The row now points at new files: remove the ones it no longer uses from Supabase.
+    $stale = [];
+    if (($old[0]['Cover_Image'] ?? null) !== $d['cover_image']) {
+        $stale[] = $old[0]['Cover_Image'] ?? null;
+    }
+    if (($old[0]['Drive_Link'] ?? null) !== $d['drive_link']) {
+        $stale[] = $old[0]['Drive_Link'] ?? null;
+    }
+    release_stored_files($con, $stale, $book_id);
 
     sendResponse(true, 'Book updated.');
 }
@@ -387,6 +645,8 @@ function handle_delete_book(mysqli $con): void {
     if ($book_id <= 0) {
         sendResponse(false, 'Invalid book ID.', [], 400);
     }
+
+    $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
 
     // NOTE: FK constraints CASCADE to bookmarks, favorites, reading progress/history,
     // reservations, transactions and fines for this book.
@@ -399,6 +659,9 @@ function handle_delete_book(mysqli $con): void {
     if ($deleted === 0) {
         sendResponse(false, 'Book not found.', [], 404);
     }
+    // Row is gone: remove its cover and PDF from Supabase (only our own files, only if no other book uses them).
+    release_stored_files($con, [$old[0]['Cover_Image'] ?? null, $old[0]['Drive_Link'] ?? null]);
+
     sendResponse(true, 'Book deleted.');
 }
 

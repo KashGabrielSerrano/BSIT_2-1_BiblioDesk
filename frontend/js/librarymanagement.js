@@ -117,7 +117,7 @@
             throw new Error('Unexpected server response. Check the PHP error log.');
         }
         if (!res.ok || !data.success) {
-            throw new Error(data.message || 'Request failed.');
+            throw new Error((data.message || 'Request failed.') + (data.debug ? ' [' + data.debug + ']' : ''));
         }
         return data;
     }
@@ -248,10 +248,31 @@
         }
     }
 
-    /** PDF link is only mandatory for digital books. */
+    /** Mirrors the server-side upload rules (the server is still the authority). */
+    const FILE_RULES = {
+        cover_file: { max: 5 * 1024 * 1024, types: ['image/jpeg', 'image/png', 'image/webp'], label: 'Cover image', hint: 'JPG, PNG or WEBP up to 5 MB' },
+        pdf_file: { max: 20 * 1024 * 1024, types: ['application/pdf'], label: 'PDF', hint: 'PDF up to 20 MB' }
+    };
+
+    /** PDF link is only mandatory for digital books that have no PDF file chosen. */
     function syncDigitalRequired(form) {
         const digital = form.elements.is_digital.value === 'Yes';
-        form.elements.drive_link.required = digital;
+        const hasPdf = !!(form.elements.pdf_file && form.elements.pdf_file.files.length);
+        form.elements.drive_link.required = digital && !hasPdf;
+    }
+
+    /** Friendly pre-check of chosen files; returns false (and toasts) if one is unacceptable. */
+    function validateFiles(form) {
+        for (const [name, rule] of Object.entries(FILE_RULES)) {
+            const input = form.elements[name];
+            const file = input && input.files[0];
+            if (!file) continue;
+            if (file.size > rule.max || (file.type && !rule.types.includes(file.type))) {
+                notify(`${rule.label} must be ${rule.hint}.`, 'error');
+                return false;
+            }
+        }
+        return true;
     }
 
     async function handleAddBook(e) {
@@ -262,6 +283,7 @@
             form.reportValidity();
             return;
         }
+        if (!validateFiles(form)) return;
         const btn = form.querySelector('[type="submit"]');
         setBusy(btn, true);
         try {
@@ -281,6 +303,7 @@
         try {
             const { book } = await api('get_book', { params: { book_id: bookId } });
             const form = $('editBookForm');
+            form.reset(); // also clears any file chosen on a previous edit
             ['book_id', 'title', 'author', 'isbn', 'publisher', 'category', 'description', 'cover_image', 'drive_link', 'is_digital']
                 .forEach((name) => {
                     form.elements[name].value = book[name] ?? '';
@@ -300,6 +323,7 @@
             form.reportValidity();
             return;
         }
+        if (!validateFiles(form)) return;
         const btn = $('editBookSaveBtn');
         setBusy(btn, true);
         try {
@@ -545,6 +569,7 @@
         $('editBookForm').addEventListener('submit', handleEditBook);
         document.querySelectorAll('form[data-book-form]').forEach((form) => {
             form.elements.is_digital.addEventListener('change', () => syncDigitalRequired(form));
+            form.elements.pdf_file.addEventListener('change', () => syncDigitalRequired(form));
             syncDigitalRequired(form);
         });
         $('catalogSearch').addEventListener('input', debounce(loadCatalog));
