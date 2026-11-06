@@ -305,8 +305,14 @@
         </div>
     </header>
 
+    <main>
+        <div class="container py-4">
+            <h1>Page Content Goes Here</h1>
+        </div>
+</main>
+
     <!-- Footer -->
-    <footer class="text-light mt-5 py-5">
+    <footer class="text-light py-5">
         <div class="container">
             <div class="row justify-content-around gy-4">
                 <div class="col-12 col-md-5 ps-0">
