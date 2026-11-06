@@ -1,6 +1,10 @@
 /* Bell dropdown: shows the latest published announcements and an unread count.
    Data sources (first one found wins):
-   1. window.biblioAnnouncements / the "announcements:changed" event (admin page)
+   1. window.biblioAnnouncements
+   2. data-endpoint on #notifMenu (JSON fetch)
+   3. the list saved in localStorage (written whenever the
+      "announcements:changed" event fires on the Announcements page)
+   The "announcements:changed" event always updates the bell live.
 */
 (function () {
     'use strict';
@@ -11,6 +15,7 @@
     if (!menu) return;
 
     var STORE_KEY = 'bibliodesk_read_notifs';
+    var LIST_KEY  = 'bibliodesk_announcements';
     var MAX_ITEMS = 6;
     var items = [];
 
@@ -34,6 +39,18 @@
 
     function saveRead(ids) {
         try { localStorage.setItem(STORE_KEY, JSON.stringify(ids)); } catch (e) { /* storage unavailable */ }
+    }
+
+    // saved announcements list (shared between the admin pages)
+    function loadList() {
+        try {
+            var list = JSON.parse(localStorage.getItem(LIST_KEY));
+            return Array.isArray(list) ? list : null;
+        } catch (e) { return null; }
+    }
+
+    function saveList(list) {
+        try { localStorage.setItem(LIST_KEY, JSON.stringify(list)); } catch (e) { /* storage unavailable */ }
     }
 
     function dayLabel(iso) {
@@ -105,7 +122,16 @@
     });
 
     // data sources
-    document.addEventListener('announcements:changed', function (e) { setItems(e.detail); });
+    document.addEventListener('announcements:changed', function (e) {
+        if (Array.isArray(e.detail)) saveList(e.detail);   // so other pages (admindb) can read it
+        setItems(e.detail);
+    });
+
+    // another tab changed the saved list -> refresh this bell too
+    window.addEventListener('storage', function (e) {
+        if (e.key === LIST_KEY) setItems(loadList());
+        if (e.key === STORE_KEY) render();
+    });
 
     if (Array.isArray(window.biblioAnnouncements)) {
         setItems(window.biblioAnnouncements);
@@ -115,6 +141,7 @@
             .then(setItems)
             .catch(function () { render(); });
     } else {
-        render();
+        var saved = loadList();
+        if (saved) setItems(saved); else render();
     }
 })();

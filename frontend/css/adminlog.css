@@ -1,4 +1,4 @@
-@import url(root.css);
+@import url(template.css);
 
 *{
     margin: 0;
@@ -27,24 +27,12 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* quick stat squares (same as userdb) */
-.neutralBox{
-    background-color: var(--cc-book-ne);
-}
+/* Summary cards */
+.redBox{ background-color: var(--cc-qs-red); }
+.yellowBox{ background-color: var(--cc-qs-yellow); }
+.greenBox{ background-color: var(--cc-qs-green); }
 
-.greenBox{
-    background-color: var(--cc-qs-green);
-}
-
-.yellowBox{
-    background-color: var(--cc-qs-yellow);
-}
-
-.redBox{
-    background-color: var(--cc-qs-red);
-}
-
-/* page title */
+/* Page title */
 .pageTitle{
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 800;
@@ -52,7 +40,7 @@ main{
     margin-bottom: 1rem;
 }
 
-/* search and form */
+/* Search and form */
 .form-control{
     background-color: var(--input-bg);
     border: 1px solid var(--line);
@@ -84,7 +72,7 @@ main{
     padding: .75rem 1.25rem;
 }
 
-/* buttons: export */
+/* Export button */
 .btnExport{
     margin-left: auto;
     display: inline-block;
@@ -102,10 +90,8 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* buttons: floating filter */
-.filterDropdown{
-    position: relative;
-}
+/* Filter button */
+.filterDropdown{ position: relative; }
 
 .btnFilter{
     width: 48px;
@@ -118,9 +104,7 @@ main{
     transition: .2s ease;
 }
 
-.btnFilter img{
-    filter: brightness(0) invert(1);
-}
+.btnFilter img{ filter: brightness(0) invert(1); }
 
 .btnFilter:hover{
     background-color: var(--brown);
@@ -204,15 +188,13 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* report table (rows are built in the page, columns are a 6-part grid) */
+/* Report table */
 .tableScroll{
     overflow-x: auto;
     padding-bottom: 4px;
 }
 
-.logTable{
-    min-width: 940px;
-}
+.logTable{ min-width: 940px; }
 
 .tableHead{
     background-color: var(--main-color);
@@ -224,9 +206,7 @@ main{
     padding: 1rem 0;
 }
 
-.tableHead span{
-    text-align: center;
-}
+.tableHead span{ text-align: center; }
 
 .tableHead span:first-child{
     text-align: left;
@@ -245,9 +225,7 @@ main{
     transition: background-color .15s ease;
 }
 
-.reportRow:hover{
-    background-color: rgba(158, 123, 88, .3);
-}
+.reportRow:hover{ background-color: rgba(158, 123, 88, .3); }
 
 .cell{
     padding: 6px 10px;
@@ -280,7 +258,7 @@ main{
     color: var(--brown);
 }
 
-/* issue and status pills */
+/* Issue and status badges */
 .issue-badge-red{
     background-color: var(--cc-book-ne);
     color: var(--fcolor-secondary);
@@ -344,7 +322,7 @@ main{
     white-space: nowrap;
 }
 
-/* action button */
+/* Action button */
 .action-btn{
     background-color: var(--cc-book-ra);
     color: var(--fcolor-secondary);
@@ -363,7 +341,7 @@ main{
     color: var(--disabled-text);
 }
 
-/* pagination */
+/* Pagination */
 .pagination .page-link{
     background-color: var(--main-bg-color);
     color: var(--text);
@@ -376,9 +354,7 @@ main{
     color: var(--fcolor-secondary);
 }
 
-.pageInfo{
-    margin: 1.2rem 0 .4rem;
-}
+.pageInfo{ margin: 1.2rem 0 .4rem; }
 
 .logPager{
     display: flex;
@@ -388,9 +364,7 @@ main{
     flex-wrap: wrap;
 }
 
-.logPager .pagination{
-    margin: 0;
-}
+.logPager .pagination{ margin: 0; }
 
 .perPage{
     display: flex;
@@ -405,7 +379,7 @@ main{
     width: auto;
 }
 
-/* empty state */
+/* Empty state */
 .emptyState{
     border: 1px dashed var(--hover);
     border-radius: .75rem;
@@ -415,16 +389,14 @@ main{
     margin-top: 14px;
 }
 
-/* sidebar (same as userdb) */
+/* Sidebar */
 #sidebar{
     --bs-offcanvas-width: var(--sidebar-expand);
     background-color: var(--main-color) !important;
     color: var(--main-bg-color);
 }
 
-.logoContain{
-    height: var(--topbar-height);
-}
+.logoContain{ height: var(--topbar-height); }
 
 .sideIcon{
     width: 48px;
@@ -433,17 +405,13 @@ main{
     transition: background .2s;
 }
 
-.sideIcon.bg-light img{
-    filter: invert(1);
-}
+.sideIcon.bg-light img{ filter: invert(1); }
 
 .sideAct:hover .sideIcon:not(.bg-light){
     background: rgba(255, 255, 255, .14);
 }
 
-footer{
-    background-color: var(--main-color);
-}
+footer{ background-color: var(--main-color); }
 
 .footerLogo{
     width: 100%;
@@ -460,77 +428,79 @@ footer{
     text-decoration: underline;
 }
 
-@media (min-width: 768px){
-    body{
-        padding-left: var(--sidebar-default);
+/* Desktop topbar and sidebar */
+@media (min-width: 768px) {
+    .topbar .container-fluid {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
     }
 
-    .topbar{
-        padding-left: var(--sidebar-default);
-    }
-
-    #sidebar{
-        position: fixed;
-        top: 0; bottom: 0; left: 0;
-        z-index: 1045;
-        width: var(--sidebar-default);
-        overflow: hidden;
-        white-space: nowrap;
-        transition: width .25s ease, box-shadow .25s ease;
-    }
-
-    .sideText{
-        opacity: 0;
-        transition: opacity .15s;
+    .topbar .container-fluid > div:last-child {
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        margin-left: auto !important;
+        gap: 25px;
     }
 }
-
-@media (min-width: 768px) and (hover: hover){
-    #sidebar:hover{
-        width: var(--sidebar-expand);
-        box-shadow: 6px 0 18px rgba(0, 0, 0, .35);
-    }
-
-    #sidebar:hover .sideText{
-        opacity: 1;
-        transition-delay: .08s;
-    }
-}
-
+/* Tablet */
 @media (max-width: 992px){
-    .logTable{
-        min-width: 860px;
-    }
+    .logTable{ min-width: 860px; }
 }
 
-@media (max-width: 767px){
-    body{
-        padding-left: 0;
-    }
+/* Mobile topbar and navigation */
+@media (max-width: 767.98px){
+    body{ padding-left: 0; }
 
-    .topbar{
-        padding-left: 0;
-    }
+    .topbar{ padding-left: 0; }
 
     main{
         padding-left: 15px;
         padding-right: 15px;
     }
 
-    /* mobile: menu + logo on the first row, bell / settings / profile on a second row, aligned right */
-    .topbar > .container-fluid{
-        row-gap: .5rem;
+    .topbar .container-fluid{
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        row-gap: .25rem;
     }
 
-    .topbar > .container-fluid > div:last-child{
+    /* First row: menu area */
+    .topbar .container-fluid > div:first-child{
         flex: 0 0 100%;
-        justify-content: flex-end;
+        width: 100%;
     }
 
-    /* announcements: centered under the top bar, always inside the screen */
-    .topbar .dropdown{
-        position: static;
+    /* Second row: action-icons wrapper fills the row */
+    .topbar .container-fluid > div:last-child{
+        flex: 0 0 100%;
+        width: 100%;
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center;
+        margin-left: auto !important;
+        padding-right: 0;
     }
+
+    /* Align icons to the far right */
+    .topbar .topActions{
+        display: flex !important;
+        justify-content: flex-end !important;
+        align-items: center;
+        width: 100%;
+        margin-left: auto !important;
+    }
+
+    /* Hide BiblioDesk logo only on mobile */
+    .topbar .navbar-brand{
+        display: none !important;
+    }
+
+    /* Notification dropdown */
+    .topbar .dropdown{ position: static; }
 
     .topbar .notifMenu{
         position: absolute !important;
@@ -547,19 +517,16 @@ footer{
     }
 }
 
+/* Small mobile screens */
 @media (max-width: 576px){
-    .toolbar{
-        gap: 10px;
-    }
+    .toolbar{ gap: 10px; }
 
     .searchWrap{
         flex-basis: 100%;
         max-width: 100%;
     }
 
-    .btnExport{
-        margin-left: 0;
-    }
+    .btnExport{ margin-left: 0; }
 
     .filterPanel{
         position: fixed !important;
@@ -570,18 +537,10 @@ footer{
         margin: 0 !important;
     }
 
-    .logPager{
-        align-items: flex-start;
-    }
+    .logPager{ align-items: flex-start; }
 }
 
-/* =====================================================
-   NOTIFICATION BELL
-   Same layout as admin_announcement.css. The variables it uses
-   are mapped to the tokens in root.css, pointed at the same
-   values the old liblog.css used so nothing changes.
-   (delete this :root block if root.css already defines them).
-   ===================================================== */
+/* Notification bell */
 :root{
     --color-red: var(--cc-qs-red);
     --color-yellow: var(--cc-qs-yellow);
@@ -645,9 +604,7 @@ footer{
     color: var(--text-main);
 }
 
-.notifItem:last-child{
-    border-bottom: 0;
-}
+.notifItem:last-child{ border-bottom: 0; }
 
 .notifItem:hover,
 .notifItem:focus{
@@ -663,29 +620,12 @@ footer{
     margin-top: 6px;
 }
 
-.dotRed{
-    background-color: var(--color-red);
-}
-
-.dotYellow{
-    background-color: var(--color-yellow);
-}
-
-.dotGreen{
-    background-color: var(--color-green);
-}
-
-.dotBlue{
-    background-color: var(--color-blue);
-}
-
-.dotTeal{
-    background-color: var(--color-teal);
-}
-
-.dotTan{
-    background-color: var(--color-brown);
-}
+.dotRed{ background-color: var(--color-red); }
+.dotYellow{ background-color: var(--color-yellow); }
+.dotGreen{ background-color: var(--color-green); }
+.dotBlue{ background-color: var(--color-blue); }
+.dotTeal{ background-color: var(--color-teal); }
+.dotTan{ background-color: var(--color-brown); }
 
 .notifText{
     display: block;
@@ -721,3 +661,24 @@ footer{
     color: var(--text-muted);
     white-space: normal;
 }
+/* FIX BIBLIODESK HEADER ALIGNMENT */
+.topbar .container-fluid {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.topbar .navbar-brand {
+    display: flex;
+    align-items: center;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.topbar .navbar-brand img {
+    height: 26px;
+    width: auto;
+    object-fit: contain;
+}
+.notifItem.isRead{ opacity: .6; }
+.notifItem.isRead .notifDot{ background-color: var(--color-brown-light); }

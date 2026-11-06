@@ -9,19 +9,25 @@ the 8 rows currently displayed -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Report Logs | BiblioDesk</title>
+    <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../frontend/css/root.css">
+    <link rel="stylesheet" href="../frontend/css/template.css">
     <link rel="stylesheet" href="../frontend/css/adminlog.css">
 </head>
 
 <body>
-<!-- SIDEBAR -->
+<!-- SIDEBAR For Admin -->
 <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light"
        tabindex="-1"
        id="sidebar"
+       aria-labelledby="sidebarLabel"
        data-bs-scroll="true">
 
-    <div class="offcanvas-header">
-        <h5 class="offcanvas-title">Menu</h5>
+    <div class="offcanvas-header py-3 px-3 d-md-none">
+        <h5 class="offcanvas-title d-flex align-items-center m-0" id="sidebarLabel">
+            <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk Logo" height="24">
+        </h5>
         <button type="button"
                 class="btn-close btn-close-white"
                 data-bs-dismiss="offcanvas"
@@ -31,74 +37,102 @@ the 8 rows currently displayed -->
 
     <div class="offcanvas-body d-flex flex-column flex-grow-1 p-0">
 
-        <div class="logoContain d-flex align-items-center px-3">
+        <div class="logoContain justify-content-center justify-content-md-start px-3 pt-2 d-none d-md-flex">
             <img src="../frontend/assets/BiblioDesk_IconW.png"
-                 alt="BiblioDesk Logo"
-                 width="48">
+                 alt="Bibliodesk Logo"
+                 width="49">
         </div>
 
-        <nav aria-label="Main">
-            <ul class="nav flex-column gap-3 pt-4">
+             <nav aria-label="Main">
+                <ul class="nav flex-column gap-3 pt-4">
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="admindb.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
+                            </span>
+                            <span class="sideText">Overview</span>
+                        </a>
+                    </li>
+                        <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="admin_announcement.php" aria-current="page">
+                            <span
+                                class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/announcement.png"
+                                    alt="create announcements page" width="28">
+                            </span>
+                            <span class="sideText">Announcements</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="librarymanagement.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/lib-default.png" alt="library management page"
+                                    width="28">
+                            </span>
+                            <span class="sideText">Library Management</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="AdminAccManagedb.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/help-default.png" alt="accounts management page"
+                                    width="28">
+                            </span>
+                            <span class="sideText">Account Manage</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="adminlog.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                                <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
+                            </span>
+                            <span class="sideText">Report Logs</span>
+                        </a>
+                    </li>
+                </ul>
+            </nav>
 
-                <li class="nav-item">
-                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="admindb_overview.php">
-                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                            <img src="../frontend/assets/icons/ow-default.png" alt="Overview" width="28">
-                        </span>
-                        <span class="sideText">Overview</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="#">
-                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                            <img src="../frontend/assets/icons/mybooks-default.png" alt="My Books" width="28">
-                        </span>
-                        <span class="sideText">My Books</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="#">
-                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                            <img src="../frontend/assets/icons/lib-default.png" alt="Library" width="28">
-                        </span>
-                        <span class="sideText">Library</span>
-                    </a>
-                </li>
-
-                <li class="nav-item">
-                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"href="adminlog.php" aria-current="page">
-                        <span class="sideIcon sideIconActive bg-light rounded-circle d-flex align-items-center justify-content-center">
-                            <img src="../frontend/assets/icons/due.png" alt="Report Logs" width="28">
-                        </span>
-                        <span class="sideText">Report Logs</span>
-                    </a>
-                </li>
-                <li class="nav-item">
-                 <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="admin_announcement.php" aria-current="page">
-                  <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                     <img src="../frontend/assets/icons/announcement.png" alt="announcements page" width="28">
-                        </span>
-                         <span class="sideText">Announcements</span>
-                      </a>
-                 </li>
-
-            </ul>
-        </nav>
-
+        <!-- LOGOUT (opens the confirmation popup) -->
         <div class="mt-auto pb-4">
             <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-               href="logout.php">
+               href="#"
+               data-bs-toggle="modal"
+               data-bs-target="#logoutModal">
                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                    <img src="../frontend/assets/icons/logout.png" alt="Log Out" width="28">
+                    <img src="../frontend/assets/icons/logout-default.png" alt="logout" width="28">
                 </span>
-                <span class="sideText">Log Out</span>
+                <span class="sideText">Logout</span>
             </a>
         </div>
 
     </div>
 </aside>
+
+
+<!-- LOGOUT CONFIRMATION MODAL -->
+<div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="background-color: var(--main-bg-color);">
+            <div class="modal-header text-white border-secondary" style="background-color: var(--main-color);">
+                <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body justify-content-center text-center m-5 fs-4">
+                Are you sure you want to log out?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <a href="login.php" class="btn btn-danger">Log Out</a>
+            </div>
+        </div>
+    </div>
+</div>
 
 
 <!-- TOP NAVBAR -->
@@ -116,7 +150,7 @@ the 8 rows currently displayed -->
                 <span class="navbar-toggler-icon"></span>
             </button>
 
-            <a class="navbar-brand m-0" href="liblog.php">
+            <a class="navbar-brand m-0" href="adminlog.php">
                 <img src="../frontend/assets/BiblioDesk_White_name.png"
                      alt="BiblioDesk"
                      height="26">
@@ -126,88 +160,26 @@ the 8 rows currently displayed -->
 
         <div class="d-flex align-items-center gap-4">
 
-            <!-- ANNOUNCEMENTS -->
+            <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
             <div class="dropdown">
 
                 <button type="button"
-                        class="btn p-0 border-0 position-relative" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open announcements">
+                        class="btn p-0 border-0 position-relative"
+                        id="notifToggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        aria-label="Open announcements">
                     <img src="../frontend/assets/icons/notifbell.png" alt="Notifications" width="34">
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notifBadge"> 4
-                    </span>
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notifBadge"
+                          id="notifBadge" hidden>0</span>
                 </button>
-                <ul class="dropdown-menu dropdown-menu-end notifMenu">
 
+                <ul class="dropdown-menu dropdown-menu-end notifMenu" id="notifMenu">
                     <li class="notifHead">
                         <span>Announcements</span>
-                        <span class="notifHeadCount">4 new</span>
+                        <span class="notifHeadCount">0 new</span>
                     </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotGreen"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">New arrivals in Fiction</span>
-                                <span class="notifBody">12 new titles added to the Fiction shelf this week.</span>
-                                <span class="notifDate">Today</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotGreen"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">2 books approved for your reservation</span>
-                                <span class="notifBody">Pick them up at the front desk before Friday.</span>
-                                <span class="notifDate">Yesterday</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotTeal"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">Digital Library ID QR available</span>
-                                <span class="notifBody">Scan your QR on the Overview page for faster checkout.</span>
-                                <span class="notifDate">3 days ago</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotBlue"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">Annual Book Fest — November 10</span>
-                                <span class="notifBody">Join us at the library hall for the annual book fest.</span>
-                                <span class="notifDate">5 days ago</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotYellow"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">Policy update: 3 books per week</span>
-                                <span class="notifBody">Users can now borrow up to 3 books per week.</span>
-                                <span class="notifDate">Oct 16</span>
-                            </span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="dropdown-item notifItem" href="#">
-                            <span class="notifDot dotRed"></span>
-                            <span class="notifText">
-                                <span class="notifTitle">System maintenance on Oct 31</span>
-                                <span class="notifBody">5:00 pm to 8:00 pm (GMT+8). All services will be paused.</span>
-                                <span class="notifDate">Oct 08</span>
-                            </span>
-                        </a>
-                    </li>
-
+                    <li><span class="notifEmpty">No announcements yet.</span></li>
                 </ul>
             </div>
 
@@ -238,63 +210,63 @@ the 8 rows currently displayed -->
     <h1 class="pageTitle">Report Logs</h1>
 
     <!-- QUICK STATS -->
-    <section class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
-
-        <div class="col">
-            <div class="cardsColor card border-0 shadow rounded-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="redBox d-inline-block p-4 rounded-3"></span>
-                        <p class="display-4 mb-0">0</p>
+    <section aria-label="Report summary">
+        <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
+            <div class="col">
+                <div class="cardsColor card border-0 shadow rounded-4 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="redBox d-inline-block p-4 rounded-3"></span>
+                            <p class="display-4 mb-0">0</p>
+                        </div>
+                        <p class="text-end fs-5 mb-0 mt-3">Current Reports</p>
                     </div>
-                    <p class="text-end fs-5 mb-0 mt-3">Current Reports</p>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="cardsColor card border-0 shadow rounded-4 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="yellowBox d-inline-block p-4 rounded-3"></span>
+                            <p class="display-4 mb-0">0</p>
+                        </div>
+                        <p class="text-end fs-5 mb-0 mt-3">Forwarded to Admin</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="cardsColor card border-0 shadow rounded-4 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="redBox d-inline-block p-4 rounded-3"></span>
+                            <p class="display-4 mb-0">0</p>
+                        </div>
+                        <p class="text-end fs-5 mb-0 mt-3">Broken Links</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col">
+                <div class="cardsColor card border-0 shadow rounded-4 h-100">
+                    <div class="card-body d-flex flex-column">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <span class="greenBox d-inline-block p-4 rounded-3"></span>
+                            <p class="display-4 mb-0">0</p>
+                        </div>
+                        <p class="text-end fs-5 mb-0 mt-3">Resolved This Week</p>
+                    </div>
                 </div>
             </div>
         </div>
-
-        <div class="col">
-            <div class="cardsColor card border-0 shadow rounded-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="yellowBox d-inline-block p-4 rounded-3"></span>
-                        <p class="display-4 mb-0">0</p>
-                    </div>
-                    <p class="text-end fs-5 mb-0 mt-3">Forwarded to Admin</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="cardsColor card border-0 shadow rounded-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="redBox d-inline-block p-4 rounded-3"></span>
-                        <p class="display-4 mb-0">0</p>
-                    </div>
-                    <p class="text-end fs-5 mb-0 mt-3">Broken Links</p>
-                </div>
-            </div>
-        </div>
-
-        <div class="col">
-            <div class="cardsColor card border-0 shadow rounded-4 h-100">
-                <div class="card-body">
-                    <div class="d-flex justify-content-between align-items-start">
-                        <span class="greenBox d-inline-block p-4 rounded-3"></span>
-                        <p class="display-4 mb-0">0</p>
-                    </div>
-                    <p class="text-end fs-5 mb-0 mt-3">Resolved Reports This Week</p>
-                </div>
-            </div>
-        </div>
-
     </section>
 
 
     <!-- TOOLBAR -->
     <section class="toolbar">
 
-        <form class="searchWrap" method="get" action="liblog.php" role="search">
+        <form class="searchWrap" method="get" action="adminlog.php" role="search">
             <input class="form-control searchInput"
                    type="search"
                    name="q"
@@ -303,11 +275,11 @@ the 8 rows currently displayed -->
                    aria-label="Search reports">
         </form>
 
-        <a class="btnExport" href="liblog-export.php">
+        <a class="btnExport" href="adminlog.php">
             Export CSV
         </a>
 
-<!-- FLOATING FILTER -->
+        <!-- FLOATING FILTER -->
         <div class="dropdown filterDropdown">
 
             <button class="btnFilter"
@@ -327,7 +299,7 @@ the 8 rows currently displayed -->
             <div class="dropdown-menu dropdown-menu-end filterPanel"
                  aria-labelledby="filterDropdown">
 
-                <form id="filterForm" method="get" action="liblog.php">
+                <form id="filterForm" method="get" action="adminlog.php">
 
                     <h5 class="filterTitle">Filter Reports</h5>
 
@@ -360,7 +332,7 @@ the 8 rows currently displayed -->
                             Apply Filters
                         </button>
 
-                        <a class="btnReset" href="liblog.php">
+                        <a class="btnReset" href="adminlog.php">
                             Reset
                         </a>
                     </div>
@@ -407,7 +379,7 @@ the 8 rows currently displayed -->
                     </div>
 
                     <div class="cell">
-                        <form method="post" action="liblog.php">
+                        <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
                             <input type="hidden" name="report_id" value="1">
                             <button class="action-btn" type="submit">Forward</button>
@@ -549,7 +521,7 @@ the 8 rows currently displayed -->
                     </div>
 
                     <div class="cell">
-                        <form method="post" action="liblog.php">
+                        <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
                             <input type="hidden" name="report_id" value="7">
                             <button class="action-btn" type="submit">Forward</button>
@@ -576,7 +548,7 @@ the 8 rows currently displayed -->
                     </div>
 
                     <div class="cell">
-                        <form method="post" action="liblog.php">
+                        <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
                             <input type="hidden" name="report_id" value="8">
                             <button class="action-btn" type="submit">Forward</button>
@@ -598,23 +570,23 @@ the 8 rows currently displayed -->
                 </li>
 
                 <li class="page-item active">
-                    <a class="page-link" href="liblog.php?page=1">1</a>
+                    <a class="page-link" href="adminlog.php?page=1">1</a>
                 </li>
 
                 <li class="page-item">
-                    <a class="page-link" href="liblog.php?page=2">2</a>
+                    <a class="page-link" href="adminlog.php?page=2">2</a>
                 </li>
 
                 <li class="page-item">
-                    <a class="page-link" href="liblog.php?page=3">3</a>
+                    <a class="page-link" href="adminlog.php?page=3">3</a>
                 </li>
 
                 <li class="page-item">
-                    <a class="page-link" href="liblog.php?page=2">Next</a>
+                    <a class="page-link" href="adminlog.php?page=2">Next</a>
                 </li>
             </ul>
 
-            <form class="perPage" method="get" action="liblog.php">
+            <form class="perPage" method="get" action="adminlog.php">
                 <label for="perPage">Rows Per Page:</label>
 
                 <select class="form-select"
@@ -672,10 +644,9 @@ the 8 rows currently displayed -->
     </div>
 
 </footer>
+    <script src="../frontend/js/notif.js" defer></script>
     <script src="../frontend/js/librarianlog.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
-
-
 
 </body>
 </html>
