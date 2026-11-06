@@ -80,7 +80,7 @@ footer {
     }
 
     footer {
-        padding-left: var(--sidebar-default); /* Keeps footer aligned with main content next to the fixed sidebar */
+        padding-left: var(--sidebar-default); 
     }
 }
 
