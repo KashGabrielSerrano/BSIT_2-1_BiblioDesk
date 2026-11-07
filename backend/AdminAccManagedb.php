@@ -4,27 +4,35 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Account Management</title>
+        <title>Announcements | BiblioDesk</title>
+        <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
-        <link rel="stylesheet" href="../frontend/css/userdb.css">
+        <link rel="stylesheet" href="../frontend/css/root.css">
         <link rel="stylesheet" href="../frontend/css/accountmgmt.css">
+        <link rel="stylesheet" href="../frontend/css/admindb.css">
     </head>
     <body>
-        <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel" data-bs-scroll="true">
-            <div class="offcanvas-header">
-                <h5 class="offcanvas-title" id="sidebarLabel">Menu</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
+        <!-- SIDEBAR For Admin -->
+        <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar"
+            aria-labelledby="sidebarLabel" data-bs-scroll="true">
+            <div class="offcanvas-header py-3 px-3 d-md-none">
+                <h5 class="offcanvas-title d-flex align-items-center m-0" id="sidebarLabel">
+                    <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk Logo" height="24">
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas"
+                    data-bs-target="#sidebar" aria-label="Close"></button>
             </div>
 
             <div class="offcanvas-body d-flex flex-column flex-grow-1 p-0">
-                <div class="logoContain d-flex align-items-center px-3">
-                    <img src="../frontend/assets/BiblioDesk_IconW.png" alt="Bibliodesk Logo" width="48">
+                <div class="logoContain justify-content-center justify-content-md-start px-3 pt-2 d-none d-md-flex">
+                    <img src="../frontend/assets/BiblioDesk_IconW.png" alt="Bibliodesk Logo" width="49">
                 </div>
 
                 <nav aria-label="Main">
                     <ul class="nav flex-column gap-3 pt-4">
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="admindb.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="admindb.php">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                     <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
                                 </span>
@@ -32,33 +40,78 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="mybooks.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="admin_announcement.php">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                    <img src="../frontend/assets/icons/mybooks-default.png" alt="my books page" width="28">
+                                    <img src="../frontend/assets/icons/announcement.png"
+                                        alt="create announcements page" width="28">
                                 </span>
-                                <span class="sideText">My Books</span>
+                                <span class="sideText">Announcements</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="user_librarydb.php">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="librarymanagement.php">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                    <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
+                                    <img src="../frontend/assets/icons/lib-default.png" alt="library management page"
+                                        width="28">
                                 </span>
-                                <span class="sideText">Library</span>
+                                <span class="sideText">Library Management</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="accountmgmt.html" aria-current="page">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="AdminAccManagedb.php" aria-current="page">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                                    <img src="../frontend/assets/icons/accounts-default.png" alt="account management page" width="28">
+                                    <img src="../frontend/assets/icons/help-default.png" alt="accounts management page"
+                                        width="28">
                                 </span>
-                                <span class="sideText">Accounts</span>
+                                <span class="sideText">Account Manage</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="adminlog.php">
+                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
+                                </span>
+                                <span class="sideText">Report Logs</span>
                             </a>
                         </li>
                     </ul>
                 </nav>
+
+                <div class="mt-auto pb-4">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="#"
+                        data-bs-toggle="modal" data-bs-target="#logoutModal">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/logout-default.png" alt="logout" width="28">
+                        </span>
+                        <span class="sideText">Logout</span>
+                    </a>
+                </div>
             </div>
         </aside>
+
+        <!-- LOGOUT CONFIRMATION MODAL -->
+        <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="background-color: var(--main-bg-color);">
+                    <div class="modal-header text-white border-secondary" style="background-color: var(--main-color);">
+                        <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body justify-content-center text-center m-5 fs-4">
+                        Are you sure you want to log out?
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <a href="login.php" class="btn btn-danger">Log Out</a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <header class="navbar navbar-dark shadow topbar">
             <div class="container-fluid">
@@ -73,14 +126,33 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-4">
-                    <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Notification Area">
-                        <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">4</span>
-                    </button>
 
-                    <a href="admindb.php?tab=settings" aria-label="Open Settings">
-                        <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
-                    </a>
+            <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
+            <div class="dropdown">
+
+                <button type="button"
+                        class="btn p-0 border-0 position-relative"
+                        id="notifToggle"
+                        data-bs-toggle="dropdown"
+                        aria-expanded="false"
+                        aria-label="Open announcements">
+                    <img src="../frontend/assets/icons/notifbell.png" alt="Notifications" width="34">
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notifBadge"
+                          id="notifBadge" hidden>0</span>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-end notifMenu" id="notifMenu">
+                    <li class="notifHead">
+                        <span>Announcements</span>
+                        <span class="notifHeadCount">0 new</span>
+                    </li>
+                    <li><span class="notifEmpty">No announcements yet.</span></li>
+                </ul>
+            </div>
+                    
+                <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
+                      <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
+                </a>
 
                     <button type="button" class="btn p-0 border-0" aria-label="Open Account Information">
                         <img src="../frontend/assets/icons/pfp-icon.png" alt="" class="rounded-circle" width="44" height="44">
@@ -580,6 +652,7 @@
         </div>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="../frontend/js/notif.js" defer></script>
         <script src="../frontend/js/accountmgmt.js"></script>
     </body>
 </html>

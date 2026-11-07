@@ -475,34 +475,306 @@
     .amTabs{ flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; }
     .amTabs .nav-link{ padding: .75rem 1rem; font-size: 1rem; }
 
-    /* the table keeps fixed column widths and scrolls sideways */
-    .scrollHint{ display: block; }
-    .amTable{ min-width: 850px; border-spacing: 0 10px; }
-    .amTable thead th:nth-child(1){ width: 250px; padding-left: 1rem; }
-    .amTable thead th:nth-child(2){ width: 90px; }
-    .amTable thead th:nth-child(3){ width: 130px; }
-    .amTable thead th:nth-child(4){ width: 150px; }
-    .amTable thead th:nth-child(5){ width: 115px; }
-    .amTable thead th:nth-child(6){ width: 115px; }
+    /* the table becomes a stack of cards: no sideways scrolling */
+    .scrollHint{ display: none; }
+    .amTableWrap{ overflow-x: visible; }
+    .amTable, .amTable.fiveCol{ min-width: 0; display: block; table-layout: auto; }
+    .amTable tbody{ display: block; }
 
-    /* five-column variant (librarianAccmanagement.php): remap the widths */
-    .amTable.fiveCol{ min-width: 760px; }
-    .amTable.fiveCol thead th:nth-child(2){ width: 130px; }
-    .amTable.fiveCol thead th:nth-child(3){ width: 150px; }
-    .amTable.fiveCol thead th:nth-child(4){ width: 115px; }
-    .amTable.fiveCol thead th:nth-child(5){ width: 115px; }
-    .amTable.fiveCol tbody td:nth-child(4){ padding: 0 .5rem; }
+    /* the header row only stays for "select all" on the Pending tab */
+    .amTable thead{ display: none; }
+    .amTable.isPending thead{ display: block; }
+    .amTable.isPending thead tr{ display: block; }
+    .amTable thead th{ display: none; }
+    .amTable thead th:first-child{
+        display: block; width: auto; padding: .85rem 1rem; margin-bottom: .75rem;
+        border-radius: 18px; text-align: left;
+    }
 
-    .amTable tbody td{ height: 100px; }
-    .amTable tbody td:first-child{ padding-left: 1rem; }
-    .amTable tbody td:nth-child(5),
-    .amTable tbody td:nth-child(6){ padding: 0 .5rem; }
+    .amTable tbody tr[data-id]{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        margin-bottom: 14px;
+        border: 2px solid var(--am-border);
+        border-radius: 18px;
+        overflow: hidden;
+    }
+    .amTable tbody tr[data-id][hidden]{ display: none; }
+    .amTable tbody tr[data-id]:focus-visible{ border-radius: 18px; }
+
+    .amTable tbody td{
+        display: block;
+        height: auto;
+        text-align: left;
+        border: 0;
+        border-radius: 0;
+        padding: .75rem 1rem;
+        font-size: .9rem;
+    }
+    .amTable tbody td:first-child{
+        grid-column: 1 / -1;
+        border: 0;
+        border-radius: 0;
+        padding: 1rem;
+        font-size: 1rem;
+    }
+    .amTable tbody td:last-child{ border-right: 0; border-radius: 0; }
+    /* Program takes a full row in the six-column page */
+    .amTable:not(.fiveCol) tbody td:nth-child(4){ grid-column: 1 / -1; }
+
+    /* small label above each value, from data-label */
+    .amTable tbody td[data-label]::before{
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .25rem;
+        font-size: .72rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        opacity: .8;
+    }
+
+    .amTable tbody .pill{ max-width: 160px; width: 100%; padding: .45rem .75rem; font-size: .8rem; }
+
+    .amTable.isPending .rowActions{ flex-direction: row; gap: .5rem; }
+    .amTable.isPending .actBtn{ flex: 1; max-width: none; min-height: 44px; font-size: .85rem; }
+
+    .amTable tbody tr.emptyRow{ display: block; }
+    .amTable tbody tr.emptyRow[hidden]{ display: none; }
+    .amTable tbody tr.emptyRow td{ text-align: center; border-radius: 18px; }
 
     .userAvatar{ width: 44px; height: 44px; }
     .userName{ font-size: 1.05rem; }
     .userEmail{ font-size: .9rem; }
 
-    /* smaller pills and buttons so Status and Active Status never overlap */
-    .pill{ padding: .4rem .5rem; font-size: .75rem; }
-    .actBtn{ min-width: 0; width: 100%; max-width: 95px; padding: .3rem .5rem; font-size: .72rem; }
+}
+
+/* ---------- phone layout polish (same look as Settings) ---------- */
+@media (max-width: 575.98px){
+    /* tabs become swipeable pills with a fade on the right edge */
+    .amTabs{
+        background: var(--main-color);
+        border: 0;
+        border-radius: 18px;
+        padding: .5rem;
+        gap: .35rem;
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, #000 88%, transparent);
+                mask-image: linear-gradient(to right, #000 88%, transparent);
+    }
+    .amTabs::-webkit-scrollbar{ display: none; }
+    .amTabs .nav-link,
+    .amTabs .nav-link:hover{
+        flex: none;
+        min-height: 44px;
+        display: inline-flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .5rem 1.1rem;
+        margin: 0;
+        border: 0;
+        border-radius: 999px;
+        font-size: .95rem;
+        color: var(--fcolor-secondary);
+        scroll-snap-align: center;
+    }
+    .amTabs .nav-link.active{
+        background: var(--fcolor-secondary);
+        color: var(--main-color);
+    }
+
+    /* comfortable touch targets */
+    .searchBox{ min-height: 48px; font-size: 1rem; padding: .6rem 1rem; border-radius: 999px; }
+    .toolBtn{ min-height: 46px; font-size: 1rem; border-radius: 999px; }
+    .toolBtn.iconOnly{ min-width: 46px; }
+}
+
+/* ---------- phone layout: swipeable pill tabs and bigger touch targets ---------- */
+@media (max-width: 767.98px){
+    .amTabs{
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: .35rem;
+        padding: .5rem;
+        border: 0;
+        border-radius: 18px;
+        background: var(--main-color);
+        scroll-snap-type: x proximity;
+        scrollbar-width: none;
+        -webkit-mask-image: linear-gradient(to right, #000 90%, transparent);
+                mask-image: linear-gradient(to right, #000 90%, transparent);
+    }
+    .amTabs::-webkit-scrollbar{ display: none; }
+    .amTabs .nav-item{ flex: none; scroll-snap-align: center; }
+    .amTabs .nav-link{
+        min-height: 44px;
+        padding: .55rem 1.1rem;
+        margin: 0;
+        border: 0;
+        border-radius: 999px;
+        font-size: 1rem;
+        white-space: nowrap;
+        color: var(--fcolor-secondary);
+    }
+    .amTabs .nav-link.active{
+        background: var(--fcolor-secondary);
+        color: var(--main-color);
+    }
+    .amTabs .nav-link:hover{ color: var(--fcolor-secondary); }
+    .amTabs .nav-link.active:hover{ color: var(--main-color); }
+
+    .searchBox{ min-height: 48px; }
+    .toolBtn{ min-height: 46px; }
+}
+
+/* ---------- phone topbar: menu + logo on the left, notification / settings / account on the right ---------- */
+@media (max-width: 767.98px){
+    .topbar .container-fluid{ flex-wrap: nowrap; justify-content: space-between; gap: .5rem; }
+    .topbar .container-fluid > div:first-child{ min-width: 0; flex: 1 1 0; }
+    .topbar .container-fluid > div:last-child{ flex: none; margin-left: auto; gap: 1rem !important; }
+    .topbar .navbar-brand{ min-width: 0; flex: 0 1 auto; overflow: hidden; }
+    .topbar .navbar-brand img{ max-width: 100%; height: auto; max-height: 26px; width: auto; }
+    .topbar .container-fluid > div:last-child img[width="34"]{ width: 28px; height: auto; }
+    .topbar .container-fluid > div:last-child img[width="44"]{ width: 40px; height: 40px; }
+}
+
+@media (max-width: 359.98px){
+    .topbar .container-fluid > div:last-child{ gap: .65rem !important; }
+    .topbar .container-fluid > div:first-child{ gap: .5rem !important; }
+}
+
+/* ---------- phone topbar: no logo, hamburger centred on the left ---------- */
+@media (max-width: 767.98px){
+    .topbar .container-fluid{ align-items: center; }
+    .topbar .navbar-brand{ display: none; }
+    .topbar .container-fluid > div:first-child{ flex: none; align-items: center; }
+    .topbar .navbar-toggler{
+        display: flex; align-items: center; justify-content: center;
+        width: 52px; height: 46px; margin: 0; padding: 0;
+    }
+}
+
+/* ---------- announcement bell (notification dropdown, filled by notif.js) ---------- */
+.notifBadge {
+    background-color: var(--cc-qs-red, #c0393b);
+    color: var(--fcolor-secondary, #fff);
+    font-size: .72rem;
+    padding: .3em .55em;
+}
+
+.notifMenu {
+    width: 360px;
+    max-width: 86vw;
+    padding: 0;
+    border: 1px solid var(--main-color, #2c251d);
+    border-radius: .75rem;
+    overflow: hidden;
+    background-color: var(--main-bg-color, #fce9d9);
+}
+
+.notifHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--dark-header, var(--main-color, #2c251d));
+    color: var(--fcolor-secondary, #fff);
+    padding: .75rem 1rem;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.notifHeadCount {
+    color: var(--cc-nb-ne, #d9bfa4);
+    font-size: .78rem;
+    font-weight: 400;
+}
+
+.notifItem {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: .9rem 1rem;
+    border-bottom: 1px solid var(--line, rgba(44, 37, 29, .2));
+    white-space: normal;
+    color: var(--text, var(--fcolor-main, #2c251d));
+}
+
+.notifItem:last-child { border-bottom: 0; }
+
+.notifItem:hover,
+.notifItem:focus {
+    background-color: rgba(158, 123, 88, .16);
+    color: var(--text, var(--fcolor-main, #2c251d));
+}
+
+.notifDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+    margin-top: 6px;
+}
+
+.dotRed    { background-color: var(--cc-qs-red, #c0393b); }
+.dotYellow { background-color: var(--cc-qs-yellow, #e0b43c); }
+.dotGreen  { background-color: var(--cc-qs-green, #4a9a3f); }
+.dotBlue   { background-color: var(--cc-book-ra, #3f7fb5); }
+.dotTeal   { background-color: var(--cc-dates, #2f6f73); }
+.dotTan    { background-color: var(--cc-book-ne, #9e7b58); }
+
+.notifText {
+    display: block;
+    min-width: 0;
+}
+
+.notifTitle {
+    display: block;
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--ink, var(--fcolor-main, #2c251d));
+}
+
+.notifBody {
+    display: block;
+    font-size: .82rem;
+    color: var(--muted, rgba(44, 37, 29, .75));
+    margin-top: 2px;
+    line-height: 1.45;
+}
+
+.notifDate {
+    display: block;
+    font-size: .72rem;
+    color: var(--placeholder, rgba(44, 37, 29, .55));
+    margin-top: 4px;
+}
+
+.notifEmpty {
+    display: block;
+    padding: 1.6rem 1rem;
+    text-align: center;
+    color: var(--muted, rgba(44, 37, 29, .75));
+    white-space: normal;
+}
+
+.notifItem.isRead { opacity: .6; }
+.notifItem.isRead .notifDot { background-color: var(--cc-nb-ne, #d9bfa4); }
+
+/* phone: the dropdown fits the screen width */
+@media (max-width: 767.98px){
+    .topbar .dropdown{ position: static; }
+
+    .topbar .notifMenu{
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 24px) !important;
+        max-width: 420px !important;
+        margin: .5rem 0 0 !important;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto !important;
+    }
 }
