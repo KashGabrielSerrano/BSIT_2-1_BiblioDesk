@@ -32,11 +32,15 @@
                 <a class="nav-link text-light px-3 py-1 rounded-pill" href="#contactus">Contact Us</a>
             </nav>
 
-            <div class="nav-pills-custom d-flex align-items-center gap-2 mt-3 mt-md-0 pb-2 pb-md-0">
+            <div class="d-none d-md-flex nav-pills-custom d-flex align-items-center gap-2 mt-3 mt-md-0 pb-2 pb-md-0">
                 <a class="nav-link text-light px-3 py-1 rounded-pill" href="login.php">Log In</a>
                 <a class="nav-link text-light px-3 py-1 rounded-pill" href="registration.php">Sign Up</a>
             </div>
 
+            <div class="d-flex gap-2 pb-3 mt-4 d-md-none w-100">
+               <a class="btn btn-outline-light rounded-pill py-2 text-center w-50" href="login.php">Log In</a>
+               <a class="btn btn-light text-dark rounded-pill text-center w-50 fw-medium" href="registration.php">Sign Up</a>
+            </div>
         </div>
     </div>
 </header>
