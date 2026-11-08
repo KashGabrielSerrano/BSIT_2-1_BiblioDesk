@@ -8,12 +8,11 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../frontend/css/root.css">
-    <link rel="stylesheet" href="../frontend/css/template.css">
     <link rel="stylesheet" href="../frontend/css/admin_announcement.css">
 </head>
 
 <body>
-    <!-- SIDEBAR For Admin -->
+    <!-- SIDEBAR -->
     <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar"
         aria-labelledby="sidebarLabel" data-bs-scroll="true">
         <div class="offcanvas-header py-3 px-3 d-md-none">
@@ -32,20 +31,20 @@
                 <ul class="nav flex-column gap-3 pt-4">
                     <li class="nav-item">
                         <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="admindb.php">
+                            href="admindb_overview.php">
                             <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                 <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
                             </span>
                             <span class="sideText">Overview</span>
                         </a>
                     </li>
-                        <li class="nav-item">
+                    <li class="nav-item">
                         <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
                             href="admin_announcement.php" aria-current="page">
                             <span
                                 class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                                <img src="../frontend/assets/icons/announcement.png"
-                                    alt="create announcements page" width="28">
+                                <img src="../frontend/assets/icons/announcement.png" alt="create announcements page"
+                                    width="28">
                             </span>
                             <span class="sideText">Announcements</span>
                         </a>
@@ -64,10 +63,10 @@
                         <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
                             href="AdminAccManagedb.php">
                             <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/help-default.png" alt="accounts management page"
+                                <img src="../frontend/assets/icons/business-mail.png" alt="accounts management page"
                                     width="28">
                             </span>
-                            <span class="sideText">Account Manage</span>
+                            <span class="sideText">User Management</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -77,6 +76,15 @@
                                 <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
                             </span>
                             <span class="sideText">Report Logs</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                            href="admin_helpdesk.php">
+                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                <img src="../frontend/assets/icons/help-default.png" alt="helpdesk page" width="28">
+                            </span>
+                            <span class="sideText">Helpdesk</span>
                         </a>
                     </li>
                 </ul>
@@ -94,7 +102,6 @@
         </div>
     </aside>
 
-    <!-- LOGOUT CONFIRMATION MODAL -->
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content" style="background-color: var(--main-bg-color);">
@@ -128,7 +135,6 @@
             </div>
 
             <div class="d-flex align-items-center gap-4 topActions">
-                <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
                 <div class="dropdown">
                     <button type="button" class="btn p-0 border-0 position-relative" id="notifToggle"
                         data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open Notification Area">
@@ -159,7 +165,6 @@
     </header>
 
     <main class="container-fluid px-3 px-md-5 py-4">
-        <!--Page title and create button-->
         <section class="d-flex flex-wrap justify-content-between align-items-start gap-3 mb-4">
             <div>
                 <h1 class="display-6 fw-semibold mb-1">Announcements</h1>
@@ -167,7 +172,6 @@
             <button class="btn btnMain" id="btnCreate" type="button">+ Create Announcement</button>
         </section>
 
-        <!--Announcement quick stats (numbers are filled in by admin_announcement.js)-->
         <section aria-label="Announcement summary">
             <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
                 <div class="col">
@@ -217,7 +221,6 @@
             </div>
         </section>
 
-        <!--Search, filters, sort-->
         <section class="d-flex flex-wrap align-items-center gap-2 mt-5 mb-3" aria-label="Search and filter">
             <input class="form-control searchInput" id="searchInput" type="search" placeholder="Search announcements..." aria-label="Search announcements">
 
@@ -242,7 +245,6 @@
             <button class="btn btn-outline-dark" id="btnReset" type="button">Reset</button>
         </section>
 
-        <!--Announcements list (rows are rendered by admin_announcement.js)-->
         <section class="cardsColor card border-0 shadow rounded-4" aria-labelledby="recentTitle">
             <div class="card-header d-flex flex-wrap justify-content-between align-items-baseline gap-2 px-4 py-3 bg-transparent border-light border-opacity-25">
                 <h2 class="h3 mb-0" id="recentTitle">Recent Announcements</h2>
@@ -259,7 +261,6 @@
         </section>
     </main>
 
-    <!--Create / edit announcement-->
     <dialog class="annDialog" id="annDialog">
         <form id="annForm" method="dialog" novalidate>
             <h2 class="h4 fw-semibold mb-4" id="dialogTitle">Create Announcement</h2>
@@ -304,7 +305,7 @@
         </form>
     </dialog>
 
-    <!-- Footer -->
+    <!-- FOOTER -->
     <footer class="text-light mt-5 py-5">
         <div class="container">
             <div class="row justify-content-around gy-4">

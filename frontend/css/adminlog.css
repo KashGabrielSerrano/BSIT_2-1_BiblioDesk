@@ -20,6 +20,7 @@ main{
 .topbar{
     background-color: var(--main-color);
     min-height: var(--topbar-height);
+    position: relative;
 }
 
 .cardsColor{
@@ -27,12 +28,10 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* Summary cards */
 .redBox{ background-color: var(--cc-qs-red); }
 .yellowBox{ background-color: var(--cc-qs-yellow); }
 .greenBox{ background-color: var(--cc-qs-green); }
 
-/* Page title */
 .pageTitle{
     font-size: clamp(2rem, 4vw, 3rem);
     font-weight: 800;
@@ -40,7 +39,6 @@ main{
     margin-bottom: 1rem;
 }
 
-/* Search and form */
 .form-control{
     background-color: var(--input-bg);
     border: 1px solid var(--line);
@@ -72,7 +70,6 @@ main{
     padding: .75rem 1.25rem;
 }
 
-/* Export button */
 .btnExport{
     margin-left: auto;
     display: inline-block;
@@ -90,7 +87,6 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* Filter button */
 .filterDropdown{ position: relative; }
 
 .btnFilter{
@@ -188,7 +184,6 @@ main{
     color: var(--fcolor-secondary);
 }
 
-/* Report table */
 .tableScroll{
     overflow-x: auto;
     padding-bottom: 4px;
@@ -258,7 +253,6 @@ main{
     color: var(--brown);
 }
 
-/* Issue and status badges */
 .issue-badge-red{
     background-color: var(--cc-book-ne);
     color: var(--fcolor-secondary);
@@ -322,7 +316,6 @@ main{
     white-space: nowrap;
 }
 
-/* Action button */
 .action-btn{
     background-color: var(--cc-book-ra);
     color: var(--fcolor-secondary);
@@ -341,7 +334,6 @@ main{
     color: var(--disabled-text);
 }
 
-/* Pagination */
 .pagination .page-link{
     background-color: var(--main-bg-color);
     color: var(--text);
@@ -354,6 +346,11 @@ main{
     color: var(--fcolor-secondary);
 }
 
+.pagination .page-item.disabled .page-link{
+    color: var(--muted);
+    opacity: .6;
+}
+
 .pageInfo{ margin: 1.2rem 0 .4rem; }
 
 .logPager{
@@ -364,7 +361,7 @@ main{
     flex-wrap: wrap;
 }
 
-.logPager .pagination{ margin: 0; }
+.logPager .pagination{ margin: 0; flex-wrap: wrap; }
 
 .perPage{
     display: flex;
@@ -379,7 +376,6 @@ main{
     width: auto;
 }
 
-/* Empty state */
 .emptyState{
     border: 1px dashed var(--hover);
     border-radius: .75rem;
@@ -388,6 +384,8 @@ main{
     color: var(--muted);
     margin-top: 14px;
 }
+
+.emptyState[hidden]{ display: none; }
 
 /* Sidebar */
 #sidebar{
@@ -411,6 +409,40 @@ main{
     background: rgba(255, 255, 255, .14);
 }
 
+@media (min-width: 768px){
+    body{ padding-left: var(--sidebar-default); }
+
+    #sidebar{
+        position: fixed;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        z-index: 1045;
+        width: var(--sidebar-default);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: width .25s ease, box-shadow .25s ease;
+    }
+
+    .sideText{
+        opacity: 0;
+        transition: opacity .15s;
+    }
+}
+
+@media (min-width: 768px) and (hover: hover){
+    #sidebar:hover{
+        width: var(--sidebar-expand);
+        box-shadow: 6px 0 18px rgba(0, 0, 0, .35);
+    }
+
+    #sidebar:hover .sideText{
+        opacity: 1;
+        transition-delay: .08s;
+    }
+}
+
+/* Footer */
 footer{ background-color: var(--main-color); }
 
 .footerLogo{
@@ -428,33 +460,46 @@ footer{ background-color: var(--main-color); }
     text-decoration: underline;
 }
 
-/* Desktop topbar and sidebar */
-@media (min-width: 768px) {
-    .topbar .container-fluid {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        width: 100%;
-    }
-
-    .topbar .container-fluid > div:last-child {
-        display: flex;
-        align-items: center;
-        justify-content: flex-end;
-        margin-left: auto !important;
-        gap: 25px;
-    }
+/* Topbar */
+.topbar .container-fluid{
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
 }
-/* Tablet */
+
+.topbar .container-fluid > div:first-child{
+    flex: 0 0 auto;
+}
+
+.topbar .container-fluid > div:last-child{
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex: 0 0 auto;
+    margin-left: auto !important;
+}
+
+.topbar .navbar-brand{
+    display: flex;
+    align-items: center;
+    margin-left: 0 !important;
+    padding-left: 0 !important;
+}
+
+.topbar .navbar-brand img{
+    height: 26px;
+    width: auto;
+    object-fit: contain;
+}
+
 @media (max-width: 992px){
     .logTable{ min-width: 860px; }
 }
 
-/* Mobile topbar and navigation */
 @media (max-width: 767.98px){
     body{ padding-left: 0; }
-
-    .topbar{ padding-left: 0; }
 
     main{
         padding-left: 15px;
@@ -462,44 +507,27 @@ footer{ background-color: var(--main-color); }
     }
 
     .topbar .container-fluid{
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        row-gap: .25rem;
+        padding: .35rem 1rem;
     }
 
-    /* First row: menu area */
-    .topbar .container-fluid > div:first-child{
-        flex: 0 0 100%;
-        width: 100%;
-    }
-
-    /* Second row: action-icons wrapper fills the row */
-    .topbar .container-fluid > div:last-child{
-        flex: 0 0 100%;
-        width: 100%;
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center;
-        margin-left: auto !important;
-        padding-right: 0;
-    }
-
-    /* Align icons to the far right */
-    .topbar .topActions{
-        display: flex !important;
-        justify-content: flex-end !important;
-        align-items: center;
-        width: 100%;
-        margin-left: auto !important;
-    }
-
-    /* Hide BiblioDesk logo only on mobile */
     .topbar .navbar-brand{
         display: none !important;
     }
 
-    /* Notification dropdown */
+    .topbar .navbar-toggler{
+        border: 1px solid rgba(255, 255, 255, .15);
+        border-radius: .6rem;
+        padding: .5rem .7rem;
+    }
+
+    .topbar .container-fluid > div:last-child{
+        gap: 1rem !important;
+    }
+
+    .topbar .container-fluid > div:last-child img{
+        flex: none;
+    }
+
     .topbar .dropdown{ position: static; }
 
     .topbar .notifMenu{
@@ -517,7 +545,6 @@ footer{ background-color: var(--main-color); }
     }
 }
 
-/* Small mobile screens */
 @media (max-width: 576px){
     .toolbar{ gap: 10px; }
 
@@ -540,7 +567,6 @@ footer{ background-color: var(--main-color); }
     .logPager{ align-items: flex-start; }
 }
 
-/* Notification bell */
 :root{
     --color-red: var(--cc-qs-red);
     --color-yellow: var(--cc-qs-yellow);
@@ -661,24 +687,6 @@ footer{ background-color: var(--main-color); }
     color: var(--text-muted);
     white-space: normal;
 }
-/* FIX BIBLIODESK HEADER ALIGNMENT */
-.topbar .container-fluid {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-}
 
-.topbar .navbar-brand {
-    display: flex;
-    align-items: center;
-    margin-left: 0 !important;
-    padding-left: 0 !important;
-}
-
-.topbar .navbar-brand img {
-    height: 26px;
-    width: auto;
-    object-fit: contain;
-}
 .notifItem.isRead{ opacity: .6; }
 .notifItem.isRead .notifDot{ background-color: var(--color-brown-light); }

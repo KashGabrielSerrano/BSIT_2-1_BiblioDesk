@@ -1,282 +1,307 @@
-(function () {
+
+document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
-    /* ---------- DATA (replace with a fetch() to your PHP endpoint later) ---------- */
+    var LIST_KEY  = 'bibliodesk_announcements';
+    var PAGE_SIZE = 5;
+
     var CATEGORIES = [
-        { name: 'System Update',  cls: 'cat-system' },
-        { name: 'Library Policy', cls: 'cat-policy' },
-        { name: 'Events',         cls: 'cat-events' },
-        { name: 'Collections',    cls: 'cat-collection' }
+        { name: 'System Update',  cls: 'cat-system',     abbr: 'SYS' },
+        { name: 'Library Policy', cls: 'cat-policy',     abbr: 'POL' },
+        { name: 'Events',         cls: 'cat-events',     abbr: 'EVT' },
+        { name: 'Collections',    cls: 'cat-collection', abbr: 'COL' }
     ];
 
-    var announcements = [
-        { id: 1,  title: 'Scheduled System Maintenance', body: 'BiblioDesk will undergo scheduled maintenance on October 31, 2026, from 5:00 PM to 8:00 PM (GMT+8). Some services may be temporarily unavailable.', category: 'System Update',  status: 'published', date: '2026-10-29T09:30', pinned: true },
-        { id: 2,  title: 'Updated Borrowing Policy',     body: 'Students can now borrow up to 3 books per week. Please review the updated borrowing guidelines before placing a request.', category: 'Library Policy', status: 'published', date: '2026-10-27T14:15' },
-        { id: 3,  title: 'Annual Book Fest 2026',        body: 'Join our annual Book Fest on November 10. Visit the library portal for event details and announcements.', category: 'Events',         status: 'scheduled', date: '2026-11-05T08:00' },
-        { id: 4,  title: 'New Arrivals in Fiction',      body: '12 new titles were added to the Fiction shelf this week.', category: 'Collections',    status: 'published', date: '2026-10-26T10:00' },
-        { id: 5,  title: 'Extended Weekend Hours',       body: 'The library reading rooms stay open until 8:00 PM on Saturdays starting this month.', category: 'Library Policy', status: 'published', date: '2026-10-22T16:40' },
-        { id: 6,  title: 'Digital Library ID QR',        body: 'Scan your QR code on the Overview page for faster checkout.', category: 'System Update',  status: 'published', date: '2026-10-20T11:05' },
-        { id: 7,  title: 'Reading Challenge Sign-ups',   body: 'Register for the November reading challenge at the front desk or through the portal.', category: 'Events',         status: 'published', date: '2026-10-15T09:00' },
-        { id: 8,  title: 'Report Logs Now Available',    body: 'Librarians can now review and forward book reports from the Report Logs page.', category: 'System Update',  status: 'published', date: '2026-10-12T13:20' },
-        { id: 9,  title: 'Author Talk: Local Writers',   body: 'Meet three local authors at the library hall for a talk and book signing.', category: 'Events',         status: 'scheduled', date: '2026-11-12T08:00' },
-        { id: 10, title: 'Holiday Closure Schedule',     body: 'Draft of the December closure dates for review.', category: 'Library Policy', status: 'draft',     date: '2026-11-01T15:10' },
-        { id: 11, title: 'Study Room Reservations',      body: 'Draft rules for booking group study rooms.', category: 'Library Policy', status: 'draft',     date: '2026-10-30T10:30' },
-        { id: 12, title: 'Book Donation Drive',          body: 'Bring gently used books to the front desk until the end of the month.', category: 'Events',         status: 'published', date: '2026-10-05T09:45' }
-    ];
+    var STATUS_LABEL = { published: 'Published', scheduled: 'Scheduled', draft: 'Draft' };
 
-    var PER_PAGE = 3;
-    var state = { q: '', status: '', category: '', sort: 'newest', page: 1 };
+    function $(id) { return document.getElementById(id); }
+
+    var listEl = $('annList');
+    if (!listEl) return;   // not the announcements page
+
+    var items = load();
+    var page = 1;
     var editingId = null;
-    var nextId = 13;
 
-    /* ---------- ELEMENTS ---------- */
-    var $ = function (id) { return document.getElementById(id); };
-    var listEl = $('annList'), pagerEl = $('pager'), infoEl = $('pageInfo');
-    var dialog = $('annDialog'), form = $('annForm');
-
-    /* ---------- HELPERS ---------- */
+    // ---------- helpers ----------
     function esc(s) {
         return String(s).replace(/[&<>"']/g, function (c) {
             return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
         });
     }
 
-    function catClass(name) {
-        for (var i = 0; i < CATEGORIES.length; i++) if (CATEGORIES[i].name === name) return CATEGORIES[i].cls;
-        return 'cat-collection';
+    function todayISO() {
+        var d = new Date();
+        return d.getFullYear() + '-' +
+               String(d.getMonth() + 1).padStart(2, '0') + '-' +
+               String(d.getDate()).padStart(2, '0');
     }
 
-    function thumbLabel(a) { return a.pinned ? 'PINN' : a.category.slice(0, 4).toUpperCase(); }
-
-    function fmtDate(iso) {
-        return new Date(iso).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+    function niceDate(iso) {
+        var d = new Date(iso + 'T00:00:00');
+        if (isNaN(d)) return '';
+        return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
     }
 
-    function fmtTime(iso) {
-        return new Date(iso).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    function catInfo(name) {
+        for (var i = 0; i < CATEGORIES.length; i++) {
+            if (CATEGORIES[i].name === name) return CATEGORIES[i];
+        }
+        return { name: name, cls: 'cat-collection', abbr: String(name).slice(0, 3).toUpperCase() };
     }
 
-    function metaLine(a) {
-        if (a.status === 'scheduled') return 'Publishes ' + fmtDate(a.date) + ' \u2022 ' + a.category;
-        if (a.status === 'draft')     return 'Draft saved ' + fmtDate(a.date) + ' \u2022 ' + a.category;
-        return fmtDate(a.date) + ' \u2022 ' + fmtTime(a.date) + ' \u2022 ' + a.category;
+    
+    function load() {
+        var raw;
+        try { raw = JSON.parse(localStorage.getItem(LIST_KEY)); } catch (e) { raw = null; }
+        if (!Array.isArray(raw)) return [];
+
+        var today = todayISO();
+        return raw.filter(function (a) { return a && typeof a.title === 'string'; }).map(function (a) {
+            var status = STATUS_LABEL[a.status] ? a.status : 'published';
+            var date = a.date || today;
+            if (status === 'scheduled' && date <= today) status = 'published';   // its day has come
+            return {
+                id: String(a.id || ('a-' + Date.now() + Math.random().toString(36).slice(2, 6))),
+                title: a.title,
+                body: a.body || '',
+                category: a.category || CATEGORIES[0].name,
+                status: status,
+                date: date
+            };
+        });
     }
 
-    function cap(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+    function save() {
+        try { localStorage.setItem(LIST_KEY, JSON.stringify(items)); } catch (e) { /* storage unavailable */ }
+        // tell the bell (notif.js) the list changed
+        document.dispatchEvent(new CustomEvent('announcements:changed', { detail: items }));
+    }
 
-    /* ---------- FILTER + SORT ---------- */
-    function getFiltered() {
-        var q = state.q.toLowerCase();
-        var out = announcements.filter(function (a) {
-            if (state.status && a.status !== state.status) return false;
-            if (state.category && a.category !== state.category) return false;
-            if (q && (a.title + ' ' + a.body + ' ' + a.category).toLowerCase().indexOf(q) === -1) return false;
+    
+    function visibleRows() {
+        var q = $('searchInput').value.trim().toLowerCase();
+        var status = $('statusFilter').value;
+        var cat = $('categoryFilter').value;
+        var sort = $('sortSelect').value;
+
+        var rows = items.map(function (a, i) { return { a: a, i: i }; }).filter(function (r) {
+            if (status && r.a.status !== status) return false;
+            if (cat && r.a.category !== cat) return false;
+            if (q && (r.a.title + ' ' + r.a.body + ' ' + r.a.category).toLowerCase().indexOf(q) === -1) return false;
             return true;
         });
 
-        out.sort(function (a, b) {
-            switch (state.sort) {
-                case 'oldest':     return new Date(a.date) - new Date(b.date);
-                case 'title-asc':  return a.title.localeCompare(b.title);
-                case 'title-desc': return b.title.localeCompare(a.title);
-                default:           return new Date(b.date) - new Date(a.date);
-            }
+        rows.sort(function (x, y) {
+            if (sort === 'oldest') return x.a.date.localeCompare(y.a.date) || x.i - y.i;
+            if (sort === 'title-asc') return x.a.title.localeCompare(y.a.title);
+            if (sort === 'title-desc') return y.a.title.localeCompare(x.a.title);
+            return y.a.date.localeCompare(x.a.date) || y.i - x.i;   // newest first
         });
-        return out;
+
+        return rows.map(function (r) { return r.a; });
     }
 
-    /* ---------- RENDER ---------- */
+    
     function renderStats() {
-        function count(s) { return announcements.filter(function (a) { return a.status === s; }).length; }
-        $('statTotal').textContent = announcements.length;
-        $('statPublished').textContent = count('published');
-        $('statScheduled').textContent = count('scheduled');
-        $('statDrafts').textContent = count('draft');
+        $('statTotal').textContent = items.length;
+        $('statPublished').textContent = items.filter(function (a) { return a.status === 'published'; }).length;
+        $('statScheduled').textContent = items.filter(function (a) { return a.status === 'scheduled'; }).length;
+        $('statDrafts').textContent = items.filter(function (a) { return a.status === 'draft'; }).length;
     }
 
-    function rowHTML(a) {
-        var publishItem = a.status !== 'published'
-            ? '<button type="button" data-action="publish" data-id="' + a.id + '">Publish now</button>' : '';
-        return '' +
-        '<article class="annRow">' +
-            '<span class="thumb ' + catClass(a.category) + '" aria-hidden="true">' + esc(thumbLabel(a)) + '</span>' +
+    function rowHtml(a) {
+        var c = catInfo(a.category);
+        var statusAction = a.status === 'published'
+            ? '<button type="button" role="menuitem" data-act="draft">Move to draft</button>'
+            : '<button type="button" role="menuitem" data-act="publish">Publish now</button>';
+
+        return '<div class="annRow" data-id="' + esc(a.id) + '">' +
+            '<span class="thumb ' + c.cls + '" aria-hidden="true">' + esc(c.abbr) + '</span>' +
             '<div class="annText">' +
-                '<h3 class="annTitle">' + esc(a.title) + '</h3>' +
-                '<p class="annBody">' + esc(a.body) + '</p>' +
-                '<p class="annMeta">' + esc(metaLine(a)) + '</p>' +
+                '<div class="annTitle">' + esc(a.title) + '</div>' +
+                '<div class="annBody">' + esc(a.body) + '</div>' +
+                '<div class="annMeta">' + esc(a.category) + ' &middot; ' + esc(niceDate(a.date)) + '</div>' +
             '</div>' +
-            '<span class="badge ' + a.status + '">' + cap(a.status) + '</span>' +
+            '<span class="badge ' + a.status + '">' + STATUS_LABEL[a.status] + '</span>' +
             '<div class="rowMenuWrap">' +
-                '<button class="btnEdit" type="button" aria-haspopup="true" aria-expanded="false" data-menu="' + a.id + '">Edit &#8942;</button>' +
+                '<button type="button" class="btnEdit" aria-haspopup="true" aria-expanded="false">Edit</button>' +
                 '<div class="rowMenu" role="menu">' +
-                    '<button type="button" data-action="edit" data-id="' + a.id + '">Edit details</button>' +
-                    publishItem +
-                    '<button type="button" class="danger" data-action="delete" data-id="' + a.id + '">Delete</button>' +
+                    '<button type="button" role="menuitem" data-act="edit">Edit details</button>' +
+                    statusAction +
+                    '<button type="button" role="menuitem" class="danger" data-act="delete">Delete</button>' +
                 '</div>' +
             '</div>' +
-        '</article>';
-    }
-
-    function notifyChange() {
-        window.biblioAnnouncements = announcements;
-        document.dispatchEvent(new CustomEvent('announcements:changed', { detail: announcements }));
+        '</div>';
     }
 
     function render() {
-        var items = getFiltered();
-        var total = items.length;
-        var pages = Math.max(1, Math.ceil(total / PER_PAGE));
-        if (state.page > pages) state.page = pages;
+        renderStats();
 
-        var start = (state.page - 1) * PER_PAGE;
-        var slice = items.slice(start, start + PER_PAGE);
+        var rows = visibleRows();
+        var total = rows.length;
+        var pages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+        if (page > pages) page = pages;
+        var start = (page - 1) * PAGE_SIZE;
+        var slice = rows.slice(start, start + PAGE_SIZE);
 
-        if (!slice.length) {
-            listEl.innerHTML = '<div class="emptyState"><strong>No announcements found</strong>Try a different search or clear the filters.</div>';
-            infoEl.textContent = 'Showing 0 of ' + announcements.length;
+        if (!items.length) {
+            listEl.innerHTML = '<div class="emptyState"><strong>No announcements yet</strong>' +
+                'Click &ldquo;+ Create Announcement&rdquo; to post your first one.</div>';
+        } else if (!total) {
+            listEl.innerHTML = '<div class="emptyState"><strong>No announcements found</strong>' +
+                'Try a different search or filter.</div>';
         } else {
-            listEl.innerHTML = slice.map(rowHTML).join('');
-            infoEl.textContent = 'Showing ' + (start + 1) + '-' + (start + slice.length) + ' of ' + total;
+            listEl.innerHTML = slice.map(rowHtml).join('');
         }
 
+        $('pageInfo').textContent = total
+            ? 'Showing ' + (start + 1) + '-' + (start + slice.length) + ' of ' + total
+            : '';
+
         renderPager(pages);
-        renderStats();
-        notifyChange();
     }
 
     function renderPager(pages) {
-        if (pages <= 1) { pagerEl.innerHTML = ''; return; }
+        var pager = $('pager');
+        if (pages <= 1) { pager.innerHTML = ''; return; }
 
-        var html = '<button class="pageBtn" type="button" data-page="' + (state.page - 1) + '"' +
-                   (state.page === 1 ? ' disabled' : '') + '>Prev</button>';
-
-        for (var i = 1; i <= pages; i++) {
-            html += '<button class="pageBtn' + (i === state.page ? ' active' : '') + '" type="button" data-page="' + i + '"' +
-                    (i === state.page ? ' aria-current="page"' : '') + '>' + i + '</button>';
+        var html = '<button type="button" class="pageBtn" data-page="' + (page - 1) + '"' +
+                   (page === 1 ? ' disabled' : '') + '>Prev</button>';
+        for (var p = 1; p <= pages; p++) {
+            html += '<button type="button" class="pageBtn' + (p === page ? ' active' : '') +
+                    '" data-page="' + p + '"' + (p === page ? ' aria-current="page"' : '') + '>' + p + '</button>';
         }
-
-        html += '<button class="pageBtn" type="button" data-page="' + (state.page + 1) + '"' +
-                (state.page === pages ? ' disabled' : '') + '>Next</button>';
-
-        pagerEl.innerHTML = html;
+        html += '<button type="button" class="pageBtn" data-page="' + (page + 1) + '"' +
+                (page === pages ? ' disabled' : '') + '>Next</button>';
+        pager.innerHTML = html;
     }
 
-    /* ---------- TOOLBAR EVENTS ---------- */
+    
     CATEGORIES.forEach(function (c) {
-        $('categoryFilter').insertAdjacentHTML('beforeend', '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>');
-        $('fCategory').insertAdjacentHTML('beforeend', '<option value="' + esc(c.name) + '">' + esc(c.name) + '</option>');
+        var f = document.createElement('option');
+        f.value = c.name; f.textContent = c.name;
+        $('categoryFilter').appendChild(f);
+
+        var o = document.createElement('option');
+        o.value = c.name; o.textContent = c.name;
+        $('fCategory').appendChild(o);
     });
 
-    $('searchInput').addEventListener('input', function (e) { state.q = e.target.value.trim(); state.page = 1; render(); });
-    $('statusFilter').addEventListener('change', function (e) { state.status = e.target.value; state.page = 1; render(); });
-    $('categoryFilter').addEventListener('change', function (e) { state.category = e.target.value; state.page = 1; render(); });
-    $('sortSelect').addEventListener('change', function (e) { state.sort = e.target.value; state.page = 1; render(); });
+    
+    ['searchInput'].forEach(function (id) {
+        $(id).addEventListener('input', function () { page = 1; render(); });
+    });
+    ['statusFilter', 'categoryFilter', 'sortSelect'].forEach(function (id) {
+        $(id).addEventListener('change', function () { page = 1; render(); });
+    });
 
     $('btnReset').addEventListener('click', function () {
-        state = { q: '', status: '', category: '', sort: 'newest', page: 1 };
         $('searchInput').value = '';
         $('statusFilter').value = '';
         $('categoryFilter').value = '';
         $('sortSelect').value = 'newest';
+        page = 1;
         render();
     });
 
-    /* ---------- PAGER ---------- */
-    pagerEl.addEventListener('click', function (e) {
-        var btn = e.target.closest('[data-page]');
+    $('pager').addEventListener('click', function (e) {
+        var btn = e.target.closest('.pageBtn');
         if (!btn || btn.disabled) return;
-        state.page = parseInt(btn.getAttribute('data-page'), 10);
+        page = parseInt(btn.getAttribute('data-page'), 10) || 1;
         render();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     });
 
-    /* ---------- ROW MENU ---------- */
+    
     function closeMenus() {
-        document.querySelectorAll('.rowMenu.open').forEach(function (m) { m.classList.remove('open'); });
-        document.querySelectorAll('.btnEdit[aria-expanded="true"]').forEach(function (b) { b.setAttribute('aria-expanded', 'false'); });
+        listEl.querySelectorAll('.rowMenu.open').forEach(function (m) { m.classList.remove('open'); });
+        listEl.querySelectorAll('.btnEdit[aria-expanded="true"]').forEach(function (b) {
+            b.setAttribute('aria-expanded', 'false');
+        });
     }
 
     document.addEventListener('click', function (e) {
-        var toggle = e.target.closest('[data-menu]');
-        if (toggle) {
-            var menu = toggle.nextElementSibling;
-            var wasOpen = menu.classList.contains('open');
-            closeMenus();
-            if (!wasOpen) { menu.classList.add('open'); toggle.setAttribute('aria-expanded', 'true'); }
-            return;
-        }
-
-        var act = e.target.closest('[data-action]');
-        if (act) {
-            var id = parseInt(act.getAttribute('data-id'), 10);
-            var action = act.getAttribute('data-action');
-            closeMenus();
-            if (action === 'edit') openDialog(id);
-            if (action === 'delete') deleteItem(id);
-            if (action === 'publish') publishItem(id);
-            return;
-        }
-
-        closeMenus();
+        if (!e.target.closest('.rowMenuWrap')) closeMenus();
     });
 
-    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeMenus(); });
-
-    function findById(id) {
-        for (var i = 0; i < announcements.length; i++) if (announcements[i].id === id) return announcements[i];
+    function findItem(id) {
+        for (var i = 0; i < items.length; i++) if (items[i].id === id) return items[i];
         return null;
     }
 
-    function deleteItem(id) {
-        var a = findById(id);
-        if (!a || !window.confirm('Delete "' + a.title + '"? This cannot be undone.')) return;
-        announcements = announcements.filter(function (x) { return x.id !== id; });
-        render();
+    listEl.addEventListener('click', function (e) {
+        var toggle = e.target.closest('.btnEdit');
+        if (toggle) {
+            var menu = toggle.parentElement.querySelector('.rowMenu');
+            var wasOpen = menu.classList.contains('open');
+            closeMenus();
+            if (!wasOpen) {
+                menu.classList.add('open');
+                toggle.setAttribute('aria-expanded', 'true');
+            }
+            return;
+        }
+
+        var actBtn = e.target.closest('[data-act]');
+        if (!actBtn) return;
+
+        var row = actBtn.closest('.annRow');
+        var item = row && findItem(row.getAttribute('data-id'));
+        if (!item) return;
+
+        var act = actBtn.getAttribute('data-act');
+        closeMenus();
+
+        if (act === 'edit') {
+            openDialog(item);
+        } else if (act === 'publish') {
+            item.status = 'published';
+            item.date = todayISO();
+            save(); render();
+        } else if (act === 'draft') {
+            item.status = 'draft';
+            save(); render();
+        } else if (act === 'delete') {
+            if (window.confirm('Delete "' + item.title + '"? This cannot be undone.')) {
+                items = items.filter(function (a) { return a.id !== item.id; });
+                save(); render();
+            }
+        }
+    });
+
+   
+    var dialog = $('annDialog');
+    var form = $('annForm');
+
+    function clearErrors() {
+        $('errTitle').textContent = '';
+        $('errDate').textContent = '';
+        $('errBody').textContent = '';
     }
 
-    function publishItem(id) {
-        var a = findById(id);
-        if (!a) return;
-        a.status = 'published';
-        a.date = new Date().toISOString().slice(0, 16);
-        render();
-    }
-
-    /* ---------- DIALOG ---------- */
-    function toggleDateField() {
+    function syncDateField() {
         $('dateField').hidden = $('fStatus').value !== 'scheduled';
     }
 
-    function clearErrors() {
-        ['errTitle', 'errDate', 'errBody'].forEach(function (id) { $(id).textContent = ''; });
-    }
-
-    function openDialog(id) {
-        editingId = id || null;
+    function openDialog(item) {
         clearErrors();
-        form.reset();
+        editingId = item ? item.id : null;
+        $('dialogTitle').textContent = item ? 'Edit Announcement' : 'Create Announcement';
 
-        if (editingId) {
-            var a = findById(editingId);
-            $('dialogTitle').textContent = 'Edit Announcement';
-            $('fTitle').value = a.title;
-            $('fCategory').value = a.category;
-            $('fStatus').value = a.status;
-            $('fDate').value = a.date.slice(0, 10);
-            $('fBody').value = a.body;
-        } else {
-            $('dialogTitle').textContent = 'Create Announcement';
-            $('fStatus').value = 'published';
-        }
+        $('fTitle').value = item ? item.title : '';
+        $('fBody').value = item ? item.body : '';
+        $('fCategory').value = item ? item.category : CATEGORIES[0].name;
+        $('fStatus').value = item ? item.status : 'published';
+        $('fDate').value = item && item.status === 'scheduled' ? item.date : '';
+        syncDateField();
 
-        toggleDateField();
         dialog.showModal();
         $('fTitle').focus();
     }
 
     $('btnCreate').addEventListener('click', function () { openDialog(null); });
     $('btnCancel').addEventListener('click', function () { dialog.close(); });
-    $('fStatus').addEventListener('change', toggleDateField);
+    $('fStatus').addEventListener('change', syncDateField);
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -288,25 +313,52 @@
         var dateVal = $('fDate').value;
         var ok = true;
 
-        if (!title) { $('errTitle').textContent = 'Enter a title.'; ok = false; }
-        if (!body)  { $('errBody').textContent = 'Enter a message.'; ok = false; }
-        if (status === 'scheduled' && !dateVal) { $('errDate').textContent = 'Pick a publish date.'; ok = false; }
+        if (!title) { $('errTitle').textContent = 'Please enter a title.'; ok = false; }
+        if (!body) { $('errBody').textContent = 'Please enter the message.'; ok = false; }
+        if (status === 'scheduled') {
+            if (!dateVal) { $('errDate').textContent = 'Please choose a publish date.'; ok = false; }
+            else if (dateVal < todayISO()) { $('errDate').textContent = 'The publish date cannot be in the past.'; ok = false; }
+        }
         if (!ok) return;
 
-        var date = status === 'scheduled' ? dateVal + 'T08:00' : new Date().toISOString().slice(0, 16);
+        var existing = editingId ? findItem(editingId) : null;
+        var date;
+        if (status === 'scheduled') date = dateVal;
+        else if (existing && existing.status === status) date = existing.date;   // keep original date
+        else date = todayISO();
 
-        if (editingId) {
-            var a = findById(editingId);
-            a.title = title; a.body = body; a.category = $('fCategory').value; a.status = status; a.date = date;
+        if (existing) {
+            existing.title = title;
+            existing.body = body;
+            existing.category = $('fCategory').value;
+            existing.status = status;
+            existing.date = date;
         } else {
-            announcements.push({ id: nextId++, title: title, body: body, category: $('fCategory').value, status: status, date: date });
+            items.push({
+                id: 'a-' + Date.now() + Math.random().toString(36).slice(2, 6),
+                title: title,
+                body: body,
+                category: $('fCategory').value,
+                status: status,
+                date: date
+            });
+            page = 1;
         }
 
-        dialog.close();
-        state.page = 1;
+        save();
         render();
+        dialog.close();
     });
 
-    /* ---------- INIT ---------- */
+    
+    window.addEventListener('storage', function (e) {
+        if (e.key === LIST_KEY) {
+            items = load();
+            render();
+        }
+    });
+
+    
     render();
-})();
+    document.dispatchEvent(new CustomEvent('announcements:changed', { detail: items }));
+});

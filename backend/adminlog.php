@@ -1,8 +1,3 @@
-<!-- The pagination, search, and rows-per-page features
-don't work properly because the PHP backend doesn't
-process the data, while JavaScript only handles
-the 8 rows currently displayed -->
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,12 +7,11 @@ the 8 rows currently displayed -->
     <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="../frontend/css/root.css">
-    <link rel="stylesheet" href="../frontend/css/template.css">
     <link rel="stylesheet" href="../frontend/css/adminlog.css">
 </head>
 
 <body>
-<!-- SIDEBAR For Admin -->
+<!-- SIDEBAR -->
 <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light"
        tabindex="-1"
        id="sidebar"
@@ -43,61 +37,65 @@ the 8 rows currently displayed -->
                  width="49">
         </div>
 
-             <nav aria-label="Main">
-                <ul class="nav flex-column gap-3 pt-4">
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="admindb.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
-                            </span>
-                            <span class="sideText">Overview</span>
-                        </a>
-                    </li>
-                        <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="admin_announcement.php" aria-current="page">
-                            <span
-                                class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/announcement.png"
-                                    alt="create announcements page" width="28">
-                            </span>
-                            <span class="sideText">Announcements</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="librarymanagement.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/lib-default.png" alt="library management page"
-                                    width="28">
-                            </span>
-                            <span class="sideText">Library Management</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="AdminAccManagedb.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/help-default.png" alt="accounts management page"
-                                    width="28">
-                            </span>
-                            <span class="sideText">Account Manage</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="adminlog.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                                <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
-                            </span>
-                            <span class="sideText">Report Logs</span>
-                        </a>
-                    </li>
-                </ul>
-            </nav>
+        <nav aria-label="Main">
+            <ul class="nav flex-column gap-3 pt-4">
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="admindb_overview.php">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
+                        </span>
+                        <span class="sideText">Overview</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="admin_announcement.php">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/announcement.png" alt="create announcements page" width="28">
+                        </span>
+                        <span class="sideText">Announcements</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="librarymanagement.php">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/lib-default.png" alt="library management page" width="28">
+                        </span>
+                        <span class="sideText">Library Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="AdminAccManagedb.php">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/business-mail.png" alt="accounts management page" width="28">
+                        </span>
+                        <span class="sideText">User Management</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="adminlog.php" aria-current="page">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
+                            <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
+                        </span>
+                        <span class="sideText">Report Logs</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                       href="admin_helpdesk.php">
+                        <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                            <img src="../frontend/assets/icons/help-default.png" alt="helpdesk page" width="28">
+                        </span>
+                        <span class="sideText">Helpdesk</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
 
-        <!-- LOGOUT (opens the confirmation popup) -->
         <div class="mt-auto pb-4">
             <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
                href="#"
@@ -113,15 +111,13 @@ the 8 rows currently displayed -->
     </div>
 </aside>
 
-
-<!-- LOGOUT CONFIRMATION MODAL -->
 <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="background-color: var(--main-bg-color);">
             <div class="modal-header text-white border-secondary" style="background-color: var(--main-color);">
                 <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-                    aria-label="Close"></button>
+                        aria-label="Close"></button>
             </div>
             <div class="modal-body justify-content-center text-center m-5 fs-4">
                 Are you sure you want to log out?
@@ -134,8 +130,7 @@ the 8 rows currently displayed -->
     </div>
 </div>
 
-
-<!-- TOP NAVBAR -->
+<!-- NAVBAR -->
 <header class="navbar navbar-dark shadow topbar">
 
     <div class="container-fluid">
@@ -146,7 +141,8 @@ the 8 rows currently displayed -->
                     type="button"
                     data-bs-toggle="offcanvas"
                     data-bs-target="#sidebar"
-                    aria-controls="sidebar">
+                    aria-controls="sidebar"
+                    aria-label="Open menu">
                 <span class="navbar-toggler-icon"></span>
             </button>
 
@@ -158,9 +154,8 @@ the 8 rows currently displayed -->
 
         </div>
 
-        <div class="d-flex align-items-center gap-4">
+        <div class="d-flex align-items-center gap-3 gap-md-4">
 
-            <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
             <div class="dropdown">
 
                 <button type="button"
@@ -183,14 +178,12 @@ the 8 rows currently displayed -->
                 </ul>
             </div>
 
-            <!-- SETTINGS -->
             <a href="userdb.php?tab=settings" aria-label="Settings">
                 <img src="../frontend/assets/icons/settings.png"
                      alt="Settings"
                      width="34">
             </a>
 
-            <!-- PROFILE -->
             <button type="button" class="btn p-0 border-0" aria-label="Account Information">
                 <img src="../frontend/assets/icons/pfp-icon.png"
                      alt="Profile"
@@ -203,13 +196,10 @@ the 8 rows currently displayed -->
     </div>
 </header>
 
-
-<!-- MAIN CONTENT -->
 <main class="container-fluid px-3 px-md-5 py-4">
 
     <h1 class="pageTitle">Report Logs</h1>
 
-    <!-- QUICK STATS -->
     <section aria-label="Report summary">
         <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
             <div class="col">
@@ -262,8 +252,6 @@ the 8 rows currently displayed -->
         </div>
     </section>
 
-
-    <!-- TOOLBAR -->
     <section class="toolbar">
 
         <form class="searchWrap" method="get" action="adminlog.php" role="search">
@@ -272,14 +260,14 @@ the 8 rows currently displayed -->
                    name="q"
                    value=""
                    placeholder="Search report..."
-                   aria-label="Search reports">
+                   aria-label="Search reports"
+                   autocomplete="off">
         </form>
 
         <a class="btnExport" href="adminlog.php">
             Export CSV
         </a>
 
-        <!-- FLOATING FILTER -->
         <div class="dropdown filterDropdown">
 
             <button class="btnFilter"
@@ -305,7 +293,6 @@ the 8 rows currently displayed -->
 
                     <div class="mb-3">
                         <label class="form-label" for="sortBy">Sort By</label>
-                        <!-- FIX: added name="sort" so the value is submitted/readable -->
                         <select class="form-select" id="sortBy" name="sort">
                             <option value="default">Default</option>
                             <option value="name-asc">Name (A - Z)</option>
@@ -343,12 +330,10 @@ the 8 rows currently displayed -->
 
     </section>
 
-    <!-- REPORT TABLE -->
     <section>
 
         <div class="tableScroll">
 
-            <!-- FIX: each .reportRow now carries data-name, data-date (YYYY-MM-DD), data-status -->
             <div class="logTable">
 
                 <div class="tableHead">
@@ -360,24 +345,15 @@ the 8 rows currently displayed -->
                     <span>Action</span>
                 </div>
 
-                <!-- ROW 1 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-11-01" data-status="new">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-pink">Broken Link</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-pink">Broken Link</span></div>
                     <div class="cell">Victor Magtanggol</div>
                     <div class="cell">Today</div>
-
-                    <div class="cell">
-                        <span class="status-badge-green">New</span>
-                    </div>
-
+                    <div class="cell"><span class="status-badge-green">New</span></div>
                     <div class="cell">
                         <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
@@ -387,139 +363,75 @@ the 8 rows currently displayed -->
                     </div>
                 </div>
 
-                <!-- ROW 2 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-10-31" data-status="reviewing">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-amber">Missing Page/s</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-amber">Missing Page/s</span></div>
                     <div class="cell">Sofia the 1st</div>
                     <div class="cell">Yesterday</div>
-
-                    <div class="cell">
-                        <span class="status-badge-red">Reviewing</span>
-                    </div>
-
-                    <div class="cell">
-                        <span class="action-badge-green">Forwarded</span>
-                    </div>
+                    <div class="cell"><span class="status-badge-red">Reviewing</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
                 </div>
 
-                <!-- ROW 3 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-10-23" data-status="forwarded">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-red">Wrong File</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-red">Wrong File</span></div>
                     <div class="cell">Dora the Explorer</div>
                     <div class="cell">Oct 23</div>
-
-                    <div class="cell">
-                        <span class="status-badge-amber">Forwarded</span>
-                    </div>
-
-                    <div class="cell">
-                        <span class="action-badge-green">Forwarded</span>
-                    </div>
+                    <div class="cell"><span class="status-badge-amber">Forwarded</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
                 </div>
 
-                <!-- ROW 4 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-10-03" data-status="resolved">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-blue">License Concern</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-blue">License Concern</span></div>
                     <div class="cell">Cardo Dalisay</div>
                     <div class="cell">Oct 03</div>
-
-                    <div class="cell">
-                        <span class="status-badge-darkred">Resolved</span>
-                    </div>
-
-                    <div class="cell">
-                        <span class="action-badge-green">Forwarded</span>
-                    </div>
+                    <div class="cell"><span class="status-badge-darkred">Resolved</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
                 </div>
 
-                <!-- ROW 5 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-10-03" data-status="resolved">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-blue">License Concern</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-blue">License Concern</span></div>
                     <div class="cell">Cardo Dalisay</div>
                     <div class="cell">Oct 03</div>
-
-                    <div class="cell">
-                        <span class="status-badge-darkred">Resolved</span>
-                    </div>
-
-                    <div class="cell">
-                        <span class="action-badge-green">Forwarded</span>
-                    </div>
+                    <div class="cell"><span class="status-badge-darkred">Resolved</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
                 </div>
 
-                <!-- ROW 6 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-10-23" data-status="forwarded">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-red">Wrong File</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-red">Wrong File</span></div>
                     <div class="cell">Dora the Explorer</div>
                     <div class="cell">Oct 23</div>
-
-                    <div class="cell">
-                        <span class="status-badge-amber">Forwarded</span>
-                    </div>
-
-                    <div class="cell">
-                        <span class="action-badge-green">Forwarded</span>
-                    </div>
+                    <div class="cell"><span class="status-badge-amber">Forwarded</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
                 </div>
 
-                <!-- ROW 7 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-11-01" data-status="new">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-pink">Broken Link</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-pink">Broken Link</span></div>
                     <div class="cell">Victor Magtanggol</div>
                     <div class="cell">Today</div>
-
-                    <div class="cell">
-                        <span class="status-badge-green">New</span>
-                    </div>
-
+                    <div class="cell"><span class="status-badge-green">New</span></div>
                     <div class="cell">
                         <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
@@ -529,24 +441,15 @@ the 8 rows currently displayed -->
                     </div>
                 </div>
 
-                <!-- ROW 8 -->
                 <div class="reportRow" data-name="Book Title" data-date="2026-11-01" data-status="new">
                     <div class="cellName">
                         <p class="bookTitle mb-0">Book Title</p>
                         <p class="bookAuthor mb-0">Book Author</p>
                     </div>
-
-                    <div class="cell">
-                        <span class="issue-badge-pink">Broken Link</span>
-                    </div>
-
+                    <div class="cell"><span class="issue-badge-pink">Broken Link</span></div>
                     <div class="cell">Victor Magtanggol</div>
                     <div class="cell">Today</div>
-
-                    <div class="cell">
-                        <span class="status-badge-green">New</span>
-                    </div>
-
+                    <div class="cell"><span class="status-badge-green">New</span></div>
                     <div class="cell">
                         <form method="post" action="adminlog.php">
                             <input type="hidden" name="action" value="forward">
@@ -556,49 +459,77 @@ the 8 rows currently displayed -->
                     </div>
                 </div>
 
+                <div class="reportRow" data-name="Noli Me Tangere" data-date="2026-09-28" data-status="resolved">
+                    <div class="cellName">
+                        <p class="bookTitle mb-0">Noli Me Tangere</p>
+                        <p class="bookAuthor mb-0">Jose Rizal</p>
+                    </div>
+                    <div class="cell"><span class="issue-badge-amber">Missing Page/s</span></div>
+                    <div class="cell">Maria Clara</div>
+                    <div class="cell">Sep 28</div>
+                    <div class="cell"><span class="status-badge-darkred">Resolved</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
+                </div>
+
+                <div class="reportRow" data-name="El Filibusterismo" data-date="2026-11-05" data-status="reviewing">
+                    <div class="cellName">
+                        <p class="bookTitle mb-0">El Filibusterismo</p>
+                        <p class="bookAuthor mb-0">Jose Rizal</p>
+                    </div>
+                    <div class="cell"><span class="issue-badge-red">Wrong File</span></div>
+                    <div class="cell">Juan dela Cruz</div>
+                    <div class="cell">Nov 05</div>
+                    <div class="cell"><span class="status-badge-red">Reviewing</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
+                </div>
+
+                <div class="reportRow" data-name="Florante at Laura" data-date="2026-11-06" data-status="new">
+                    <div class="cellName">
+                        <p class="bookTitle mb-0">Florante at Laura</p>
+                        <p class="bookAuthor mb-0">Francisco Balagtas</p>
+                    </div>
+                    <div class="cell"><span class="issue-badge-pink">Broken Link</span></div>
+                    <div class="cell">Pedro Penduko</div>
+                    <div class="cell">Nov 06</div>
+                    <div class="cell"><span class="status-badge-green">New</span></div>
+                    <div class="cell">
+                        <form method="post" action="adminlog.php">
+                            <input type="hidden" name="action" value="forward">
+                            <input type="hidden" name="report_id" value="11">
+                            <button class="action-btn" type="submit">Forward</button>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="reportRow" data-name="Ibong Adarna" data-date="2026-10-15" data-status="forwarded">
+                    <div class="cellName">
+                        <p class="bookTitle mb-0">Ibong Adarna</p>
+                        <p class="bookAuthor mb-0">Unknown</p>
+                    </div>
+                    <div class="cell"><span class="issue-badge-blue">License Concern</span></div>
+                    <div class="cell">Darna</div>
+                    <div class="cell">Oct 15</div>
+                    <div class="cell"><span class="status-badge-amber">Forwarded</span></div>
+                    <div class="cell"><span class="action-badge-green">Forwarded</span></div>
+                </div>
+
             </div>
         </div>
 
-        <p class="pageInfo">Showing 1-8 of 80</p>
+        <p class="pageInfo">Showing 1-8 of 12</p>
 
-        <!-- PAGINATION -->
         <div class="logPager">
 
-            <ul class="pagination">
-                <li class="page-item disabled">
-                    <a class="page-link" href="#">Prev</a>
-                </li>
-
-                <li class="page-item active">
-                    <a class="page-link" href="adminlog.php?page=1">1</a>
-                </li>
-
-                <li class="page-item">
-                    <a class="page-link" href="adminlog.php?page=2">2</a>
-                </li>
-
-                <li class="page-item">
-                    <a class="page-link" href="adminlog.php?page=3">3</a>
-                </li>
-
-                <li class="page-item">
-                    <a class="page-link" href="adminlog.php?page=2">Next</a>
-                </li>
-            </ul>
+            <ul class="pagination"></ul>
 
             <form class="perPage" method="get" action="adminlog.php">
                 <label for="perPage">Rows Per Page:</label>
 
-                <select class="form-select"
-                        id="perPage"
-                        name="per_page"
-                        onchange="this.form.submit()">
-
+                <select class="form-select" id="perPage" name="per_page">
                     <option value="8" selected>8</option>
                     <option value="12">12</option>
                     <option value="20">20</option>
                     <option value="40">40</option>
-
                 </select>
             </form>
 
@@ -644,9 +575,10 @@ the 8 rows currently displayed -->
     </div>
 
 </footer>
-    <script src="../frontend/js/notif.js" defer></script>
-    <script src="../frontend/js/librarianlog.js" defer></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+
+<script src="../frontend/js/notif.js" defer></script>
+<script src="../frontend/js/librarianlog.js" defer></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 
 </body>
 </html>

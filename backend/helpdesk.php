@@ -285,9 +285,9 @@
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
                                 href="terms_privacy.php?view=privacy">Privacy Policy</a></li>
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
-                                href="more.php">More About BiblioDesk</a></li>
+                                href="index.php#about">More About BiblioDesk</a></li>
                         <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover"
-                                href="aboutus.php">BiblioDesk Developers</a></li>
+                                href="index.php#developers">BiblioDesk Developers</a></li>
                     </ul>
                 </div>
                 <div class="col-12 col-md-5 ps-4 ps-md-0">
