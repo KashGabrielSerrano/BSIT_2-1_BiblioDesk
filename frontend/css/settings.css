@@ -483,6 +483,24 @@
 .notifItem.isRead { opacity: .6; }
 .notifItem.isRead .notifDot { background-color: var(--cc-nb-ne, #d9bfa4); }
 
+/* ---------- phone topbar: no logo, hamburger on the left, notification / settings / account on the right ---------- */
+@media (max-width: 767.98px){
+    header.topbar > .container-fluid{ flex-wrap: wrap !important; justify-content: space-between !important; align-items: center; row-gap: .5rem; }
+    header.topbar > .container-fluid > div:first-child{ flex: 0 0 100% !important; align-items: center; }
+    header.topbar > .container-fluid > div:last-child{ flex: 0 0 100% !important; width: 100%; justify-content: flex-end !important; margin-left: auto !important; gap: 1rem !important; }
+    .topbar .navbar-brand{ display: none; }
+    .topbar .navbar-toggler{
+        display: flex; align-items: center; justify-content: center;
+        width: 52px; height: 46px; margin: 0; padding: 0;
+    }
+    .topbar .container-fluid > div:last-child img[width="34"]{ width: 28px; height: auto; }
+    .topbar .container-fluid > div:last-child img[width="44"]{ width: 40px; height: 40px; }
+}
+
+@media (max-width: 359.98px){
+    .topbar .container-fluid > div:last-child{ gap: .65rem !important; }
+}
+
 /* phone: the dropdown fits the screen width */
 @media (max-width: 767.98px){
     .topbar .dropdown{ position: static; }

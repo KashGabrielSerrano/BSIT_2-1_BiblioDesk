@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Announcements | BiblioDesk</title>
+        <title>Account Management | BiblioDesk</title>
         <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
         <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
         <link rel="stylesheet" href="../frontend/css/root.css">
@@ -32,7 +32,7 @@
                     <ul class="nav flex-column gap-3 pt-4">
                         <li class="nav-item">
                             <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                                href="admindb.php">
+                                href="admindb_overview.php">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
                                     <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
                                 </span>
@@ -63,10 +63,10 @@
                             <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
                                 href="AdminAccManagedb.php" aria-current="page">
                                 <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center bg-light">
-                                    <img src="../frontend/assets/icons/help-default.png" alt="accounts management page"
+                                    <img src="../frontend/assets/icons/business-mail.png" alt="accounts management page"
                                         width="28">
                                 </span>
-                                <span class="sideText">Account Manage</span>
+                                <span class="sideText">User Management</span>
                             </a>
                         </li>
                         <li class="nav-item">
@@ -76,6 +76,15 @@
                                     <img src="../frontend/assets/icons/due.png" alt="report logs page" width="28">
                                 </span>
                                 <span class="sideText">Report Logs</span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
+                                href="admin_helpdesk.php">
+                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img src="../frontend/assets/icons/help-default.png" alt="helpdesk page" width="28">
+                                </span>
+                                <span class="sideText">Helpdesk</span>
                             </a>
                         </li>
                     </ul>
@@ -127,29 +136,23 @@
 
                 <div class="d-flex align-items-center gap-4">
 
-            <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
-            <div class="dropdown">
-
-                <button type="button"
-                        class="btn p-0 border-0 position-relative"
-                        id="notifToggle"
-                        data-bs-toggle="dropdown"
-                        aria-expanded="false"
-                        aria-label="Open announcements">
-                    <img src="../frontend/assets/icons/notifbell.png" alt="Notifications" width="34">
-                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notifBadge"
-                          id="notifBadge" hidden>0</span>
-                </button>
-
-                <ul class="dropdown-menu dropdown-menu-end notifMenu" id="notifMenu">
-                    <li class="notifHead">
-                        <span>Announcements</span>
-                        <span class="notifHeadCount">0 new</span>
-                    </li>
-                    <li><span class="notifEmpty">No announcements yet.</span></li>
-                </ul>
+                    <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) --> 
+                        <div class="dropdown"> 
+                <button type="button" class="btn p-0 border-0 position-relative" id="notifToggle" 
+                    data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open Notification Area"> 
+                    <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34"> 
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill  notifBadge" 
+                        id="notifBadge" hidden>0</span> 
+                </button> 
+            
+                <ul class="dropdown-menu dropdown-menu-end notifMenu" id="notifMenu"> 
+                    <li class="notifHead"> 
+                        <span>Announcements</span> 
+                        <span class="notifHeadCount">0 new</span> 
+                    </li> 
+                    <li><span class="notifEmpty">No announcements yet.</span></li> 
+                </ul> 
             </div>
-                    
                 <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
                       <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
                 </a>

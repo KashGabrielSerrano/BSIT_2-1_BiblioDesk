@@ -178,11 +178,9 @@
                 </ul>
             </div>
 
-            <a href="userdb.php?tab=settings" aria-label="Settings">
-                <img src="../frontend/assets/icons/settings.png"
-                     alt="Settings"
-                     width="34">
-            </a>
+            <<a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
+                    <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
+                </a>
 
             <button type="button" class="btn p-0 border-0" aria-label="Account Information">
                 <img src="../frontend/assets/icons/pfp-icon.png"

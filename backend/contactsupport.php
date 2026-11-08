@@ -85,9 +85,9 @@
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">4</span>
                     </button>
 
-                    <a href="userdb.php?tab=settings" aria-label="Open Settings">
-                        <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
-                    </a>
+                    <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
+                    <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
+                     </a>
 
                     <button type="button" class="btn p-0 border-0" aria-label="Open Account Information">
                         <img src="../frontend/assets/icons/pfp-icon.png" alt="" class="rounded-circle" width="44" height="44">

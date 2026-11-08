@@ -1,0 +1,382 @@
+@import url(template.css);
+
+/* page spacing */
+@media (max-width: 991.98px) {
+    main {
+        padding: 0 24px;
+    }
+}
+
+@media (max-width: 575.98px) {
+    main {
+        padding: 0 12px;
+    }
+}
+
+/* ---------- dark cards ---------- */
+.darkCard {
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+/* ---------- light beige cards ---------- */
+.lightCard {
+    --beige: var(--cc-beige, #EBD3B9);
+    background-color: var(--beige);
+    color: var(--fcolor-main);
+    border: 2px solid var(--main-color);
+}
+
+/* ---------- account status ---------- */
+.statusDot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background-color: var(--cc-qs-green);
+    display: inline-block;
+}
+
+/* ---------- to-do ---------- */
+.todoHead {
+    border-bottom: 2px solid var(--fcolor-secondary);
+}
+
+.todoItem {
+    padding: .75rem 0;
+}
+
+.todoItem + .todoItem {
+    border-top: 1px solid rgba(255, 255, 255, .25);
+}
+
+.dateBox {
+    flex: none;
+    width: 40px;
+    padding: .3rem 0;
+    background-color: var(--cc-dates);
+    color: var(--fcolor-secondary);
+    line-height: 1.1;
+}
+
+.dateDay {
+    display: block;
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+.dateMonth {
+    display: block;
+    font-size: .55rem;
+    text-transform: uppercase;
+}
+
+.todoDesc {
+    font-size: .68rem;
+    opacity: .85;
+}
+
+/* ---------- borrowing activity chart (categories x months) ---------- */
+.chartLegend {
+    color: var(--fcolor-main);
+}
+
+.legendDot {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+.legendBorrowed,
+.barBorrowed {
+    background-color: var(--cc-qs-red, #c0393b);
+}
+
+.legendReturned,
+.barReturned {
+    background-color: var(--cc-qs-green, #4a9a3f);
+}
+
+/* horizontal scroll on small screens so labels/months never get squished */
+.catChartScroll {
+    overflow-x: auto;
+}
+
+.catChart {
+    min-width: 720px;
+    display: flex;
+    flex-direction: column;
+}
+
+.catRow {
+    display: grid;
+    grid-template-columns: 190px repeat(12, 1fr);
+    align-items: stretch;
+}
+
+.catLabel {
+    display: flex;
+    align-items: center;
+    padding: 0 .75rem 0 0;
+    font-size: .7rem;
+    font-weight: 600;
+    line-height: 1.15;
+    border-right: 1px solid var(--main-color);
+}
+
+.catCell {
+    height: 38px;
+    padding: 3px 4px 0;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2px;
+    border-bottom: 1px dashed rgba(44, 37, 29, .45);
+}
+
+.catCell:hover {
+    background-color: rgba(44, 37, 29, .08);
+}
+
+.catBar {
+    flex: 1;
+    max-width: 10px;
+    border-radius: 2px 2px 0 0;
+    min-height: 1px;
+}
+
+/* month labels (bottom row) */
+.catHeader .catLabel {
+    border-right: 1px solid var(--main-color);
+}
+
+.catMonth {
+    padding-top: .35rem;
+    text-align: center;
+    font-size: .68rem;
+    font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+    .catRow {
+        grid-template-columns: 150px repeat(12, 1fr);
+    }
+}
+
+/* ---------- quick actions ---------- */
+.actionsHead {
+    border-bottom: 1px solid var(--main-color);
+}
+
+.actionItem {
+    padding: .6rem 0;
+    font-size: .8rem;
+}
+
+.actionItem + .actionItem {
+    border-top: 1px solid rgba(44, 37, 29, .2);
+}
+
+.actionLink {
+    color: var(--fcolor-main);
+}
+
+.actionLink:hover {
+    color: var(--fcolor-main);
+    text-decoration: underline !important;
+}
+
+.actionIcon {
+    flex: none;
+    width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--cc-dates);
+    color: var(--fcolor-secondary);
+    font-size: .7rem;
+    line-height: 1;
+}
+
+/* ---------- quick stat squares ---------- */
+.neutralBox {
+    background-color: var(--cc-qs-neutral);
+}
+
+.greenBox {
+    background-color: var(--cc-qs-green);
+}
+
+.yellowBox {
+    background-color: var(--cc-qs-yellow);
+}
+
+/* ---------- notification bell (same as admin_announcement) ---------- */
+:root {
+    --color-red: var(--cc-qs-red);
+    --color-yellow: var(--cc-qs-yellow);
+    --color-green: var(--cc-qs-green);
+    --color-blue: var(--cc-book-ra);
+    --color-teal: var(--cc-dates);
+    --color-brown: var(--cc-book-ne);
+    --color-brown-light: var(--cc-nb-ne);
+
+    --text-light: var(--fcolor-secondary);
+    --text-main: var(--text);
+    --text-dark: var(--ink);
+    --text-muted: var(--muted);
+
+    --bg-main: var(--main-bg-color);
+    --border-main: var(--main-color);
+    --border-light: var(--line);
+}
+
+.notifBadge {
+    background-color: var(--color-red);
+    color: var(--text-light);
+    font-size: .72rem;
+    padding: .3em .55em;
+}
+
+.notifMenu {
+    width: 360px;
+    max-width: 86vw;
+    padding: 0;
+    border: 1px solid var(--border-main);
+    border-radius: .75rem;
+    overflow: hidden;
+    background-color: var(--bg-main);
+}
+
+.notifHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--dark-header);
+    color: var(--text-light);
+    padding: .75rem 1rem;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.notifHeadCount {
+    color: var(--color-brown-light);
+    font-size: .78rem;
+    font-weight: 400;
+}
+
+.notifItem {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: .9rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    white-space: normal;
+    color: var(--text-main);
+}
+
+.notifItem:last-child { border-bottom: 0; }
+
+.notifItem:hover,
+.notifItem:focus {
+    background-color: rgba(158, 123, 88, .16);
+    color: var(--text-main);
+}
+
+.notifDot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+    margin-top: 6px;
+}
+
+.dotRed { background-color: var(--color-red); }
+.dotYellow { background-color: var(--color-yellow); }
+.dotGreen { background-color: var(--color-green); }
+.dotBlue { background-color: var(--color-blue); }
+.dotTeal { background-color: var(--color-teal); }
+.dotTan { background-color: var(--color-brown); }
+
+.notifText {
+    display: block;
+    min-width: 0;
+}
+
+.notifTitle {
+    display: block;
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--text-dark);
+}
+
+.notifBody {
+    display: block;
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.45;
+}
+
+.notifDate {
+    display: block;
+    font-size: .72rem;
+    color: var(--placeholder);
+    margin-top: 4px;
+}
+
+.notifEmpty {
+    display: block;
+    padding: 1.6rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    white-space: normal;
+}
+
+.notifItem.isRead { opacity: .6; }
+.notifItem.isRead .notifDot { background-color: var(--color-brown-light); }
+
+/* ---------- mobile topbar ---------- */
+@media (max-width: 767.98px) {
+
+    .topbar .container-fluid {
+        flex-wrap: wrap;
+        row-gap: .25rem;
+    }
+
+    .topbar .container-fluid > div:first-child {
+        flex: 0 0 100%;
+    }
+
+    .topActions {
+        flex: 0 0 100%;
+        justify-content: flex-end;
+    }
+
+    /* Hide BiblioDesk logo only on mobile */
+    .topbar .navbar-brand {
+        display: none !important;
+    }
+
+    /* notification dropdown fits the screen on mobile */
+    .topbar .dropdown { position: static; }
+
+    .topbar .notifMenu {
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 24px) !important;
+        max-width: 420px !important;
+        margin: .5rem 0 0 !important;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto !important;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; }
+}

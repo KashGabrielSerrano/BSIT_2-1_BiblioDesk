@@ -136,9 +136,9 @@ if (empty($_SESSION['csrf_token'])) {
                 <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Notification Area">
                     <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
                 </button>
-                <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
+               <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
                     <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
-                </button>
+                </a>
                 <button type="button" class="btn p-0 border-0" aria-label="Open Account Information">
                     <img src="../frontend/assets/icons/pfp-icon.png" alt="Profile" class="rounded-circle" width="44"
                         height="44">

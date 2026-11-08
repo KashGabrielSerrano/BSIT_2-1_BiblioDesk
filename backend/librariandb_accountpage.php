@@ -86,9 +86,9 @@
                         <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
                         <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">4</span>
                     </button>
-                    <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
-                        <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
-                    </button>
+                   <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
+                    <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
+                </a>
                     <a type="button" class="btn p-0 border-0" aria-label="Open Account Information" href="librariandb_accountpage.php">
                         <img src="../frontend/assets/icons/pfp-icon.png" alt="Profile" class="rounded-circle" width="44" height="44">
                     </a>
