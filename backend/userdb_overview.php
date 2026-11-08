@@ -64,6 +64,19 @@
                         </li>
                     </ul>
                 </nav>
+
+                <div class="mt-auto pb-4">
+                    <ul class="nav flex-column m-0 p-0">
+                        <li class="nav-item">
+                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
+                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
+                                    <img src="../frontend/assets/icons/logout-default.png" alt="logout" width="28">
+                                </span>
+                                <span class="sideText">Logout</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </div>
         </aside>
 
@@ -80,10 +93,23 @@
                 </div>
 
                 <div class="d-flex align-items-center gap-4">
-                    <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Notification Area">
-                        <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
-                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">4</span>
-                    </button>
+
+                    <!-- ANNOUNCEMENTS (notification dropdown, filled by notif.js) -->
+                    <div class="dropdown">
+                        <button type="button" class="btn p-0 border-0 position-relative" id="notifToggle"
+                            data-bs-toggle="dropdown" aria-expanded="false" aria-label="Open Notification Area">
+                            <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill notifBadge"
+                                id="notifBadge" hidden>0</span>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end notifMenu" id="notifMenu">
+                            <li class="notifHead">
+                                <span>Announcements</span>
+                                <span class="notifHeadCount">0 new</span>
+                            </li>
+                            <li><span class="notifEmpty">No announcements yet.</span></li>
+                        </ul>
+                    </div>
 
                     <a href="settings.php?tab=settings" class="btn p-0 border-0 position-relative" aria-label="Open Settings">
                     <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
@@ -234,6 +260,25 @@
                     </div>
                 </div>
             </section>
+
+            <!-- LOGOUT CONFIRMATION MODAL -->
+            <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="background-color: var(--main-bg-color);">
+                        <div class="modal-header text-white border-secondary" style="background-color: var(--main-color);">
+                            <h5 class="modal-title" id="logoutModalLabel">Confirm Logout</h5>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body justify-content-center text-center m-5 fs-4">
+                            Are you sure you want to log out?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <a href="login.php" class="btn btn-danger">Log Out</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </main>
 
         <footer class="text-light mt-5 py-5">
@@ -265,5 +310,6 @@
         </footer>
 
         <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="../frontend/js/notif.js" defer></script>
     </body>
 </html>
