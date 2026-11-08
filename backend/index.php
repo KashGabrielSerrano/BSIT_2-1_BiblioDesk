@@ -5,10 +5,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bibliodesk</title>
-    <link rel="icon" type="image/png" href="/BSIT_2-1_BiblioDesk/frontend/assets/BiblioDesk_Icon.png">
+    <link rel="icon" type="image/png" href="./frontend/assets/BiblioDesk_Icon.png">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="/BSIT_2-1_BiblioDesk/frontend/css/index.css">
+    <link rel="stylesheet" href="../frontend/css/index.css">
 </head>
 
 <body data-bs-spy="scroll" data-bs-target=".nav-pills-custom" data-bs-smooth-scroll="true" tabindex="0">
@@ -21,7 +21,7 @@
             <span class="navbar-toggler-icon"></span>
         </button>
         <a class="navbar-brand m-0" href="#home">
-            <img src="/BSIT_2-1_BiblioDesk/frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk" height="26">
+            <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk" height="26">
         </a>
 
         <div class="collapse navbar-collapse justify-content-between mt-3 mt-md-0" id="navbarNav">
@@ -62,7 +62,7 @@
             </div>
 
             <div class="col-12 col-lg-6 text-center">
-                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/Home.png" alt="BiblioDesk" class="img-fluid rounded-4 shadow-sm">
+                <img src="../frontend/assets/Home.png" alt="BiblioDesk" class="img-fluid rounded-4 shadow-sm">
             </div>
 
         </div>
@@ -116,7 +116,7 @@
                     <div class="row justify-content-center g-4">
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Gabrielle Calderon</h4>
                                 <p class="text-muted small mb-3">Frontend Developer &amp; Designer</p>
                                 <p class="text-secondary small mb-0">Responsible for user interface design and responsive layouts.</p>
@@ -125,7 +125,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Claire Arcino</h4>
                                 <p class="text-muted small mb-3">Frontend Developer</p>
                                 <p class="text-secondary small mb-0">Responsible for user interface design and responsive layouts.</p>
@@ -134,7 +134,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Lance Ramos</h4>
                                 <p class="text-muted small mb-3">Frontend Developer</p>
                                 <p class="text-secondary small mb-0">Responsible for user interface design and responsive layouts.</p>
@@ -147,7 +147,7 @@
                         <div class="row justify-content-center g-4">
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Lui Ortega</h4>
                                 <p class="text-muted small mb-3">Frontend Developer</p>
                                 <p class="text-secondary small mb-0">Responsible for user interface design and responsive layouts.</p>
@@ -156,7 +156,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Kyle De Castro</h4>
                                 <p class="text-muted small mb-3">Backend Developer</p>
                                 <p class="text-secondary small mb-0">Handles session management and authentication modules.</p>
@@ -165,7 +165,7 @@
 
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">Kash Serrano</h4>
                                 <p class="text-muted small mb-3">Backend Developer</p>
                                 <p class="text-secondary small mb-0">Handles session management and authentication modules.</p>
@@ -178,7 +178,7 @@
                     <div class="row justify-content-center g-4">
                         <div class="col-12 col-md-4">
                             <div class="card border-0 shadow-sm rounded-4 text-center p-4 h-100 bg-white">
-                                <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
+                                <img src="../frontend/assets/icons/pfp-icon.png" alt="Developer" class="rounded-circle mx-auto mb-3" width="80" height="80">
                                 <h4 class="h5 fw-bold mb-1">John Monte</h4>
                                 <p class="text-muted small mb-3">Backend Developer</p>
                                 <p class="text-secondary small mb-0">Handles session management and authentication modules.</p>
@@ -218,7 +218,7 @@
                 <ul class="list-unstyled d-flex flex-column gap-4 mt-4">
                     <li class="d-flex align-items-center gap-3">
                         <span class="contactIcon rounded-4 d-flex align-items-center justify-content-center flex-shrink-0">
-                            <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/business-mail.png" alt="" width="52">
+                            <img src="../frontend/assets/icons/business-mail.png" alt="" width="52">
                         </span>
                         <div>
                             <h3 class="h4 mb-1">Business Email:</h3>
@@ -227,7 +227,7 @@
                     </li>
                     <li class="d-flex align-items-center gap-3">
                         <span class="contactIcon rounded-4 d-flex align-items-center justify-content-center flex-shrink-0">
-                            <img src="/BSIT_2-1_BiblioDesk/frontend/assets/icons/support-mail.png" alt="" width="52">
+                            <img src="../frontend/assets/icons/support-mail.png" alt="" width="52">
                         </span>
                         <div>
                             <h3 class="h4 mb-1">Support Email:</h3>
@@ -287,7 +287,7 @@
         <div class="container">
             <div class="row justify-content-around gy-4">
                 <div class="col-12 col-md-5 ps-0">
-                    <img src="/BSIT_2-1_BiblioDesk/frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk logo" height="56"
+                    <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk logo" height="56"
                         class="footerLogo">
                     <ul class="list-unstyled lh-lg mt-3 ps-4 mb-0">
                         <li>
