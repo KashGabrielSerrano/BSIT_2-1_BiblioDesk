@@ -484,7 +484,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                             <label class="small mb-1" for="modalShareLink">Link back to this book (readers need to be logged in)</label>
                                             <div class="input-group input-group-sm">
                                                 <input type="text" id="modalShareLink" class="form-control" readonly>
-                                                <button type="button" id="modalShareCopy" class="btn btn-outline-light">Copy</button>
+                                                <button type="button" id="modalShareCopy" class="btn btn-outline-dark">Copy</button>
                                             </div>
                                         </div>
                                     </div>
@@ -497,6 +497,27 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                 <button type="button" id="modalBookFavorite" class="btn border-0 p-2 d-none" aria-label="Favorite">
                                     <i class="bi bi-heart fs-4"></i>
                                 </button>
+                                <button type="button" id="modalBookReport" class="btn border-0 p-2" aria-label="Report an issue with this book"
+                                    title="Report an issue" data-report-toggle="modalReportPanel" aria-expanded="false" aria-controls="modalReportPanel">
+                                    <i class="bi bi-flag fs-4"></i>
+                                </button>
+                                <form id="modalReportPanel" class="w-100 mt-2 order-last" hidden data-report-panel data-book-source="#modalBookId">
+                                    <label class="small mb-1" for="modalReportIssue">What is wrong with this book?</label>
+                                    <select id="modalReportIssue" name="issue_type" class="form-select form-select-sm mb-2" required>
+                                        <option value="">Choose an issue…</option>
+                                        <option value="Broken Link">Broken Link</option>
+                                        <option value="Missing Page/s">Missing Page/s</option>
+                                        <option value="Wrong File">Wrong File</option>
+                                        <option value="License Concern">License Concern</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                    <textarea name="description" class="form-control form-control-sm mb-2" rows="2" maxlength="1000"
+                                        placeholder="Details (optional), e.g. which page"></textarea>
+                                    <div class="d-flex flex-wrap align-items-center gap-2">
+                                        <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3">Send report</button>
+                                        <span class="small" data-report-result hidden role="status"></span>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -537,13 +558,10 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
 
     <script>
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
-        // Public base URL for share links / QR codes (config APP_BASE_URL); empty = use this page's address.
         window.appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
     </script>
-    <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
-<?php render_scripts(['mybooks.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
+<?php render_scripts(['mybooks.js', 'report_issue.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
     <script>
-        // Share panel in the book details modal: link back to the book + QR code.
         (() => {
             const modal    = document.getElementById('bookDetailsModal');
             if (!modal) return;

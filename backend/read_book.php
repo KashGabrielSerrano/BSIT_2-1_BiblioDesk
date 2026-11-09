@@ -168,6 +168,20 @@ session_write_close();
             text-align: center;
         }
         #share-panel.open { display: block; }
+        #report-panel {
+            position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            width: min(360px, calc(100vw - 24px)); background: #1a1a1a; border: 1px solid #555;
+            border-radius: 8px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.5); text-align: left;
+        }
+        #report-panel[hidden] { display: none; }
+        #report-panel label { font-size: 12px; color: #ccc; display: block; margin-bottom: 6px; }
+        #report-panel select, #report-panel textarea {
+            width: 100%; box-sizing: border-box; background: #333; color: #fff; border: 1px solid #555;
+            border-radius: 4px; padding: 6px 8px; font-size: 13px; margin-bottom: 8px; font-family: inherit;
+        }
+        .report-result { display: block; font-size: 12px; margin-top: 8px; }
+        .report-result.ok { color: #8fd18f; }
+        .report-result.error { color: #ff8a80; }
         #share-qr { display: inline-block; background: #fff; padding: 8px; border-radius: 6px; }
         #share-panel p { font-size: 12px; color: #ccc; margin: 10px 0 6px; }
         #share-row { display: flex; gap: 6px; }
@@ -194,9 +208,24 @@ session_write_close();
     </span>
     <button id="next-btn" disabled>Next</button>
     <button id="share-btn" type="button" aria-expanded="false" aria-controls="share-panel">Share</button>
+    <button id="report-btn" type="button" data-report-toggle="report-panel" aria-expanded="false" aria-controls="report-panel">Report issue</button>
 <?php if (in_array($user_role, ['Librarian', 'Admin'], true)): ?>
     <a class="preview-badge" href="librarymanagement.php" title="Back to Library Management">Preview mode (<?php echo htmlspecialchars($user_role); ?>)</a>
 <?php endif; ?>
+    <form id="report-panel" hidden data-report-panel data-book-id="<?php echo (int)$book_id; ?>" aria-label="Report an issue with this book">
+        <label for="report-issue">What is wrong with this book?</label>
+        <select id="report-issue" name="issue_type" required>
+            <option value="">Choose an issue…</option>
+            <option value="Broken Link">Broken Link</option>
+            <option value="Missing Page/s">Missing Page/s</option>
+            <option value="Wrong File">Wrong File</option>
+            <option value="License Concern">License Concern</option>
+            <option value="Other">Other</option>
+        </select>
+        <textarea name="description" rows="2" maxlength="1000" placeholder="Details (optional), e.g. which page"></textarea>
+        <button type="submit">Send report</button>
+        <span data-report-result hidden role="status"></span>
+    </form>
     <div id="share-panel" role="dialog" aria-label="Share this book">
         <div id="share-qr"></div>
         <p>Link back to this book (readers need to be logged in)</p>
@@ -403,5 +432,6 @@ pageInput.addEventListener('change', handlePageInputChange);
 
 loadDocument();
 </script>
+<script src="../frontend/js/report_issue.js"></script>
 </body>
 </html>

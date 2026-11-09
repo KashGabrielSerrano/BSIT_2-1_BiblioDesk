@@ -137,6 +137,42 @@ if ($action === 'save_progress') {
         'has_progress' => $has_progress,
         'resume_page'  => $has_progress ? (int)$row['Current_Page'] : 1
     ]);
+
+} elseif ($action === 'report_issue') {
+    $issue_types = ['Broken Link', 'Missing Page/s', 'Wrong File', 'License Concern', 'Other'];
+    $book_id     = max(0, intval($_POST['book_id'] ?? 0));
+    $issue       = gv($_POST, 'issue_type');
+    $details     = gv($_POST, 'description');
+
+    $book = db_one("SELECT Title FROM book_table WHERE Book_ID = ?", 'i', [$book_id]);
+    if (!$book) {
+        http_response_code(404);
+        sendResponse(false, 'Book not found.');
+    }
+    if (!in_array($issue, $issue_types, true)) {
+        http_response_code(422);
+        sendResponse(false, 'Please choose what is wrong with the book.');
+    }
+    if (mb_strlen($details) > 1000) {
+        http_response_code(422);
+        sendResponse(false, 'Please keep the details under 1,000 characters.');
+    }
+    if (db_one("SELECT 1 FROM report_table WHERE User_ID = ? AND Book_ID = ? AND Issue_Type = ? AND Status <> 'Resolved' LIMIT 1",
+               'iis', [$user_id, $book_id, $issue])) {
+        sendResponse(false, 'You already reported this issue for this book. The library is looking into it.');
+    }
+    $today = (int)(db_one("SELECT COUNT(*) AS c FROM report_table WHERE User_ID = ? AND Created_At > UTC_TIMESTAMP() - INTERVAL 1 DAY",
+                          'i', [$user_id])['c'] ?? 0);
+    if ($today >= 10) {
+        http_response_code(429);
+        sendResponse(false, 'You have sent many reports today. Please try again tomorrow.');
+    }
+
+    db_exec("INSERT INTO report_table (Book_ID, User_ID, Issue_Type, Description) VALUES (?, ?, ?, ?)",
+            'iiss', [$book_id, $user_id, $issue, $details !== '' ? $details : null]);
+    notify_roles(['Librarian', 'Admin'], 'new_report', "Book issue reported: {$book['Title']}",
+                 $issue . ($details !== '' ? ' - ' . mb_substr($details, 0, 150) : ''), 'librarymanagement.php#reports', $user_id);
+    sendResponse(true, 'Thank you! Your report was sent to the library. You will get a notification when it is updated.');
 }
 
 http_response_code(400);

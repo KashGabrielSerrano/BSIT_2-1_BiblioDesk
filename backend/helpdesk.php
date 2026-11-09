@@ -25,6 +25,48 @@ render_head($is_staff ? 'BiblioDesk - Admin Helpdesk' : 'BiblioDesk - Helpdesk',
             </div>
         </div>
 
+<?php if ($is_staff): ?>
+        <!-- Support tickets inbox (staff only) - frontend/js/helpdesk_tickets.js -->
+        <section id="tickets" class="mx-auto mb-5" style="max-width: 1000px;" aria-labelledby="ticketsHeading">
+            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
+                <h2 id="ticketsHeading" class="fw-semibold mb-0">Support Tickets</h2>
+                <div class="btn-group flex-wrap" role="group" aria-label="Filter tickets by status" id="ticketFilters">
+                    <button type="button" class="btn btn-outline-dark active" data-status="Open">Open <span class="badge bg-warning text-dark" data-count="Open">0</span></button>
+                    <button type="button" class="btn btn-outline-dark" data-status="Answered">Answered <span class="badge bg-success" data-count="Answered">0</span></button>
+                    <button type="button" class="btn btn-outline-dark" data-status="Closed">Closed <span class="badge bg-secondary" data-count="Closed">0</span></button>
+                    <button type="button" class="btn btn-outline-dark" data-status="">All</button>
+                </div>
+            </div>
+            <div id="ticketList"><p class="text-muted">Loading tickets…</p></div>
+        </section>
+
+        <!-- Reply modal (one reply per ticket) -->
+        <div class="modal fade" id="ticketReplyModal" tabindex="-1" aria-labelledby="ticketReplyLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header text-white" style="background-color: var(--main-color);">
+                        <h5 class="modal-title fw-bold" id="ticketReplyLabel">Reply to ticket</h5>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="ticketReplyForm" novalidate>
+                        <div class="modal-body" style="background-color: var(--main-bg-color);">
+                            <p class="small text-muted mb-1" id="ticketReplyFrom"></p>
+                            <p class="mb-3" id="ticketReplyMessage" style="white-space: pre-line;"></p>
+                            <label for="ticketReplyText" class="form-label fw-semibold">Your reply</label>
+                            <textarea class="form-control" id="ticketReplyText" rows="5" maxlength="2000" required></textarea>
+                            <div class="invalid-feedback" id="ticketReplyError"></div>
+                            <p class="small text-muted mt-2 mb-0">Only one reply can be sent per ticket.</p>
+                        </div>
+                        <div class="modal-footer" style="background-color: var(--main-bg-color);">
+                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn rounded-pill px-4 text-white" style="background-color: var(--btn);" id="ticketReplySend">Send reply</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+<?php endif; ?>
+
         <!-- Tutorial -->
         <section class="tutorial-section">
             <div class="tutorial-wrapper mx-auto" style="max-width: 800px;">
@@ -296,4 +338,4 @@ render_head($is_staff ? 'BiblioDesk - Admin Helpdesk' : 'BiblioDesk - Helpdesk',
     <!-- ========================================================================== -->
     <?php render_footer($menu, 'class="text-light py-5" style="margin-top: 100px;"'); ?>
 
-<?php render_scripts(['helpdesk.js']); ?>
+<?php render_scripts($is_staff ? ['helpdesk.js', 'helpdesk_tickets.js'] : ['helpdesk.js']); ?>

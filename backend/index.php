@@ -1,3 +1,6 @@
+<?php
+require_once __DIR__ . '/core/bootstrap.php';
+?>
 <!DOCTYPE html>
 <html lang="en">
 
@@ -248,27 +251,31 @@
                             Rest assured that your email and data will not be published anywhere.
                         </p>
 
-                        <form class="formContain mt-4" action="" method="post">
+                        <form class="formContain mt-4" action="" method="post" data-contact-form>
+                            <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token'], ENT_QUOTES, 'UTF-8') ?>">
+                            <div class="d-none" aria-hidden="true"><label for="website">Leave this empty</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name:</label>
-                                <input type="text" id="name" class="name form-control contactInput" placeholder="Victor Magtanggol" required>
+                                <input type="text" id="name" name="name" maxlength="100" class="name form-control contactInput" placeholder="Victor Magtanggol" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email:</label>
-                                <input type="email" id="email" class="email form-control contactInput" placeholder="insert.your.email@gmail.com" required>
+                                <input type="email" id="email" name="email" maxlength="150" class="email form-control contactInput" placeholder="insert.your.email@gmail.com" required>
                             </div>
                             <div class="mb-3">
                                 <label for="subject" class="form-label">Subject/Concern:</label>
                                 <select name="subject" id="subject" class="form-select contactInput" required>
-                                    <option value="placeholder-value">Placeholder Text</option>
-                                    <option value="placeholder-value">Placeholder Text</option>
-                                    <option value="placeholder-value">Placeholder Text</option>
-                                    <option value="others">Others</option>
+                                    <option value="Account / Login">Account / Login</option>
+                                    <option value="Borrowing & Reservations">Borrowing &amp; Reservations</option>
+                                    <option value="Digital Books / Reading">Digital Books / Reading</option>
+                                    <option value="Fines & Payments">Fines &amp; Payments</option>
+                                    <option value="Suggestion">Suggestion</option>
+                                    <option value="Others">Others</option>
                                 </select>
                             </div>
                             <div class="mb-3">
                                 <label for="message" class="form-label">Message:</label>
-                                <textarea id="message" rows="4" class="message form-control contactInput" placeholder="Send us your concern/message here..." required></textarea>
+                                <textarea id="message" name="message" rows="4" minlength="10" maxlength="2000" class="message form-control contactInput" placeholder="Send us your concern/message here..." required></textarea>
                             </div>
                             <div class="btnContain d-flex justify-content-end mt-4">
                                 <button type="submit" class="fw-medium px-4 py-2 sendBtn btn btn-light">Send Message</button>
@@ -317,6 +324,7 @@
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../frontend/js/contact.js"></script>
 </body>
 
 </html>
