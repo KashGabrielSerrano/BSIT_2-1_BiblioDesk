@@ -67,6 +67,11 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                     Report Logs
                 </button>
             </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" type="button" role="tab" data-main-tab="circulation" aria-selected="false">
+                    Circulation
+                </button>
+            </li>
         </ul>
 
         <!-- ================================================================ -->
@@ -119,6 +124,11 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                         <option value="No">No – physical copy only</option>
                                     </select>
                                 </div>
+                                <div class="form-group col-md-6 text-white fw-semibold" data-copies-field hidden>
+                                    <label class="form-label" for="addCopies">Physical copies:</label>
+                                    <input type="number" id="addCopies" name="total_copies" class="form-control" min="0" max="1000" step="1" value="1">
+                                    <div class="form-text text-white-50">How many copies students can borrow.</div>
+                                </div>
                                 <div class="form-group col-12 text-white fw-semibold">
                                     <label class="form-label" for="addDescription">Description:</label>
                                     <textarea id="addDescription" name="description" class="form-control" rows="3"
@@ -140,7 +150,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     <div class="form-text text-white-50 mb-2">PDF, up to 20 MB. Or paste a Supabase https link instead:</div>
                                     <label class="visually-hidden" for="addDrive">PDF Document URL (https)</label>
                                     <input type="url" id="addDrive" name="drive_link" class="form-control"
-                                        maxlength="255" required
+                                        maxlength="255"
                                         placeholder="https://<project>.supabase.co/storage/v1/object/public/...pdf">
                                 </div>
                                 <div class="form-group col-12 pt-3 d-flex justify-content-end">
@@ -381,6 +391,26 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                 </div>
             </section>
         </div>
+        <!-- ================================================================ -->
+        <!-- PANEL 4: CIRCULATION (borrowing, reservations, fines - Stage 8)  -->
+        <!-- frontend/js/circulation_staff.js -> circulation_controller.php    -->
+        <!-- ================================================================ -->
+        <div id="panel-circulation" data-main-panel="circulation" class="d-none">
+            <ul class="nav subTabs gap-2 mb-4 flex-wrap" role="tablist" aria-label="Circulation sections" id="circTabs">
+                <li class="nav-item" role="presentation"><button class="nav-link active" type="button" role="tab" data-circ-section="requests" aria-selected="true">Requests <span class="tabBadge amber" data-circ-count="requests">0</span></button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" type="button" role="tab" data-circ-section="borrowed" aria-selected="false">Borrowed <span class="tabBadge green" data-circ-count="borrowed">0</span></button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" type="button" role="tab" data-circ-section="overdue" aria-selected="false">Overdue <span class="tabBadge red" data-circ-count="overdue">0</span></button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" type="button" role="tab" data-circ-section="reservations" aria-selected="false">Reservations <span class="tabBadge amber" data-circ-count="reservations">0</span></button></li>
+                <li class="nav-item" role="presentation"><button class="nav-link" type="button" role="tab" data-circ-section="fines" aria-selected="false">Fines <span class="tabBadge red" data-circ-count="fines">0</span></button></li>
+            </ul>
+            <p class="small mb-2" id="circInfo" aria-live="polite"></p>
+            <div class="table-responsive rounded-4 shadow-sm">
+                <table class="table align-middle mb-0 bg-white" id="circTable">
+                    <thead class="table-dark"><tr id="circHead"></tr></thead>
+                    <tbody id="circRows"><tr><td class="py-4 text-center">Loading…</td></tr></tbody>
+                </table>
+            </div>
+        </div>
     </main>
 
     <!-- ========================================================================== -->
@@ -432,6 +462,11 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     <option value="No">No - physical copy only</option>
                                 </select>
                             </div>
+                            <div class="col-md-6" data-copies-field hidden>
+                                <label class="form-label fw-semibold" for="editCopies">Physical copies</label>
+                                <input type="number" id="editCopies" name="total_copies" class="form-control" min="0" max="1000" step="1">
+                                <div class="form-text">Cannot go below the copies currently borrowed or held for pickup.</div>
+                            </div>
                             <div class="col-12">
                                 <label class="form-label fw-semibold" for="editDescription">Description</label>
                                 <textarea id="editDescription" name="description" class="form-control" rows="3" required
@@ -451,7 +486,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     accept="application/pdf,.pdf">
                                 <div class="form-text mb-2">Choose a file to replace the current PDF (up to 20 MB), or edit the https link below.</div>
                                 <label class="visually-hidden" for="editDrive">PDF Document URL (https)</label>
-                                <input type="url" id="editDrive" name="drive_link" class="form-control" maxlength="255" required>
+                                <input type="url" id="editDrive" name="drive_link" class="form-control" maxlength="255">
                             </div>
                         </div>
                     </div>
@@ -510,4 +545,4 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
     <script>
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token']); ?>;
     </script>
-<?php render_scripts(['librarymanagement.js']); ?>
+<?php render_scripts(['librarymanagement.js', 'circulation_staff.js']); ?>

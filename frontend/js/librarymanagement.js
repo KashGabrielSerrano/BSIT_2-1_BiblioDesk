@@ -14,7 +14,7 @@
     const API = 'librarymanagement_controller.php';
     const CSRF = window.csrfToken || '';
     const FALLBACK_COVER = '../frontend/assets/icons/library-default.png';
-    const MAIN_TABS = ['catalog', 'accounts', 'reports'];
+    const MAIN_TABS = ['catalog', 'accounts', 'reports', 'circulation'];
 
     const $ = (id) => document.getElementById(id);
 
@@ -191,6 +191,7 @@
 
         if (target === 'catalog') loadCatalog();
         else if (target === 'accounts') loadAccountTab();
+        else if (target === 'circulation') { if (window.loadCirculation) window.loadCirculation(); }
         else loadReports();
     }
 
@@ -201,6 +202,10 @@
     function digitalBadge(book) {
         if (book.is_digital === 'Yes' && book.drive_link) return '<span class="status-badge-green">PDF Linked</span>';
         if (book.is_digital === 'Yes') return '<span class="status-badge-red">Link Missing</span>';
+        if (book.total_copies > 0) {
+            const avail = book.available == null ? book.total_copies : book.available;
+            return `<span class="${avail > 0 ? 'status-badge-amber' : 'status-badge-red'}">Physical · ${avail}/${book.total_copies} available</span>`;
+        }
         return '<span class="status-badge-amber">Not Digital</span>';
     }
 
@@ -255,11 +260,17 @@
         pdf_file: { max: 20 * 1024 * 1024, types: ['application/pdf'], label: 'PDF', hint: 'PDF up to 20 MB' }
     };
 
-    /** PDF link is only mandatory for digital books that have no PDF file chosen. */
+    /** PDF link is only mandatory for digital books that have no PDF file chosen;
+     *  the physical-copies field only shows (and is required) for physical books. */
     function syncDigitalRequired(form) {
         const digital = form.elements.is_digital.value === 'Yes';
         const hasPdf = !!(form.elements.pdf_file && form.elements.pdf_file.files.length);
         form.elements.drive_link.required = digital && !hasPdf;
+        const copies = form.querySelector('[data-copies-field]');
+        if (copies) {
+            copies.hidden = digital;
+            form.elements.total_copies.required = !digital;
+        }
     }
 
     /** Friendly pre-check of chosen files; returns false (and toasts) if one is unacceptable. */
@@ -305,7 +316,7 @@
             const { book } = await api('get_book', { params: { book_id: bookId } });
             const form = $('editBookForm');
             form.reset(); // also clears any file chosen on a previous edit
-            ['book_id', 'title', 'author', 'isbn', 'publisher', 'category', 'description', 'cover_image', 'drive_link', 'is_digital']
+            ['book_id', 'title', 'author', 'isbn', 'publisher', 'category', 'description', 'cover_image', 'drive_link', 'is_digital', 'total_copies']
                 .forEach((name) => {
                     form.elements[name].value = book[name] ?? '';
                 });
@@ -695,6 +706,9 @@
 
     // Public API (spec'd function names, also handy from the browser console while testing)
     Object.assign(window, { switchMainTab, loadCatalog, loadAccountTab, updateAccountStatus, loadReports });
+    // shared with circulation_staff.js (same page)
+    window.lmConfirm = confirmAction;
+    window.lmNotify = notify;
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
     else init();

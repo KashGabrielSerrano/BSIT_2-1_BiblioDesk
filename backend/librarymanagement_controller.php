@@ -8,6 +8,7 @@ ob_start();   // lets sendResponse() discard stray notices before the JSON is se
 // Session, config, DB, SystemOperators and the shared helpers
 // (sendResponse, gv, db_all, like_term, enc, dec, guards) all come from the core.
 require_once __DIR__ . '/core/bootstrap.php';
+require_once __DIR__ . '/core/circulation.php';   // copies / availability (Stage 8)
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -250,6 +251,7 @@ function read_book_input(bool $has_pdf_upload = false): array {
         'cover_image' => gv($_POST, 'cover_image'),
         'drive_link'  => gv($_POST, 'drive_link'),
         'is_digital'  => gv($_POST, 'is_digital') ?: 'Yes',
+        'total_copies'=> gv($_POST, 'total_copies'),
     ];
 
     // A PDF uploaded with this request replaces any typed link and makes the book digital.
@@ -277,6 +279,15 @@ function read_book_input(bool $has_pdf_upload = false): array {
 
     if (!in_array($d['is_digital'], ['Yes', 'No'], true)) {
         return [$d, 'Invalid digital access value.'];
+    }
+    // Physical books are borrowed (D1): they need a copy count. Digital books always have 0 copies.
+    if ($d['is_digital'] === 'No') {
+        if (!preg_match('/^\d{1,4}$/', $d['total_copies']) || (int)$d['total_copies'] > 1000) {
+            return [$d, 'Enter how many physical copies the library has (0 to 1000).'];
+        }
+        $d['total_copies'] = (int)$d['total_copies'];
+    } else {
+        $d['total_copies'] = 0;
     }
     if ($d['isbn'] !== '' && !preg_match('/^[0-9Xx\- ]{1,20}$/', $d['isbn'])) {
         return [$d, 'ISBN may only contain digits, hyphens, spaces and X.'];
@@ -344,6 +355,8 @@ function book_row(array $r): array {
         'cover_image' => $r['Cover_Image'] ?? '',
         'drive_link'  => $r['Drive_Link'] ?? '',
         'is_digital'  => $r['Is_digital'],
+        'total_copies'=> (int)($r['Total_Copies'] ?? 0),
+        'available'   => isset($r['Available']) ? (int)$r['Available'] : null,
     ];
 }
 
@@ -430,7 +443,7 @@ function handle_get_catalog(mysqli $con): void {
 
     $rows = db_all(
         $con,
-        "SELECT Book_ID, Title, Author, ISBN, Publisher, Category, Cover_Image, Drive_Link, Is_digital
+        "SELECT Book_ID, Title, Author, ISBN, Publisher, Category, Cover_Image, Drive_Link, Is_digital, Total_Copies
            FROM book_table {$where}
           ORDER BY Book_ID {$order}
           LIMIT 500",
@@ -438,6 +451,11 @@ function handle_get_catalog(mysqli $con): void {
         $params
     );
 
+    $avail = availability_map(array_column($rows, 'Book_ID'));
+    foreach ($rows as &$r) {
+        $r['Available'] = $avail[(int)$r['Book_ID']][1] ?? 0;
+    }
+    unset($r);
     sendResponse(true, 'Catalog loaded.', [
         'books' => array_map('book_row', $rows),
         'count' => count($rows),
@@ -466,13 +484,13 @@ function handle_add_book(mysqli $con): void {
 
     try {
         $stmt = $con->prepare(
-            'INSERT INTO book_table (Title, Description, Cover_Image, Drive_Link, Author, ISBN, Publisher, Category, Is_digital)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO book_table (Title, Description, Cover_Image, Drive_Link, Author, ISBN, Publisher, Category, Is_digital, Total_Copies)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->bind_param(
-            'sssssssss',
+            'sssssssssi',
             $d['title'], $d['description'], $d['cover_image'], $d['drive_link'],
-            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital']
+            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital'], $d['total_copies']
         );
         $stmt->execute();
         $new_id = $con->insert_id;
@@ -503,19 +521,27 @@ function handle_update_book(mysqli $con): void {
         sendResponse(false, $err, [], 422);
     }
 
+    // Copies in use (borrowed + held for pickup) cannot be removed from the count.
+    $in_use = (int)(db_one("SELECT (SELECT COUNT(*) FROM loan_table WHERE Book_ID = ? AND Status = 'Borrowed')
+                                 + (SELECT COUNT(*) FROM reservation_table WHERE Book_ID = ? AND Status = 'Ready') AS n",
+                           'ii', [$book_id, $book_id])['n'] ?? 0);
+    if ($d['total_copies'] < $in_use) {
+        sendResponse(false, "{$in_use} copies are borrowed or held for pickup right now, so the count cannot go below {$in_use}.", [], 422);
+    }
+
     $uploaded = process_book_uploads($con, $d);
 
     try {
         $stmt = $con->prepare(
             'UPDATE book_table
                 SET Title = ?, Description = ?, Cover_Image = ?, Drive_Link = ?, Author = ?,
-                    ISBN = ?, Publisher = ?, Category = ?, Is_digital = ?
+                    ISBN = ?, Publisher = ?, Category = ?, Is_digital = ?, Total_Copies = ?
               WHERE Book_ID = ?'
         );
         $stmt->bind_param(
-            'sssssssssi',
+            'sssssssssii',
             $d['title'], $d['description'], $d['cover_image'], $d['drive_link'],
-            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital'], $book_id
+            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital'], $d['total_copies'], $book_id
         );
         $stmt->execute();
         $stmt->close();
@@ -537,6 +563,7 @@ function handle_update_book(mysqli $con): void {
     }
     release_stored_files($con, $stale, $book_id);
 
+    promote_reservations($book_id);   // added copies go to the next people in line
     sendResponse(true, 'Book updated.');
 }
 
@@ -546,9 +573,18 @@ function handle_delete_book(mysqli $con): void {
         sendResponse(false, 'Invalid book ID.', [], 400);
     }
 
+    // A book that is out on loan, requested or reserved cannot be deleted
+    $busy = db_one("SELECT (SELECT COUNT(*) FROM loan_table WHERE Book_ID = ? AND Status IN ('Requested','Borrowed'))
+                         + (SELECT COUNT(*) FROM reservation_table WHERE Book_ID = ? AND Status IN ('Pending','Ready')) AS n",
+                   'ii', [$book_id, $book_id]);
+    if ((int)($busy['n'] ?? 0) > 0) {
+        sendResponse(false, 'This book has active loans, requests or reservations. Finish those first.', [], 409);
+    }
+
     $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
 
-
+    // NOTE: FK constraints CASCADE to bookmarks, favorites, reading progress/history, reports and
+    // the book's finished loan / reservation / fine history.
     $stmt = $con->prepare('DELETE FROM book_table WHERE Book_ID = ?');
     $stmt->bind_param('i', $book_id);
     $stmt->execute();

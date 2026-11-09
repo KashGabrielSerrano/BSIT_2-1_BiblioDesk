@@ -290,6 +290,14 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                 </div>
             </div>
 
+            <!-- My Loans & Reservations - frontend/js/circulation_student.js -->
+            <section id="my-loans" aria-labelledby="myLoansHeading">
+                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
+                    <h2 id="myLoansHeading" class="h3 fw-semibold mb-0">My Loans &amp; Reservations</h2>
+                </div>
+                <div id="myLoans"><p class="text-muted">Loading your loans…</p></div>
+            </section>
+
             <!-- Continue Reading -->
             <section>
                 <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
@@ -490,6 +498,9 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                     </div>
                                 </div>
                                 <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">Read Now</a>
+
+                                <button type="button" id="modalBookBorrow" class="bookModal-btn-read border-0 d-none">Borrow</button>
+                                <p id="modalCircInfo" class="small w-100 mb-0 order-last" hidden role="status"></p>
                                 <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none">Add To Collections</a>
                                 <button type="button" id="modalBookBookmark" class="btn border-0 p-2 d-none" aria-label="Bookmark">
                                     <i class="bi bi-bookmark fs-4"></i>
@@ -560,7 +571,8 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
         window.appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
     </script>
-<?php render_scripts(['mybooks.js', 'report_issue.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
+    <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
+<?php render_scripts(['mybooks.js', 'report_issue.js', 'circulation_student.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
     <script>
         (() => {
             const modal    = document.getElementById('bookDetailsModal');

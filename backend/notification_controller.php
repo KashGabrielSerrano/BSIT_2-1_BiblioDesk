@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/announcements.php';
+require_once __DIR__ . '/core/circulation.php';
 header('Content-Type: application/json; charset=utf-8');
 header('Cache-Control: no-store');
 
@@ -15,6 +16,7 @@ $action = gv($_POST, 'action') ?: gv($_GET, 'action');
 switch ($action) {
     case 'list':
         publish_due_announcements();
+        circulation_upkeep();   // due-soon / overdue reminders, expired holds (no cron)
         $rows = db_all(db(),
             "SELECT Notification_ID, Type, Title, Message, Link, Is_Read, Created_At
                FROM notification_table WHERE User_ID = ? ORDER BY Created_At DESC, Notification_ID DESC LIMIT ?",
