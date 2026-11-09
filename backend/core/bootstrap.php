@@ -1,23 +1,4 @@
 <?php
-/**
- * backend/core/bootstrap.php
- * THE shared file. Every page and controller that needs the session, the database or a helper
- * starts with:   require_once __DIR__ . '/core/bootstrap.php';   (adjust the path from subfolders)
- *
- * What it does on include (in this order — the order matters):
- *   1. Starts the session with hardened cookie settings (BEFORE config.php, so they always apply)
- *   2. Loads connection/config.php (DB credentials, Supabase keys) and SystemOperators
- *   3. Makes sure a CSRF token exists
- * Everything else is a function you call when you need it. Nothing is printed by this file.
- *
- * Sections:  1. Session & config   2. Shared objects (db, so)   3. JSON responses
- *            4. Security guards     5. DB helpers                 6. Input & encryption helpers
- *            7. Login session & remember-me cookie
- *
- * NOTE: connection/config.php and helpers/SystemOperators.php are git-ignored (they hold secrets).
- *       This file works with the existing live copies unchanged.
- */
-
 /* ========================================================================== */
 /* 1. SESSION & CONFIG                                                        */
 /* ========================================================================== */
@@ -45,15 +26,10 @@ if (!defined('BIBLIODESK_CORE')) {
     if (empty($_SESSION['csrf_token'])) {
         $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
     }
-
-    // Optional config values: config.php may define them; otherwise sensible defaults.
     if (!defined('APP_BASE_URL')) {
-        // Public base URL of the backend folder, used for share links / QR codes.
-        // Set it in config.php on the live server, e.g. define('APP_BASE_URL', 'https://example.com/backend/');
         define('APP_BASE_URL', '');
     }
     if (!defined('DRIVE_LINK_ALLOWED_HOSTS')) {
-        // Only files on our own Supabase project may be linked as a book PDF.
         $supabase_host = defined('SUPABASE_URL') ? parse_url(SUPABASE_URL, PHP_URL_HOST) : null;
         define('DRIVE_LINK_ALLOWED_HOSTS', is_string($supabase_host) && $supabase_host !== '' ? [$supabase_host] : []);
     }
@@ -67,17 +43,24 @@ function is_https(): bool {
 /* 2. SHARED OBJECTS                                                          */
 /* ========================================================================== */
 
-/** The one database connection for this request (created on first use). */
+
 function db(): mysqli {
     static $con = null;
     if ($con === null) {
         $con = connection();
         $con->set_charset('utf8mb4');
+        $mode = (string)($con->query('SELECT @@SESSION.sql_mode')->fetch_row()[0] ?? '');
+        if (stripos($mode, 'STRICT_TRANS_TABLES') === false) {
+            $mode = trim($mode . ',STRICT_TRANS_TABLES', ',');
+            $stmt = $con->prepare('SET SESSION sql_mode = ?');
+            $stmt->bind_param('s', $mode);
+            $stmt->execute();
+            $stmt->close();
+        }
     }
     return $con;
 }
 
-/** The one SystemOperators instance (encryption, OTP, email, client IP). */
 function so(): SystemOperators {
     static $so = null;
     return $so ??= new SystemOperators();
@@ -138,13 +121,7 @@ function require_csrf(): void {
     }
 }
 
-/**
- * The logged-in user, re-checked against the database on every request:
- * ['user_id' => int, 'role' => 'Student'|'Librarian'|'Admin', 'status' => 'Active'].
- * Returns null when nobody is logged in. If the account was deleted, suspended or is no longer
- * Active, the session is ended on the spot (so suspension takes effect immediately).
- * The session role is kept in sync with the DB (so a role change applies on the next request).
- */
+
 function current_user(): ?array {
     static $checked = false, $user = null;
     if ($checked) {
@@ -249,7 +226,7 @@ function dashboard_for_role(?string $role): string {
 /* 5. DB HELPERS (prepared statements only)                                   */
 /* ========================================================================== */
 
-/** Run a prepared SELECT and return all rows as associative arrays. */
+
 function db_all(mysqli $con, string $sql, string $types = '', array $params = []): array {
     $stmt = $con->prepare($sql);
     if ($types !== '') {
@@ -261,12 +238,12 @@ function db_all(mysqli $con, string $sql, string $types = '', array $params = []
     return $rows;
 }
 
-/** First row of a prepared SELECT (or null), on the shared connection. */
+
 function db_one(string $sql, string $types = '', array $params = []): ?array {
     return db_all(db(), $sql, $types, $params)[0] ?? null;
 }
 
-/** Run a prepared INSERT / UPDATE / DELETE on the shared connection. Returns affected rows. */
+
 function db_exec(string $sql, string $types = '', array $params = []): int {
     $stmt = db()->prepare($sql);
     if ($types !== '') {
@@ -282,18 +259,18 @@ function db_exec(string $sql, string $types = '', array $params = []): int {
 /* 6. INPUT & ENCRYPTION HELPERS                                              */
 /* ========================================================================== */
 
-/** Scalar-string reader for $_GET / $_POST (arrays and nulls become ''). */
+
 function gv(array $src, string $key): string {
     $v = $src[$key] ?? '';
     return is_scalar($v) ? trim((string)$v) : '';
 }
 
-/** Escape LIKE wildcards so user input is matched literally. */
+
 function like_term(string $s): string {
     return '%' . addcslashes($s, '%_\\') . '%';
 }
 
-/** Decrypt a SystemOperators-encrypted field; never returns false/null. */
+
 function dec(SystemOperators $so, $value): string {
     if ($value === null || $value === '') {
         return '';
@@ -302,7 +279,7 @@ function dec(SystemOperators $so, $value): string {
     return is_string($out) ? $out : '';
 }
 
-/** Encrypt a sensitive field via SystemOperators before it is bound to SQL. */
+
 function enc(SystemOperators $so, $value): string {
     if ($value === null || $value === '') {
         return '';
@@ -317,7 +294,7 @@ function enc(SystemOperators $so, $value): string {
 
 const REMEMBER_ME_DAYS = 30;
 
-/** Fill the session after a successful login. $user needs User_ID, Email, Role, Student_ID (encrypted). */
+
 function start_user_session(array $user): void {
     session_regenerate_id(true);
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
@@ -327,7 +304,7 @@ function start_user_session(array $user): void {
     $_SESSION['student_id'] = !empty($user['Student_ID']) ? so()->decrypt($user['Student_ID']) : null;
 }
 
-/** Log out: forget the session completely and delete the session cookie. */
+
 function end_user_session(): void {
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {
@@ -339,7 +316,6 @@ function end_user_session(): void {
     }
 }
 
-/** Create a remember-me token for the user (stored hashed) and send the cookie. */
 function issue_remember_token(int $user_id): void {
     $token      = bin2hex(random_bytes(32));
     $expires_at = date('Y-m-d H:i:s', time() + REMEMBER_ME_DAYS * 86400);
@@ -385,13 +361,7 @@ const DEPARTMENT_LABELS = [
     'BSA'  => 'BS Accountancy',
 ];
 
-/**
- * The logged-in user's details, decrypted for display (null when nobody is logged in):
- * full_name, first_name, last_name, suffix, student_id, student_id_masked, department,
- * department_label, email, birthday (Y-m-d for <input type="date">), role, status, created_at.
- * Full_Name is stored as one encrypted string ("First Middle Last Suffix"), so the split into
- * first / last / suffix is a best guess for the form fields.
- */
+
 function current_profile(): ?array {
     static $profile = null;
     if ($profile !== null) {
