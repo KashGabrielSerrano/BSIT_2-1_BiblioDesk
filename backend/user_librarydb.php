@@ -266,97 +266,16 @@ function renderShelf(array $books, string $ratioClass): string {
     return $html;
 }
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BiblioDesk - <?php echo ($view === 'mybooks') ? 'My Books' : 'Digital Library'; ?></title>
-    <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="../frontend/css/<?php echo ($view === 'mybooks') ? 'mybooks.css' : 'user_librarydb.css'; ?>">
-</head>
-<body>
+<?php
+require_once __DIR__ . '/partials/layout.php';
+render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Library'), [$view === 'mybooks' ? 'mybooks.css' : 'user_librarydb.css']);
+?>
     <!-- SIDEBAR -->
-    <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar" aria-labelledby="sidebarLabel" data-bs-scroll="true">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="sidebarLabel">Menu</h5>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" data-bs-target="#sidebar" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body d-flex flex-column flex-grow-1 p-0">
-            <div class="logoContain d-flex align-items-center px-3">
-                <img src="../frontend/assets/BiblioDesk_IconW.png" alt="Bibliodesk Logo" width="48">
-            </div>
-            <nav aria-label="Main">
-                <ul class="nav flex-column gap-3 pt-4">
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="userdb_overview.php">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/ow-default.png" alt="overview page" width="28">
-                            </span>
-                            <span class="sideText">Overview</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light <?php echo ($view === 'mybooks') ? 'active' : ''; ?>" href="user_librarydb.php?view=mybooks" <?php echo ($view === 'mybooks') ? 'aria-current="page"' : ''; ?>>
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center <?php echo ($view === 'mybooks') ? 'bg-light' : ''; ?>">
-                                <img src="../frontend/assets/icons/mybooks-default.png" alt="my books page" width="28">
-                            </span>
-                            <span class="sideText">My Books</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light <?php echo ($view === 'library') ? 'active' : ''; ?>" href="user_librarydb.php?view=library" <?php echo ($view === 'library') ? 'aria-current="page"' : ''; ?>>
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center <?php echo ($view === 'library') ? 'bg-light' : ''; ?>">
-                                <img src="../frontend/assets/icons/lib-default.png" alt="library page" width="28">
-                            </span>
-                            <span class="sideText">Library</span>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="contactsupport.php" aria-current="page">
-                            <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                <img src="../frontend/assets/icons/contact-default.png" alt="contact support page" width="28">
-                            </span>
-                            <span class="sideText">Contact Support</span>
-                        </a>
-                    </li>
-                        <li class="nav-item">
-                            <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light" href="helpdesk.php">
-                                <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center">
-                                    <img src="../frontend/assets/icons/help-default.png" alt="helpdesk page" width="28">
-                                </span>
-                                <span class="sideText">Helpdesk</span>
-                            </a>
-                        </li>
-                </ul>
-            </nav>
-        </div>
-    </aside>
+    <?php render_sidebar('student', $view === 'mybooks' ? 'mybooks' : 'library'); ?>
+    <?php render_logout_modal(); ?>
 
     <!-- NAVBAR -->
-    <header class="navbar navbar-dark shadow topbar">
-        <div class="container-fluid">
-            <div class="d-flex align-items-center gap-2">
-                <button class="navbar-toggler d-md-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebar" aria-controls="sidebar" aria-label="Toggle menu">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <a class="navbar-brand m-0" href="userdb_overview.php">
-                    <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk" height="26">
-                </a>
-            </div>
-            <div class="d-flex align-items-center gap-4">
-                <button type="button" class="btn p-0 border-0 position-relative" aria-label="Open Notification Area">
-                    <img src="../frontend/assets/icons/notifbell.png" alt="notification bell icon" width="34">
-                </button>
-                <button type="button" class="btn p-0 border-0" aria-label="Open Account Information">
-                    <img src="../frontend/assets/icons/pfp-icon.png" alt="" class="rounded-circle" width="44" height="44">
-                </button>
-            </div>
-        </div>
-    </header>
+    <?php render_topbar('student'); ?>
 
     <main class="container-fluid px-3 px-md-5 py-4">
 
@@ -613,33 +532,13 @@ function renderShelf(array $books, string $ratioClass): string {
     <?php endif; ?>
 
     <!-- FOOTER -->
-    <footer class="text-light mt-5 py-5">
-        <div class="container">
-            <div class="row justify-content-around gy-4">
-                <div class="col-md-5">
-                    <img src="../frontend/assets/BiblioDesk_White_name.png" alt="BiblioDesk logo" height="56" class="footerLogo">
-                    <ul class="list-unstyled lh-lg mt-3 ps-4">
-                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=terms">Terms of Use</a></li>
-                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="terms_privacy.php?view=privacy">Privacy Policy</a></li>
-                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">More About BiblioDesk</a></li>
-                        <li><a class="link-light link-underline-opacity-0 link-underline-opacity-100-hover" href="#">BiblioDesk Developers</a></li>
-                    </ul>
-                </div>
-                <div class="col-md-5">
-                    <h2 class="h4 text-uppercase">Contact Us</h2>
-                    <p class="lh-lg">bibliodesk@gmail.com<br>bibliodesk.help@gmail.com</p>
-                </div>
-            </div>
-        </div>
-    </footer>
+    <?php render_footer('student'); ?>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
     </script>
-    <script src="../frontend/js/mybooks.js"></script>
     <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<?php render_scripts(['mybooks.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
     <script>
         // Share panel in the book details modal: link back to the book + QR code.
         (() => {
