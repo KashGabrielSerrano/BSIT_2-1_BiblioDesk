@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
-$user = require_login_page();
+$user    = require_login_page();
+$profile = current_profile();
 render_head('User Dashboard', ['userdb.css']);
 ?>
         <?php render_sidebar('student', 'overview'); ?>
@@ -16,13 +17,16 @@ render_head('User Dashboard', ['userdb.css']);
                     <div class="cardsColor card border-0 shadow rounded-4 h-100">
                         <div class="card-body p-4 d-flex flex-column flex-sm-row align-items-center gap-4">
                             <div class="flex-grow-1">
-                                <h1 class="display-6 fw-semibold">Victor Magtanggol</h1>
-                                <p class="fs-4 mb-2">R2025******</p>
-                                <p class="mb-0">Account Status: 🟢 <strong>Active</strong></p>
+                                <h1 class="display-6 fw-semibold"><?= e($profile['full_name']) ?></h1>
+                                <p class="fs-4 mb-2"><?= e($profile['student_id_masked'] ?: '—') ?></p>
+                                <p class="mb-0">Account Status: 🟢 <strong><?= e($profile['status']) ?></strong></p>
                             </div>
                             <div class="libID text-center pt-3 pt-sm-0 ps-sm-4">
                                 <p class="fs-5">Digital Library ID:</p>
-                                <img src="../frontend/assets/icons/placeholder-qr.png" alt="Digital library ID QR code" class="img-fluid p-1" width="150">
+                                <!-- Digital library ID: QR of the student ID, drawn in the browser (placeholder image if the QR library fails to load) -->
+                                <div id="libraryIdQr" class="d-inline-block bg-white p-2 rounded" data-qr="<?= e($profile['student_id']) ?>">
+                                    <img src="../frontend/assets/icons/placeholder-qr.png" alt="Digital library ID QR code" class="img-fluid p-1" width="150">
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -153,4 +157,16 @@ render_head('User Dashboard', ['userdb.css']);
 
         <?php render_footer('student'); ?>
 
-<?php render_scripts(); ?>
+<?php render_scripts(['https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
+    <script>
+        (() => {
+            const box = document.getElementById('libraryIdQr');
+            const value = box && box.dataset.qr;
+            if (!value || typeof QRCode === 'undefined') return;   // keep the placeholder image
+            box.replaceChildren();
+            new QRCode(box, { text: value, width: 134, height: 134, correctLevel: QRCode.CorrectLevel.M });
+        })();
+    </script>
+</body>
+
+</html>

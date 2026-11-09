@@ -17,7 +17,7 @@ $so->checkRememberMe($con);
 
 // Redirect to dashboard if logged in (and still Active)
 if ($user = current_user()) {
-    header("Location: " . dashboard_for_role($user['role']));
+    header("Location: " . after_login_redirect($user['role']));
     exit();
 }
 ?>

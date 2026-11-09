@@ -116,7 +116,7 @@ if ($action === 'login') {
     $clear_stmt->execute();
     $clear_stmt->close();
 
-    $redirect_url = dashboard_for_role($user['Role']);
+    $redirect_url = after_login_redirect($user['Role']);   // back to a scanned QR / requested page, if any
     sendResponse(true, 'Login successful!', ['redirect' => $redirect_url]);
 }
 

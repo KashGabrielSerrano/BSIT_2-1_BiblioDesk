@@ -26,7 +26,9 @@ const STAFF_MENU = [
     'overview'      => ['staff_overview.php',     'ow-default.png',    'overview page',           'Overview'],
     'announcements' => ['admin_announcement.php', 'announcement.png',  'announcements page',      'Announcements'],
     'library'       => ['librarymanagement.php',  'lib-default.png',   'library management page', 'Library Management'],
-    'users'         => ['AdminAccManagedb.php',   'business-mail.png', 'accounts management page','User Management'],
+    // User Management = the working student account list (Account Management tab). AdminAccManagedb.php is a
+    // static mock-up with fake users; it stays reachable from the overview quick actions until Stage 7.
+    'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management'],
     'logs'          => ['adminlog.php',           'due.png',           'report logs page',        'Report Logs'],
     'helpdesk'      => ['helpdesk.php',           'help-default.png',  'helpdesk page',           'Helpdesk'],
 ];
@@ -276,3 +278,19 @@ function render_scripts(array $js = [], bool $close = true): void { ?>
 </html>
 <?php endif;
 }
+
+/**
+ * "Preview mode" strip for staff viewing a student page (L6: checking how new books look to
+ * students). Prints nothing for students.
+ */
+function render_preview_banner(): void {
+    $user = current_user();
+    if (!$user || !in_array($user['role'], ['Librarian', 'Admin'], true)) {
+        return;
+    } ?>
+    <div class="alert alert-warning d-flex flex-wrap align-items-center justify-content-between gap-2 rounded-3 mb-4" role="status">
+        <span><i class="bi bi-eye me-2" aria-hidden="true"></i><strong>Preview mode:</strong>
+            you are viewing the student library as <?= e($user['role']) ?>.</span>
+        <a href="librarymanagement.php" class="btn btn-sm btn-dark rounded-pill px-3">Back to Library Management</a>
+    </div>
+<?php }

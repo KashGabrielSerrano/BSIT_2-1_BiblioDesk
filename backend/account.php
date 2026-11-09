@@ -6,15 +6,19 @@ $user       = require_login_page();
 $menu       = menu_for_role($user['role']);
 $is_student = $user['role'] === 'Student';
 
-$placeholders = [
-    'Student'   => ['name' => 'Victor Magtanggol', 'id_masked' => 'R2025******', 'first' => 'Victor', 'last' => 'Magtanggol',
-                    'suffix_ph' => 'Suffix (I / II / Sr. / Jr.)', 'id' => 'R20XXXXXXXX', 'birthday' => '2002-02-02', 'email' => 'schoolemail@gmail.com'],
-    'Librarian' => ['name' => 'Dora Marquez', 'id_masked' => '**********', 'first' => 'Dora', 'last' => 'Marquez',
-                    'suffix_ph' => 'Suffix (I / II / Sr. / Jr.)', 'id' => 'XXXXXXXXXXX', 'birthday' => '1992-12-09', 'email' => 'your.email@gmail.com'],
-    'Admin'     => ['name' => 'Sofia Baltazar-Winslow I', 'id_masked' => '**********', 'first' => 'Sofia', 'last' => 'Baltazar-Winslow',
-                    'suffix_ph' => 'I', 'id' => 'XXXXXXXXXXX', 'birthday' => '2018-05-01', 'email' => 'your.email@gmail.com'],
+// Real details of the logged-in user (decrypted). Saving changes is not wired up yet (accountpage.js
+// only simulates it); that needs an update endpoint in a later stage.
+$profile = current_profile();
+$p = [
+    'name'      => $profile['full_name'],
+    'id_masked' => $profile['student_id_masked'] !== '' ? $profile['student_id_masked'] : '**********',
+    'first'     => $profile['first_name'],
+    'last'      => $profile['last_name'],
+    'suffix_ph' => $profile['suffix'] !== '' ? $profile['suffix'] : 'Suffix (I / II / Sr. / Jr.)',
+    'id'        => $profile['student_id'],
+    'birthday'  => $profile['birthday'],
+    'email'     => $profile['email'],
 ];
-$p = $placeholders[$user['role']];
 
 render_head('Account', ['accountpage.css']);
 render_sidebar($menu);
@@ -82,7 +86,7 @@ render_topbar($menu);
                                 <?php if ($is_student): ?>
                                 <div class="col-12 col-md-6">
                                     <label for="department" class="form-label fs-5 mb-2">Department</label>
-                                    <input type="text" id="department" name="department" class="form-control accountInput" value="BS Information Technology">
+                                    <input type="text" id="department" name="department" class="form-control accountInput" value="<?= e($profile['department_label']) ?>">
                                 </div>
                                 <?php endif; ?>
                             </div>

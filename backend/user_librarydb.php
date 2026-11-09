@@ -278,6 +278,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
     <?php render_topbar('student'); ?>
 
     <main class="container-fluid px-3 px-md-5 py-4">
+        <?php render_preview_banner(); ?>
 
         <?php if ($view === 'mybooks'): ?>
             <!-- ============================================================================ -->
@@ -536,6 +537,8 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
 
     <script>
         window.csrfToken = <?php echo json_encode($_SESSION['csrf_token'] ?? ''); ?>;
+        // Public base URL for share links / QR codes (config APP_BASE_URL); empty = use this page's address.
+        window.appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
     </script>
     <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
 <?php render_scripts(['mybooks.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
@@ -561,8 +564,8 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             shareBtn.addEventListener('click', () => {
                 const id = idInput.value;
                 if (!id) return;
-                // Resolved against this page's URL, so it stays correct under any folder or port.
-                const url = new URL('read_book.php?id=' + encodeURIComponent(id), window.location.href).href;
+                // Public domain from config (APP_BASE_URL) so phones can open it; falls back to this page's URL.
+                const url = new URL('read_book.php?id=' + encodeURIComponent(id), window.appBaseUrl || window.location.href).href;
                 linkBox.value = url;
                 qrBox.replaceChildren();
                 if (typeof QRCode !== 'undefined') {

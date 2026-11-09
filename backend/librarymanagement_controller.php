@@ -359,7 +359,7 @@ try {
 
     /* ---- Action whitelists ---- */
     $read_actions  = ['get_catalog', 'get_book', 'get_accounts', 'get_reports'];
-    $write_actions = ['add_book', 'update_book', 'delete_book', 'update_account_status'];
+    $write_actions = ['add_book', 'update_book', 'delete_book', 'update_account_status', 'update_report_status'];
 
     /* ---- Retrieve & validate action ---- */
     $action = $_POST['action'] ?? $_GET['action'] ?? '';
@@ -399,6 +399,7 @@ try {
         case 'get_accounts':          handle_get_accounts($con, $so); break;
         case 'update_account_status': handle_update_account_status($con); break;
         case 'get_reports':           handle_get_reports($con, $so); break;
+        case 'update_report_status':  handle_update_report_status(); break;
     }
 } catch (Throwable $e) {
     error_log('librarymanagement_controller error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
@@ -753,4 +754,27 @@ function handle_get_reports(mysqli $con, SystemOperators $so): void {
         ],
         'pagination'    => ['page' => $page, 'per_page' => $per_page, 'total' => $total, 'pages' => $pages],
     ]);
+}
+
+function handle_update_report_status(): void {
+    $report_id = (int)gv($_POST, 'report_id');
+    $status    = gv($_POST, 'status');
+    if ($report_id <= 0 || !in_array($status, REPORT_STATUSES, true)) {
+        sendResponse(false, 'Invalid report or status.', [], 400);
+    }
+
+    $current = db_one("SELECT Status FROM report_table WHERE Report_ID = ?", 'i', [$report_id]);
+    if (!$current) {
+        sendResponse(false, 'Report not found.', [], 404);
+    }
+    if ($current['Status'] === $status) {
+        sendResponse(true, "Report is already {$status}.", ['status' => $status]);
+    }
+
+    db_exec(
+        "UPDATE report_table SET Status = ?, Resolved_At = IF(? = 'Resolved', NOW(), NULL) WHERE Report_ID = ?",
+        'ssi',
+        [$status, $status, $report_id]
+    );
+    sendResponse(true, "Report marked as {$status}.", ['status' => $status]);
 }

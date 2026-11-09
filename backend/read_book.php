@@ -65,6 +65,8 @@ session_write_close();
     <meta charset="UTF-8">
     <title>BiblioDesk Document Reader - <?php echo htmlspecialchars($book['Title']); ?></title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- QR code for the Share panel is drawn in the browser (no third-party service sees the link) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -149,6 +151,34 @@ session_write_close();
             color: #ccc;
             font-size: 14px;
         }
+        /* Share panel (link + QR back to this book) and staff preview badge */
+        #viewer-toolbar { flex-wrap: wrap; }
+        #share-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(360px, calc(100vw - 24px));
+            background: #1a1a1a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        #share-panel.open { display: block; }
+        #share-qr { display: inline-block; background: #fff; padding: 8px; border-radius: 6px; }
+        #share-panel p { font-size: 12px; color: #ccc; margin: 10px 0 6px; }
+        #share-row { display: flex; gap: 6px; }
+        #share-link {
+            flex: 1; min-width: 0; background: #333; color: #fff; border: 1px solid #555;
+            border-radius: 4px; padding: 5px 8px; font-size: 12px; user-select: all;
+        }
+        .preview-badge {
+            background: #ffc107; color: #1a1a1a; border-radius: 999px; padding: 4px 10px;
+            font-size: 12px; font-weight: bold; text-decoration: none;
+        }
         @media print {
             body { display: none !important; }
             #viewer-container, #page-canvas { display: none !important; }
@@ -163,6 +193,18 @@ session_write_close();
         / <span id="total-pages">-</span>
     </span>
     <button id="next-btn" disabled>Next</button>
+    <button id="share-btn" type="button" aria-expanded="false" aria-controls="share-panel">Share</button>
+<?php if (in_array($user_role, ['Librarian', 'Admin'], true)): ?>
+    <a class="preview-badge" href="librarymanagement.php" title="Back to Library Management">Preview mode (<?php echo htmlspecialchars($user_role); ?>)</a>
+<?php endif; ?>
+    <div id="share-panel" role="dialog" aria-label="Share this book">
+        <div id="share-qr"></div>
+        <p>Link back to this book (readers need to be logged in)</p>
+        <div id="share-row">
+            <input type="text" id="share-link" readonly>
+            <button id="share-copy" type="button">Copy</button>
+        </div>
+    </div>
 </div>
 
 <div id="viewer-container">
@@ -181,6 +223,37 @@ const userEmail = <?php echo json_encode($user_email); ?>;
 const bookId = <?php echo json_encode($book_id); ?>;
 const initialSavedPage = <?php echo json_encode($initial_page); ?>;
 const csrfToken = <?php echo json_encode($csrf_token); ?>;
+const appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
+
+(() => {
+    const btn = document.getElementById('share-btn');
+    const panel = document.getElementById('share-panel');
+    const qrBox = document.getElementById('share-qr');
+    const linkBox = document.getElementById('share-link');
+    const copyBtn = document.getElementById('share-copy');
+    btn.addEventListener('click', () => {
+        const open = !panel.classList.contains('open');
+        if (open) {
+            const url = new URL('read_book.php?id=' + encodeURIComponent(bookId), appBaseUrl || window.location.href).href;
+            linkBox.value = url;
+            qrBox.replaceChildren();
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(qrBox, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
+                qrBox.style.display = '';
+            } else {
+                qrBox.style.display = 'none';   // QR library did not load: the link still works
+            }
+        }
+        panel.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', String(open));
+    });
+    copyBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(linkBox.value); }
+        catch { linkBox.select(); document.execCommand('copy'); }
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+})();
 
 let pdfDoc = null;
 let currentPage = initialSavedPage;

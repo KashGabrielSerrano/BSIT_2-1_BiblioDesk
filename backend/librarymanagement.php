@@ -44,6 +44,10 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
     <main>
         <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-5 mb-3">
             <h1 class="fw-bold mb-0 p-1">Library Management</h1>
+            <!-- L6: open the student library to check how books look to students -->
+            <a href="user_librarydb.php?view=library" class="btn btn-outline-dark rounded-pill px-3">
+                <i class="bi bi-eye me-1" aria-hidden="true"></i> View as student
+            </a>
         </div>
 
         <!-- MAIN SPA TABS -->

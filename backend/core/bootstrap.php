@@ -173,6 +173,7 @@ function current_user(): ?array {
 function require_login_page(): array {
     $user = current_user();
     if (!$user) {
+        remember_return_to();
         header('Location: login.php');
         exit();
     }
@@ -183,10 +184,42 @@ function require_login_page(): array {
 function require_role_page(array $roles): array {
     $user = current_user();
     if (!$user || !in_array($user['role'], $roles, true)) {
+        if (!$user) {
+            remember_return_to();
+        }
         header('Location: login.php');
         exit();
     }
     return $user;
+}
+
+/**
+ * Remember the page a logged-out visitor asked for (e.g. a scanned book QR code), so login can
+ * send them back to it instead of the dashboard. Only plain GET requests for a page in this
+ * folder are remembered (no full URLs, so it can never redirect to another site).
+ */
+function remember_return_to(): void {
+    if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
+        return;
+    }
+    $target = basename((string)parse_url($_SERVER['SCRIPT_NAME'] ?? '', PHP_URL_PATH));
+    $query  = (string)($_SERVER['QUERY_STRING'] ?? '');
+    $candidate = $target . ($query !== '' ? '?' . $query : '');
+    if (is_safe_return_to($candidate)) {
+        $_SESSION['return_to'] = $candidate;
+    }
+}
+
+function is_safe_return_to(string $path): bool {
+    return (bool)preg_match('/^[A-Za-z0-9_]+\.php(\?[A-Za-z0-9_=&%.\-]*)?$/', $path)
+        && !preg_match('/^(login|registration|login_controller|registration_controller|stream_pdf)\.php/', $path);
+}
+
+/** Where to go right after logging in: the remembered page (once), otherwise the role's dashboard. */
+function after_login_redirect(?string $role): string {
+    $target = $_SESSION['return_to'] ?? '';
+    unset($_SESSION['return_to']);
+    return is_string($target) && is_safe_return_to($target) ? $target : dashboard_for_role($role);
 }
 
 /** For controllers: 401 JSON when not logged in. */
@@ -338,6 +371,77 @@ function clear_remember_cookie(): void {
         'httponly' => true,
         'samesite' => 'Lax',
     ]);
+}
+
+/* ========================================================================== */
+/* 8. PROFILE (decrypted details of the logged-in user)                       */
+/* ========================================================================== */
+
+const DEPARTMENT_LABELS = [
+    'BSIT' => 'BS Information Technology',
+    'BSCS' => 'BS Computer Science',
+    'BSIS' => 'BS Information Systems',
+    'BSBA' => 'BS Business Administration',
+    'BSA'  => 'BS Accountancy',
+];
+
+/**
+ * The logged-in user's details, decrypted for display (null when nobody is logged in):
+ * full_name, first_name, last_name, suffix, student_id, student_id_masked, department,
+ * department_label, email, birthday (Y-m-d for <input type="date">), role, status, created_at.
+ * Full_Name is stored as one encrypted string ("First Middle Last Suffix"), so the split into
+ * first / last / suffix is a best guess for the form fields.
+ */
+function current_profile(): ?array {
+    static $profile = null;
+    if ($profile !== null) {
+        return $profile;
+    }
+    $user = current_user();
+    if (!$user) {
+        return null;
+    }
+    $row = db_one(
+        "SELECT Full_Name, Student_ID, Department, Birthday, Email, Role, Account_Status, Created_At
+           FROM user_table WHERE User_ID = ?",
+        'i',
+        [$user['user_id']]
+    );
+    $so = so();
+
+    $full   = trim(dec($so, $row['Full_Name'] ?? ''));
+    $parts  = $full === '' ? [] : preg_split('/\s+/', $full);
+    $suffix = '';
+    if (count($parts) > 2 && preg_match('/^(Jr\.?|Sr\.?|I{1,3}|IV|V)$/i', end($parts))) {
+        $suffix = array_pop($parts);
+    }
+    $last  = count($parts) > 1 ? array_pop($parts) : '';
+    $first = implode(' ', $parts);
+
+    $sid  = dec($so, $row['Student_ID'] ?? '');
+    $dept = dec($so, $row['Department'] ?? '');
+
+    $birthday = '';
+    $bday_raw = dec($so, $row['Birthday'] ?? '');
+    if ($bday_raw !== '' && ($d = DateTime::createFromFormat('m-d-Y', $bday_raw))) {
+        $birthday = $d->format('Y-m-d');
+    }
+
+    return $profile = [
+        'full_name'         => $full !== '' ? $full : 'BiblioDesk User',
+        'first_name'        => $first,
+        'last_name'         => $last,
+        'suffix'            => $suffix,
+        'student_id'        => $sid,
+        'student_id_masked' => $sid !== '' ? mb_substr($sid, 0, 5) . str_repeat('*', max(0, mb_strlen($sid) - 5)) : '',
+        'department'        => $dept,
+        'department_label'  => DEPARTMENT_LABELS[$dept] ?? $dept,
+        'email'             => dec($so, $row['Email'] ?? ''),
+        'birthday'          => $birthday,
+        'role'              => $row['Role'],
+        'status'            => $row['Account_Status'],
+        'created_at'        => $row['Created_At'],
+    ];
 }
 
 /** Delete this browser's remember-me token from the DB and the cookie (used by logout). */
