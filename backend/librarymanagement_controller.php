@@ -660,6 +660,7 @@ function handle_update_account_status(mysqli $con): void {
         $del->close();
     }
 
+    log_activity('account_status_changed', 'user', $user_id, "{$current_status} -> {$status}");
     sendResponse(true, "Account set to {$status}.", ['status' => $status]);
 }
 
@@ -763,7 +764,9 @@ function handle_update_report_status(): void {
         sendResponse(false, 'Invalid report or status.', [], 400);
     }
 
-    $current = db_one("SELECT Status FROM report_table WHERE Report_ID = ?", 'i', [$report_id]);
+    $current = db_one("SELECT r.Status, r.User_ID, r.Issue_Type, b.Title
+                         FROM report_table r LEFT JOIN book_table b ON b.Book_ID = r.Book_ID
+                        WHERE r.Report_ID = ?", 'i', [$report_id]);
     if (!$current) {
         sendResponse(false, 'Report not found.', [], 404);
     }
@@ -776,5 +779,18 @@ function handle_update_report_status(): void {
         'ssi',
         [$status, $status, $report_id]
     );
+
+    // Tell the student who reported it (the bell), and keep a record for the admin log.
+    $book = $current['Title'] ?? 'a book';
+    $what = [
+        'Reviewing' => 'is being reviewed by the library.',
+        'Forwarded' => 'was forwarded for fixing.',
+        'Resolved'  => 'has been resolved. Thank you for reporting it!',
+        'New'       => 'was reopened.',
+    ][$status];
+    notify((int)$current['User_ID'], 'report_status', "Report update: {$book}",
+           "Your \"{$current['Issue_Type']}\" report {$what}");
+    log_activity('report_status_changed', 'report', $report_id, "{$current['Status']} -> {$status} ({$book})");
+
     sendResponse(true, "Report marked as {$status}.", ['status' => $status]);
 }

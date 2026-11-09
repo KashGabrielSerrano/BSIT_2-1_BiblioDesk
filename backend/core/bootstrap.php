@@ -414,7 +414,60 @@ function current_profile(): ?array {
     ];
 }
 
-/** Delete this browser's remember-me token from the DB and the cookie (used by logout). */
+/* ========================================================================== */
+/* 9. NOTIFICATIONS & ACTIVITY LOG                                            */
+/* ========================================================================== */
+
+
+const APP_TIMEZONE = 'Asia/Manila';
+
+/** Send one notification (the bell). $link: a page to open on click (null for none). */
+function notify(int $user_id, string $type, string $title, string $message = '', ?string $link = null): void {
+    db_exec(
+        "INSERT INTO notification_table (User_ID, Type, Title, Message, Link) VALUES (?, ?, ?, ?, ?)",
+        'issss',
+        [$user_id, mb_substr($type, 0, 40), mb_substr($title, 0, 120), mb_substr($message, 0, 255), $link]
+    );
+}
+
+
+function notify_roles(array $roles, string $type, string $title, string $message = '', ?string $link = null, int $except_user = 0): int {
+    $roles = array_values(array_intersect($roles, ['Student', 'Librarian', 'Admin']));
+    if (!$roles) {
+        return 0;
+    }
+    $marks = implode(',', array_fill(0, count($roles), '?'));
+    $rows  = db_all(db(), "SELECT User_ID FROM user_table WHERE Account_Status = 'Active' AND Role IN ($marks)",
+                    str_repeat('s', count($roles)), $roles);
+    $count = 0;
+    foreach ($rows as $r) {
+        if ((int)$r['User_ID'] !== $except_user) {
+            notify((int)$r['User_ID'], $type, $title, $message, $link);
+            $count++;
+        }
+    }
+    return $count;
+}
+
+/** Record who did what (role changes, approvals, settings...). Shown on adminlog.php later. */
+function log_activity(string $action, ?string $target_type = null, ?int $target_id = null, string $details = ''): void {
+    $actor = current_user()['user_id'] ?? null;
+    db_exec(
+        "INSERT INTO activity_log (Actor_ID, Action, Target_Type, Target_ID, Details) VALUES (?, ?, ?, ?, ?)",
+        'issis',
+        [$actor, mb_substr($action, 0, 60), $target_type, $target_id, mb_substr($details, 0, 500)]
+    );
+}
+
+/** UTC 'Y-m-d H:i:s' from the DB -> local date string, e.g. 'Nov 09, 2026' or 'Y-m-d'. */
+function local_date(?string $utc, string $format = 'M d, Y'): string {
+    if (!$utc) {
+        return '';
+    }
+    $d = new DateTime($utc, new DateTimeZone('UTC'));
+    return $d->setTimezone(new DateTimeZone(APP_TIMEZONE))->format($format);
+}
+
 function forget_remember_token(): void {
     if (!empty($_COOKIE['remember_me'])) {
         db_exec("DELETE FROM user_tokens WHERE token_hash = ?", 's', [hash('sha256', (string)$_COOKIE['remember_me'])]);

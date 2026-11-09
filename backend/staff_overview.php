@@ -228,7 +228,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
         </div>
     </div>
 
-    <?php if ($is_admin): ?>
+    
     <div class="modal fade qaModal" id="qaAnnModal" tabindex="-1" aria-labelledby="qaAnnLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
@@ -278,7 +278,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
             </div>
         </div>
     </div>
-    <?php endif; ?>
+    
 
     <div class="toast-container position-fixed bottom-0 end-0 p-3">
         <div id="qaToast" class="toast qaToast" role="status" aria-live="polite" aria-atomic="true">
@@ -383,7 +383,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                                     <span>Generate Reports</span>
                                 </button>
                             </li>
-                            <?php if ($is_admin): ?>
+                            
                             <li class="actionItem">
                                 <button type="button" class="actionLink actionBtn d-flex align-items-center gap-3"
                                     data-bs-toggle="modal" data-bs-target="#qaAnnModal">
@@ -391,7 +391,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                                     <span>Create Announcement</span>
                                 </button>
                             </li>
-                            <?php endif; ?>
+                            
                         </ul>
                     </div>
                 </div>

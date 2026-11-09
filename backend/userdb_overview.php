@@ -1,8 +1,21 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
+require_once __DIR__ . '/core/announcements.php';
 $user    = require_login_page();
 $profile = current_profile();
+// Published announcements for this user's audience (Library Updates = everything except Events)
+$updates = published_announcements_for($user['role'], 3, 'Events', true);
+$events  = published_announcements_for($user['role'], 3, 'Events');
+
+/** One announcement row with the date badge, in the original markup. */
+function overview_ann_item(array $a, bool $last): void {
+    $d = DateTime::createFromFormat('Y-m-d', $a['date']) ?: new DateTime(); ?>
+                            <li class="list-group-item bg-transparent text-reset <?= $last ? 'border-0' : 'border-light border-opacity-25' ?> d-flex align-items-center gap-3 px-4 py-3">
+                                <div class="dateBadge rounded-3 d-flex flex-column align-items-center justify-content-center"><strong><?= $d->format('d') ?></strong><small><?= strtoupper($d->format('M')) ?></small></div>
+                                <div><?= e($a['title']) ?><small class="d-block"><?= e($a['body']) ?></small></div>
+                            </li>
+<?php }
 render_head('User Dashboard', ['userdb.css']);
 ?>
         <?php render_sidebar('student', 'overview'); ?>
@@ -53,14 +66,9 @@ render_head('User Dashboard', ['userdb.css']);
                     <div class="cardsColor card border-0 shadow rounded-4 h-100">
                         <h2 class="card-header h3 px-4 py-3 bg-transparent border-light border-opacity-25">Library Updates</h2>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item bg-transparent text-reset border-light border-opacity-25 d-flex align-items-center gap-3 px-4 py-3">
-                                <div class="dateBadge rounded-3 d-flex flex-column align-items-center justify-content-center"><strong>17</strong><small>OCT</small></div>
-                                <div>Policy Updates<small class="d-block">Users can now borrow 3 books per week!</small></div>
-                            </li>
-                            <li class="list-group-item bg-transparent text-reset border-0 d-flex align-items-center gap-3 px-4 py-3">
-                                <div class="dateBadge rounded-3 d-flex flex-column align-items-center justify-content-center"><strong>31</strong><small>OCT</small></div>
-                                <div>System Maintenance on Oct. 31, 2026<small class="d-block">5:00 pm to 8:00 pm (GMT+8). All services will be paused during the maintenance.</small></div>
-                            </li>
+<?php if (!$updates): ?>
+                            <li class="list-group-item bg-transparent text-reset border-0 px-4 py-3">No library updates yet.</li>
+<?php endif; foreach ($updates as $i => $a) overview_ann_item($a, $i === count($updates) - 1); ?>
                         </ul>
                     </div>
                 </div>
@@ -69,10 +77,9 @@ render_head('User Dashboard', ['userdb.css']);
                     <div class="cardsColor card border-0 shadow rounded-4 h-100">
                         <h2 class="card-header h3 px-4 py-3 bg-transparent border-light border-opacity-25">Upcoming Events:</h2>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item bg-transparent text-reset border-0 d-flex align-items-center gap-3 px-4 py-3">
-                                <div class="dateBadge rounded-3 d-flex flex-column align-items-center justify-content-center"><strong>10</strong><small>NOV</small></div>
-                                <div>The annual book fest this coming <u>November 10.</u></div>
-                            </li>
+<?php if (!$events): ?>
+                            <li class="list-group-item bg-transparent text-reset border-0 px-4 py-3">No upcoming events yet.</li>
+<?php endif; foreach ($events as $i => $a) overview_ann_item($a, $i === count($events) - 1); ?>
                         </ul>
                     </div>
                 </div>
