@@ -30,6 +30,9 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                         <button type="button" class="navItem" role="tab" id="tab-notifications" data-panel="notifications" aria-controls="panel-notifications" aria-selected="false">Notifications</button>
                         <button type="button" class="navItem" role="tab" id="tab-reading" data-panel="reading" aria-controls="panel-reading" aria-selected="false">Reading &amp; appearance</button>
                         <button type="button" class="navItem" role="tab" id="tab-data" data-panel="data" aria-controls="panel-data" aria-selected="false">My data &amp; account</button>
+<?php if ($user['role'] === 'Admin'): ?>
+                        <button type="button" class="navItem" role="tab" id="tab-system" data-panel="system" aria-controls="panel-system" aria-selected="false">System (admin)</button>
+<?php endif; ?>
                     </nav>
                 </div>
 
@@ -283,6 +286,51 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             <button type="button" id="closeAccountBtn" class="btn stBtn danger">Close my account&hellip;</button>
                         </div>
                     </section>
+
+<?php if ($user['role'] === 'Admin'): $sys = settings_all(); $group = ''; ?>
+                    <!--SYSTEM (Admin only, A2): global settings in the system_settings table - frontend/js/admin_settings.js -->
+                    <section class="settingsPanel" id="panel-system" role="tabpanel" aria-labelledby="tab-system" tabindex="-1">
+                        <div class="panelHead">
+                            <h2>System settings</h2>
+                            <p>Library-wide rules for borrowing, reservations and fines. Changes apply to everyone right away and are recorded in the activity log.</p>
+                        </div>
+                        <form id="systemSettingsForm" novalidate>
+                            <div class="row g-3">
+<?php foreach (SETTINGS_SPEC as $key => [$label, $type, $min, $max, $default, $help, $grp]):
+        if ($grp !== $group): $group = $grp; ?>
+                                <div class="col-12"><h3 class="h5 fw-semibold mt-3 mb-0"><?= e($grp) ?></h3></div>
+<?php   endif;
+        if ($type === 'bool'): ?>
+                                <div class="col-12">
+                                    <div class="switchRow">
+                                        <div>
+                                            <label for="sys_<?= $key ?>" class="switchTitle"><?= e($label) ?></label>
+                                            <p class="helpText mb-0"><?= e($help) ?></p>
+                                        </div>
+                                        <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch"
+                                            id="sys_<?= $key ?>" name="<?= $key ?>" <?= $sys[$key] ? 'checked' : '' ?>></div>
+                                    </div>
+                                </div>
+<?php   else: ?>
+                                <div class="col-md-6">
+                                    <label for="sys_<?= $key ?>" class="fieldLabel"><?= e($label) ?></label>
+                                    <input type="number" id="sys_<?= $key ?>" name="<?= $key ?>" class="form-control stField"
+                                        min="<?= $min ?>" max="<?= $max ?>" step="<?= $type === 'money' ? '0.01' : '1' ?>" required
+                                        value="<?= $type === 'money' ? number_format((float)$sys[$key], 2, '.', '') : (int)$sys[$key] ?>"
+                                        aria-describedby="sys_<?= $key ?>_help sys_<?= $key ?>_err">
+                                    <p class="helpText mb-0" id="sys_<?= $key ?>_help"><?= e($help) ?> (<?= $min ?>–<?= $max ?>, default <?= $type === 'money' ? number_format((float)$default, 2) : $default ?>)</p>
+                                    <p class="fieldError" id="sys_<?= $key ?>_err" role="alert"></p>
+                                </div>
+<?php   endif;
+      endforeach; ?>
+                            </div>
+                            <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
+                                <button type="submit" id="systemSave" class="btn stBtn primary">Save system settings</button>
+                                <span id="systemResult" class="small" role="status"></span>
+                            </div>
+                        </form>
+                    </section>
+<?php endif; ?>
                 </div>
             </div>
         </main>
@@ -329,4 +377,4 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
             </div>
         </div>
 
-<?php render_scripts(['settings.js']); ?>
+<?php render_scripts($user['role'] === 'Admin' ? ['settings.js', 'admin_settings.js'] : ['settings.js']); ?>

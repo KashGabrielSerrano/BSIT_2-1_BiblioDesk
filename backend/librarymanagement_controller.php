@@ -359,7 +359,7 @@ try {
 
     /* ---- Action whitelists ---- */
     $read_actions  = ['get_catalog', 'get_book', 'get_accounts', 'get_reports'];
-    $write_actions = ['add_book', 'update_book', 'delete_book', 'update_account_status', 'update_report_status'];
+    $write_actions = ['add_book', 'update_book', 'delete_book', 'update_account_status', 'update_report_status', 'update_user_role'];
 
     /* ---- Retrieve & validate action ---- */
     $action = $_POST['action'] ?? $_GET['action'] ?? '';
@@ -400,6 +400,7 @@ try {
         case 'update_account_status': handle_update_account_status($con); break;
         case 'get_reports':           handle_get_reports($con, $so); break;
         case 'update_report_status':  handle_update_report_status(); break;
+        case 'update_user_role':      handle_update_user_role(); break;
     }
 } catch (Throwable $e) {
     error_log('librarymanagement_controller error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
@@ -557,7 +558,6 @@ function handle_delete_book(mysqli $con): void {
     if ($deleted === 0) {
         sendResponse(false, 'Book not found.', [], 404);
     }
-    // Row is gone: remove its cover and PDF from Supabase (only our own files, only if no other book uses them).
     release_stored_files($con, [$old[0]['Cover_Image'] ?? null, $old[0]['Drive_Link'] ?? null]);
 
     sendResponse(true, 'Book deleted.');
@@ -570,9 +570,13 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
     $status = gv($_GET, 'status');
     $search = mb_strtolower(gv($_GET, 'search'));
 
+    // Admins also see Librarian accounts (they can switch Student <-> Librarian). Librarians see students.
+    $is_admin = current_user()['role'] === 'Admin';
+    $roleSql  = $is_admin ? "Role IN ('Student','Librarian')" : "Role = 'Student'";
+
     // Tab badge counts (independent of search/filter)
     $counts = ['users' => 0, 'pending' => 0];
-    foreach (db_all($con, "SELECT Account_Status, COUNT(*) AS c FROM user_table WHERE Role = 'Student' GROUP BY Account_Status") as $r) {
+    foreach (db_all($con, "SELECT Account_Status, COUNT(*) AS c FROM user_table WHERE {$roleSql} GROUP BY Account_Status") as $r) {
         $counts[$r['Account_Status'] === 'Pending' ? 'pending' : 'users'] += (int)$r['c'];
     }
 
@@ -591,9 +595,9 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
 
     $rows = db_all(
         $con,
-        "SELECT User_ID, Full_Name, Student_ID, Email, Department, Account_Status, Created_At
+        "SELECT User_ID, Full_Name, Student_ID, Email, Department, Role, Account_Status, Created_At
            FROM user_table
-          WHERE Role = 'Student' AND {$statusSql}
+          WHERE {$roleSql} AND {$statusSql}
           ORDER BY Created_At DESC, User_ID DESC
           LIMIT 1000",
         $types,
@@ -610,6 +614,7 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
             'student_id' => dec($so, $r['Student_ID']),
             'department' => dec($so, $r['Department']),
             'status'     => $r['Account_Status'],
+            'role'       => $r['Role'],
             'created_at' => $r['Created_At'],
         ];
         if ($search !== '') {
@@ -621,7 +626,8 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
         $accounts[] = $acct;
     }
 
-    sendResponse(true, 'Accounts loaded.', ['accounts' => $accounts, 'counts' => $counts, 'tab' => $tab]);
+    sendResponse(true, 'Accounts loaded.', ['accounts' => $accounts, 'counts' => $counts, 'tab' => $tab,
+                 'can_change_roles' => $is_admin]);
 }
 
 function handle_update_account_status(mysqli $con): void {
@@ -793,4 +799,40 @@ function handle_update_report_status(): void {
     log_activity('report_status_changed', 'report', $report_id, "{$current['Status']} -> {$status} ({$book})");
 
     sendResponse(true, "Report marked as {$status}.", ['status' => $status]);
+}
+
+
+function handle_update_user_role(): void {
+    $admin = current_user();
+    if ($admin['role'] !== 'Admin') {
+        sendResponse(false, 'Only admins can change roles.', [], 403);
+    }
+    $user_id = (int)gv($_POST, 'user_id');
+    $role    = gv($_POST, 'role');
+    if ($user_id <= 0 || !in_array($role, ['Student', 'Librarian'], true)) {
+        sendResponse(false, 'Accounts can only be switched between Student and Librarian.', [], 400);
+    }
+    if ($user_id === $admin['user_id']) {
+        sendResponse(false, 'You cannot change your own role.', [], 403);
+    }
+    $target = db_one("SELECT Role, Account_Status FROM user_table WHERE User_ID = ?", 'i', [$user_id]);
+    if (!$target) {
+        sendResponse(false, 'Account not found.', [], 404);
+    }
+    if ($target['Role'] === 'Admin') {
+        sendResponse(false, 'Admin accounts cannot be changed here.', [], 403);
+    }
+    if ($target['Account_Status'] !== 'Active') {
+        sendResponse(false, 'Only active accounts can change role.', [], 422);
+    }
+    if ($target['Role'] === $role) {
+        sendResponse(true, "Account is already a {$role}.", ['role' => $role]);
+    }
+
+    db_exec("UPDATE user_table SET Role = ? WHERE User_ID = ? AND Role IN ('Student','Librarian')", 'si', [$role, $user_id]);
+    db_exec("DELETE FROM user_tokens WHERE user_id = ?", 'i', [$user_id]);
+    notify($user_id, 'role_changed', "Your account is now a {$role} account",
+           $role === 'Librarian' ? 'You can now open Library Management from the sidebar.' : 'You now have a student account.');
+    log_activity('role_changed', 'user', $user_id, "{$target['Role']} -> {$role}");
+    sendResponse(true, "Account changed to {$role}.", ['role' => $role]);
 }

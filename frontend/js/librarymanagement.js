@@ -22,6 +22,7 @@
         mainTab: 'catalog',
         catalogSort: 'newest',
         accountTab: 'users',
+        canChangeRoles: false,   // set from get_accounts (true for Admins)
         reportPage: 1,
         reportPerPage: 8,
         // monotonically increasing ids so a slow, stale response never overwrites a newer one
@@ -361,15 +362,25 @@
     /* Account management                                                     */
     /* ====================================================================== */
 
+    // Admins only (A3): switch an active account between Student and Librarian
+    function roleActionHtml(a) {
+        if (!state.canChangeRoles || a.status !== 'Active') return '';
+        const to = a.role === 'Librarian' ? 'Student' : 'Librarian';
+        return `<button type="button" class="actBtn approve js-account-role" data-id="${a.user_id}"
+                    data-name="${escapeHtml(a.name)}" data-role="${to}">Make ${to}</button>`;
+    }
+
     function accountActionsHtml(a) {
         const attrs = `data-id="${a.user_id}" data-name="${escapeHtml(a.name)}"`;
+        // Librarian accounts (listed for Admins only) can change role, but suspension stays student-only
+        if (a.role === 'Librarian') return roleActionHtml(a);
         if (a.status === 'Pending') {
             return `
                 <button type="button" class="actBtn approve js-account-status" ${attrs} data-status="Active">Approve</button>
                 <button type="button" class="actBtn deny js-account-status" ${attrs} data-status="Suspended" data-confirm="1">Deny</button>`;
         }
         if (a.status === 'Active') {
-            return `<button type="button" class="actBtn deny js-account-status" ${attrs} data-status="Suspended" data-confirm="1">Suspend</button>`;
+            return `<button type="button" class="actBtn deny js-account-status" ${attrs} data-status="Suspended" data-confirm="1">Suspend</button>` + roleActionHtml(a);
         }
         return `<button type="button" class="actBtn approve js-account-status" ${attrs} data-status="Active">Reactivate</button>`;
     }
@@ -386,6 +397,7 @@
                     <div class="text-start">
                         <p class="userName">${escapeHtml(a.name || 'Unnamed student')}</p>
                         <p class="userEmail">${escapeHtml(a.email)}</p>
+                        ${state.canChangeRoles ? `<span class="badge rounded-pill ${a.role === 'Librarian' ? 'bg-dark' : 'bg-secondary'} mt-1">${escapeHtml(a.role)}</span>` : ''}
                     </div>
                 </div>
             </td>
@@ -419,6 +431,7 @@
             });
             if (seq !== state.seq.accounts) return;
 
+            state.canChangeRoles = !!data.can_change_roles;
             $('countUsers').textContent = data.counts.users;
             $('countPending').textContent = data.counts.pending;
             $('accountResultCount').textContent =
@@ -445,7 +458,29 @@
         }
     }
 
+    async function updateUserRole(btn) {
+        const { id, role, name } = btn.dataset;
+        const ok = await confirmAction({
+            title: `Make ${name || 'this user'} a ${role}?`,
+            message: role === 'Librarian'
+                ? 'They will be able to manage the catalog, accounts and reports. Their saved logins are signed out.'
+                : 'They will lose access to Library Management. Their saved logins are signed out.',
+            confirmLabel: `Make ${role}`,
+            variant: 'dark'
+        });
+        if (!ok) return;
+        try {
+            const data = await api('update_user_role', { method: 'POST', params: { user_id: id, role } });
+            notify(data.message);
+            loadAccountTab();
+        } catch (err) {
+            notify(err.message, 'error');
+        }
+    }
+
     async function handleAccountClick(e) {
+        const roleBtn = e.target.closest('.js-account-role');
+        if (roleBtn) { updateUserRole(roleBtn); return; }
         const btn = e.target.closest('.js-account-status');
         if (!btn) return;
         const { id, status, name } = btn.dataset;

@@ -468,6 +468,65 @@ function local_date(?string $utc, string $format = 'M d, Y'): string {
     return $d->setTimezone(new DateTimeZone(APP_TIMEZONE))->format($format);
 }
 
+/* ========================================================================== */
+/* 10. GLOBAL SYSTEM SETTINGS (system_settings table, Admin-editable — A2)    */
+/* ========================================================================== */
+
+const SETTINGS_SPEC = [
+    'max_borrows'           => ['Max active borrows per student', 'int', 1, 20, 3, 'How many physical books a student can have borrowed at once.', 'Borrowing'],
+    'loan_days'             => ['Loan period (days)', 'int', 1, 60, 7, 'Due date = the day the book is borrowed + this many days.', 'Borrowing'],
+    'max_reservations'      => ['Max active reservations per student', 'int', 0, 10, 2, 'Reservations are only possible when no copy is available.', 'Reservations'],
+    'reservation_hold_days' => ['Pickup hold (days)', 'int', 1, 14, 2, 'How long a reserved copy is held once it is ready for pickup.', 'Reservations'],
+    'fine_per_day'          => ['Overdue fine per day (₱)', 'money', 0, 1000, 5.00, 'Charged for each day a borrowed book is late.', 'Fines'],
+    'grace_days'            => ['Grace period (days)', 'int', 0, 30, 0, 'Days late before the overdue fine starts.', 'Fines'],
+    'max_fine_per_loan'     => ['Max overdue fine per loan (₱)', 'money', 0, 100000, 200.00, 'The overdue fine for one loan never goes above this.', 'Fines'],
+    'lost_book_fee'         => ['Lost book fee (₱)', 'money', 0, 100000, 500.00, 'Fixed fine when a borrowed copy is marked as lost.', 'Fines'],
+    'block_if_unpaid_fines' => ['Block borrowing with unpaid fines', 'bool', 0, 1, 1, 'Students with unpaid fines cannot borrow or reserve.', 'Fines'],
+];
+
+
+function settings_all(bool $refresh = false): array {
+    static $cache = null;
+    if ($cache !== null && !$refresh) {
+        return $cache;
+    }
+    $stored = [];
+    foreach (db_all(db(), "SELECT Setting_Key, Setting_Value FROM system_settings") as $r) {
+        $stored[$r['Setting_Key']] = $r['Setting_Value'];
+    }
+    $cache = [];
+    foreach (SETTINGS_SPEC as $key => $spec) {
+        $parsed = isset($stored[$key]) ? parse_setting($key, $stored[$key]) : null;
+        $cache[$key] = $parsed ?? $spec[4];
+    }
+    return $cache;
+}
+
+function get_setting(string $key) {
+    return settings_all()[$key] ?? null;
+}
+
+
+function parse_setting(string $key, $raw) {
+    if (!isset(SETTINGS_SPEC[$key]) || !is_scalar($raw)) {
+        return null;
+    }
+    [, $type, $min, $max] = SETTINGS_SPEC[$key];
+    $raw = trim((string)$raw);
+    if ($type === 'bool') {
+        return in_array($raw, ['1', '0'], true) ? (int)$raw : null;
+    }
+    if ($type === 'int') {
+        if (!preg_match('/^\d+$/', $raw)) return null;
+        $v = (int)$raw;
+    } else {
+        if (!preg_match('/^\d+(\.\d{1,2})?$/', $raw)) return null;
+        $v = round((float)$raw, 2);
+    }
+    return ($v >= $min && $v <= $max) ? $v : null;
+}
+
+
 function forget_remember_token(): void {
     if (!empty($_COOKIE['remember_me'])) {
         db_exec("DELETE FROM user_tokens WHERE token_hash = ?", 's', [hash('sha256', (string)$_COOKIE['remember_me'])]);
