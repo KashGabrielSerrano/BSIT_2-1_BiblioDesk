@@ -1,33 +1,8 @@
 <?php
-/**
- * backend/partials/layout.php
- * The shared page shell: <head>, sidebar, top navbar (with the notification bell), logout modal,
- * footer and the common scripts. Built from the existing markup, so pages look the same as before.
- *
- * Usage in a page (see template.php for a full example):
- *
- *   require_once __DIR__ . '/core/bootstrap.php';
- *   require_once __DIR__ . '/partials/layout.php';
- *   $user = require_role_page(['Librarian', 'Admin']);
- *   render_head('Report Logs | BiblioDesk', ['root.css', 'adminlog.css']);   // opens <html><head>…<body>
- *   render_sidebar('staff', 'logs');
- *   render_logout_modal();
- *   render_topbar('staff');
- *   ...page <main>...
- *   render_footer('staff');
- *   render_scripts(['librarianlog.js']);                                     // closes </body></html>
- *
- * Menus: 'staff' (Librarian + Admin) and 'student'. menu_for_role() picks one from a role.
- * Active keys — staff: overview, announcements, library, users, logs, helpdesk
- *               student: overview, mybooks, library, contact, helpdesk
- */
-
 const STAFF_MENU = [
     'overview'      => ['staff_overview.php',     'ow-default.png',    'overview page',           'Overview'],
     'announcements' => ['admin_announcement.php', 'announcement.png',  'announcements page',      'Announcements'],
     'library'       => ['librarymanagement.php',  'lib-default.png',   'library management page', 'Library Management'],
-    // User Management = the working student account list (Account Management tab). AdminAccManagedb.php is a
-    // static mock-up with fake users; it stays reachable from the overview quick actions until Stage 7.
     'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management'],
     'logs'          => ['adminlog.php',           'due.png',           'report logs page',        'Report Logs'],
     'helpdesk'      => ['helpdesk.php',           'help-default.png',  'helpdesk page',           'Helpdesk'],
@@ -155,7 +130,11 @@ function render_logout_modal(): void { ?>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <a href="login.php?action=logout" class="btn btn-danger">Log Out</a>
+                    <form method="post" action="login.php" class="d-inline m-0">
+                        <input type="hidden" name="action" value="logout">
+                        <input type="hidden" name="csrf_token" value="<?= e($_SESSION['csrf_token'] ?? '') ?>">
+                        <button type="submit" class="btn btn-danger">Log Out</button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -281,8 +260,9 @@ function render_scripts(array $js = [], bool $close = true): void { ?>
 }
 
 /**
- * "Preview mode" strip for staff viewing a student page (L6: checking how new books look to
- * students). Prints nothing for students.
+ * "Preview mode" strip for staff viewing a student page. Only shown to Librarian/Admin users, not students. 
+ * The strip is a warning that the page is being viewed as a staff member, and a link to return 
+ * to the staff library management page.
  */
 function render_preview_banner(): void {
     $user = current_user();

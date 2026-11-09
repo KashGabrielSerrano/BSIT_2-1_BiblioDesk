@@ -4,10 +4,12 @@ require_once __DIR__ . "/core/bootstrap.php";
 $con = db();
 $so  = so();
 
-// Handle Logout
-if (isset($_GET['action']) && $_GET['action'] === 'logout') {
-    forget_remember_token();
-    end_user_session();
+// Handle Logout: POST with the CSRF token only
+if (($_SERVER['REQUEST_METHOD'] ?? '') === 'POST' && ($_POST['action'] ?? '') === 'logout') {
+    if (hash_equals($_SESSION['csrf_token'] ?? '', (string)($_POST['csrf_token'] ?? ''))) {
+        forget_remember_token();
+        end_user_session();
+    }
     header("Location: login.php");
     exit();
 }

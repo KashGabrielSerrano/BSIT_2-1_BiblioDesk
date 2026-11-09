@@ -66,8 +66,26 @@ function so(): SystemOperators {
     return $so ??= new SystemOperators();
 }
 
+/**
+ * The visitor's IP address (login lockout, OTP limits, logs). Only REMOTE_ADDR is trusted: headers
+ * like X-Forwarded-For can be faked by any client, which would let them dodge the lockout (bug #5).
+ * If the host sits behind a proxy/CDN that sets a trusted header, name it in config.php, e.g.
+ *   define('TRUSTED_PROXY_IP_HEADER', 'HTTP_CF_CONNECTING_IP');
+ * (dev/ip_check.php shows what the live host actually sends.)
+ */
 function client_ip(): string {
-    return so()->getClientIP();
+    if (defined('TRUSTED_PROXY_IP_HEADER') && TRUSTED_PROXY_IP_HEADER !== '' && !empty($_SERVER[TRUSTED_PROXY_IP_HEADER])) {
+        $first = trim(explode(',', (string)$_SERVER[TRUSTED_PROXY_IP_HEADER])[0]);
+        if (filter_var($first, FILTER_VALIDATE_IP)) {
+            return $first;
+        }
+    }
+    return filter_var($_SERVER['REMOTE_ADDR'] ?? '', FILTER_VALIDATE_IP) ?: '0.0.0.0';
+}
+
+/** A 6-digit one-time code from a cryptographically secure generator (bug #6: was mt_rand). */
+function generate_otp(): string {
+    return str_pad((string)random_int(0, 999999), 6, '0', STR_PAD_LEFT);
 }
 
 /* ========================================================================== */

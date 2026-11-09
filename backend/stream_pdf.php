@@ -1,31 +1,16 @@
 <?php
-/**
- * stream_pdf.php
- * Fetches the book's PDF from Supabase Storage and returns it (base64 text) to PDF.js
- * in read_book.php. The PDF itself is passed through untouched.
- *
- * Called ONLY via fetch() POST from read_book.php with a single-use, 60-second token.
- * NOTE: no closing "?>" tag on purpose - a trailing newline after it would be
- * sent before the payload and could corrupt it.
- */
-
-// ---------------------------------------------------------------------------
-// 0. Output hygiene - nothing may reach the client except the final payload
-// ---------------------------------------------------------------------------
 while (ob_get_level()) {
     ob_end_clean();
 }
-ob_start();                                   // swallow notices / BOMs / whitespace from includes
-ini_set('display_errors', '0');               // warnings must never be mixed into the output
-ini_set('zlib.output_compression', 'Off');    // gzip would invalidate our Content-Length
+ob_start();                                   
+ini_set('display_errors', '0');               
+ini_set('zlib.output_compression', 'Off');    
 if (function_exists('apache_setenv')) {
-    @apache_setenv('no-gzip', '1');           // stop mod_deflate from re-encoding the body
+    @apache_setenv('no-gzip', '1');           
 }
 
 require_once __DIR__ . "/core/bootstrap.php";
-
-// Set to true once curl.cainfo / openssl.cafile is configured in php.ini (XAMPP).
-const VERIFY_SSL = false;
+define('VERIFY_SSL', !defined('STREAM_PDF_VERIFY_SSL') || STREAM_PDF_VERIFY_SSL);
 
 function fail(int $code, string $message): void
 {
@@ -139,8 +124,6 @@ if ($pdf_binary === false || substr($pdf_binary, 0, 4) !== '%PDF') {
 // ---------------------------------------------------------------------------
 // 4. Send the bytes - discard ALL buffered junk first, then headers, then body
 // ---------------------------------------------------------------------------
-// Base64 text: download managers (IDM) only capture binary/downloadable MIME
-// types, so a text/plain body is ignored. read_book.php decodes it in JS.
 $payload = base64_encode($pdf_binary);
 unset($pdf_binary);
 

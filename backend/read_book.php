@@ -48,6 +48,8 @@ $token = bin2hex(random_bytes(32));
 if (!isset($_SESSION['image_tokens'])) {
     $_SESSION['image_tokens'] = [];
 }
+// Forget tokens that already expired (bug #11: they used to pile up in the session)
+$_SESSION['image_tokens'] = array_filter($_SESSION['image_tokens'], fn($t) => ($t['expires_at'] ?? 0) >= time());
 $_SESSION['image_tokens'][$token] = [
     'user_id'    => $user_id,
     'book_id'    => $book_id,
