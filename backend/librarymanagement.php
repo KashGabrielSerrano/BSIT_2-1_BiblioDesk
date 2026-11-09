@@ -1,27 +1,6 @@
 <?php
-/**
- * WAG AALISIN YUNG COMMENT BLOCK NA TO PLS :)
- * backend/librarymanagement.php
- * Librarian SPA: Digital Catalog | Account Management | Report Logs
- * API: librarymanagement_controller.php   JS: ../frontend/js/librarymanagement.js
- *
- * Layout (top to bottom):
- *   1. PHP bootstrap & security guard   5. Main content area (SPA panels)
- *   2. HTML head & assets               6. Modals & toast containers
- *   3. Sidebar navigation               7. Footer
- *   4. Top navbar                       8. JavaScript
- */
-
-/* ========================================================================== */
-/* 1. PHP BOOTSTRAP & SECURITY GUARD                                          */
-/* ========================================================================== */
-
 require_once __DIR__ . '/core/bootstrap.php';
 
-/* ---- Role authorization (WAG GAGALAWIN TO KUKURITIN KO KAYO) ----
- * Only Active Librarian / Admin accounts; role and status are re-checked against the DB.
- * Everyone else is sent to login.php. The CSRF token is created by the core.
- */
 require_role_page(['Librarian', 'Admin']);
 ?>
 <?php

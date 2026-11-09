@@ -1,7 +1,7 @@
 (function () {
     'use strict';
 
-    /*
+    /* REMINDER!!!!!!!!!!!!!!!!
      * Set this to your PHP endpoint once it exists, e.g. 'save_settings.php'.
      * While it is null the page runs in demo mode: settings are kept in this browser only.
      *

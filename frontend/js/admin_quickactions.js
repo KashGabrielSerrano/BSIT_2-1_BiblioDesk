@@ -2,33 +2,25 @@ document.addEventListener('DOMContentLoaded', function () {
     'use strict';
 
     
-    var CATEGORIES = [
-        'Educational',
-        'Research Articles',
-        'General Fiction (Horror, Sci-Fi, Romance, etc.)',
-        'Memoirs, Autobiographies & Biographies',
-        'True Crime',
-        'Travel Literatures & Travelogues',
-        'Magazines',
-        'Art Section'
-    ];
-
+    // Real data rendered by backend/core/dashboard.php (staff_overview.php -> window.biblioDashboard)
+    var DASH = window.biblioDashboard || {};
+    var CATEGORIES = DASH.categories || ['Educational', 'Non-Educational', 'Research Articles'];
     var ANN_CATEGORIES = ['System Update', 'Library Policy', 'Events', 'Collections'];
+    var users = DASH.users || [];
+    var logs = DASH.logs || [];
 
-    var users = [
-        { name: 'Victor Magtanggol', email: 'victor@example.com', role: 'Student',   status: 'Active' },
-        { name: 'Sofia the 1st',     email: 'sofia@example.com',  role: 'Student',   status: 'Active' },
-        { name: 'Dora the Explorer', email: 'dora@example.com',   role: 'Student',   status: 'Pending' },
-        { name: 'Cardo Dalisay',     email: 'cardo@example.com',  role: 'Librarian', status: 'Active' },
-        { name: 'Maria Clara',       email: 'maria@example.com',  role: 'Librarian', status: 'Inactive' }
-    ];
+    var csrfMeta = document.querySelector('meta[name="csrf-token"]');
+    var CSRF = (csrfMeta && csrfMeta.content) || '';
 
-    var logs = [
-        { book: 'Book Title', issue: 'Broken Link',     by: 'Victor Magtanggol', date: 'Today',     status: 'New' },
-        { book: 'Book Title', issue: 'Missing Page/s',  by: 'Sofia the 1st',     date: 'Yesterday', status: 'Reviewing' },
-        { book: 'Book Title', issue: 'Wrong File',      by: 'Dora the Explorer', date: 'Oct 23',    status: 'Forwarded' },
-        { book: 'Book Title', issue: 'License Concern', by: 'Cardo Dalisay',     date: 'Oct 03',    status: 'Resolved' }
-    ];
+    /** POST to a backend controller; resolves with the JSON reply (success or not). */
+    function postTo(endpoint, fields) {
+        var fd = new FormData();
+        fd.set('csrf_token', CSRF);
+        Object.keys(fields).forEach(function (k) { fd.set(k, fields[k]); });
+        return fetch(endpoint, { method: 'POST', body: fd, credentials: 'same-origin' })
+            .then(function (r) { return r.json(); })
+            .catch(function () { return { success: false, message: 'Server connection error. Please try again.' }; });
+    }
 
 
     
@@ -79,10 +71,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
 
-    function send(endpoint, payload) {
-
-        return Promise.resolve({ ok: true });
-    }
 
     function bindForm(formId, handler) {
         var form = $(formId);
@@ -120,40 +108,38 @@ document.addEventListener('DOMContentLoaded', function () {
         ok = setError(copies, parseInt(copies.value, 10) >= 1 ? '' : 'Copies must be at least 1.') && ok;
         if (!ok) return;
 
-        send('add_book.php', {
+        // Added as a physical book with copies; cover, ISBN, PDF etc. can be filled in later in Library Management.
+        postTo('librarymanagement_controller.php', {
+            action: 'add_book',
             title: title.value.trim(),
             author: author.value.trim(),
             category: $('qaBookCategory').value,
-            copies: parseInt(copies.value, 10)
-        }).then(function () {
+            description: 'Added from the overview. Edit this book in Library Management to add details.',
+            is_digital: 'No',
+            total_copies: parseInt(copies.value, 10)
+        }).then(function (d) {
+            if (!d.success) { setError(title, d.message || 'Could not add the book.'); return; }
             closeModal('qaBookModal');
-            toast('Book "' + title.value.trim() + '" added.');
+            toast('Book "' + title.value.trim() + '" added with ' + parseInt(copies.value, 10) + ' copies.');
         });
     });
 
     
     bindForm('qaLibrarianForm', function () {
-        var name  = $('qaLibName');
         var email = $('qaLibEmail');
+        var value = email.value.trim();
+        if (!setError(email, /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? '' : 'Please enter a valid email address.')) return;
 
-        var ok = true;
-        ok = setError(name, name.value.trim() ? '' : 'Please enter the full name.') && ok;
-        var validEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value.trim());
-        ok = setError(email, validEmail ? '' : 'Please enter a valid email address.') && ok;
-        if (!ok) return;
-
-        send('add_librarian.php', {
-            name: name.value.trim(),
-            email: email.value.trim(),
-            status: $('qaLibStatus').value
-        }).then(function () {
-            closeModal('qaLibrarianModal');
-            toast('Librarian ' + name.value.trim() + ' added.');
-        });
+        postTo('librarymanagement_controller.php', { action: 'update_user_role', email: value, role: 'Librarian' })
+            .then(function (d) {
+                if (!d.success) { setError(email, d.message || 'Could not change the account.'); return; }
+                closeModal('qaLibrarianModal');
+                toast(d.message || 'Account changed to Librarian.');
+            });
     });
 
     // ---------- View Users ----------
-    var userClass = { Active: 'qaGreen', Pending: 'qaYellow', Inactive: 'qaBrown' };
+    var userClass = { Active: 'qaGreen', Pending: 'qaYellow', Suspended: 'qaBrown' };
 
     function renderUsers(query) {
         var body = $('qaUserRows');
@@ -188,7 +174,9 @@ document.addEventListener('DOMContentLoaded', function () {
     var logClass = { New: 'qaGreen', Reviewing: 'qaRed', Forwarded: 'qaYellow', Resolved: 'qaBrown' };
 
     var logBody = $('qaLogRows');
-    if (logBody) {
+    if (logBody && !logs.length) {
+        logBody.innerHTML = '<tr><td colspan="5" class="text-center py-4">No book reports yet.</td></tr>';
+    } else if (logBody) {
         logBody.innerHTML = logs.map(function (l) {
             return '<tr>' +
                 '<td class="fw-semibold">' + esc(l.book) + '</td>' +

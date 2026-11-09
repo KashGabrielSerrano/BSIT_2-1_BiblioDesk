@@ -1,22 +1,4 @@
 <?php
-/**
- * backend/core/circulation.php — borrowing, reservations and fines for PHYSICAL books (D1, D2).
- * Needs core/bootstrap.php first. Used by circulation_controller.php, notification_controller.php,
- * librarymanagement_controller.php (catalog availability) and the student pages.
- *
- * Loans:        Requested -> Borrowed (staff approve at the counter) -> Returned
- *               Requested -> Rejected (staff) | Cancelled (student)
- *               "Overdue" is not stored: Status = 'Borrowed' AND Due_At has passed.
- * Reservations: only when no copy is free. Pending (queue) -> Ready (a copy is held until Hold_Until)
- *               -> Fulfilled (picked up: becomes a Borrowed loan) | Expired | Cancelled | Rejected
- * Copies:       available = Total_Copies - Borrowed loans - Ready reservations (always calculated).
- * Fines:        Overdue  = min(max_fine_per_loan, max(0, days late - grace_days) x fine_per_day), on return
- *               Lost     = lost_book_fee (the copy is removed from Total_Copies)
- *               Damaged  = amount typed by staff.        Paid / Waived at the counter.
- * Dates:        stored in UTC; due dates end at 23:59:59 school time (APP_TIMEZONE).
- * No cron (InfinityFree): circulation_upkeep() runs lazily when pages / the bell load.
- */
-
 const LOAN_ACTIVE = ['Requested', 'Borrowed'];
 const RES_ACTIVE  = ['Pending', 'Ready'];
 

@@ -1,16 +1,4 @@
 <?php
-/**
- * backend/announcement_controller.php — announcements API for staff (Librarian + Admin, decision D3).
- * Used by frontend/js/admin_announcement.js and the overview quick action (admin_quickactions.js).
- *
- *   GET  ?action=list                                         every announcement (all statuses)
- *   POST action=save        [id] title body category status [date] [audience]   create / update
- *   POST action=set_status  id status=published|draft         "Publish now" / "Move to draft"
- *   POST action=delete      id
- *
- * status: published | scheduled | draft  (scheduled needs date = Y-m-d, today or later, local time).
- * Publishing notifies the audience (core/announcements.php); draft/delete removes those notifications.
- */
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/announcements.php';
 header('Content-Type: application/json; charset=utf-8');

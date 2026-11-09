@@ -44,7 +44,7 @@ switch ($action) {
         $message = gv($_POST, 'message');
         $errors  = [];
 
-        if (gv($_POST, 'website') !== '') {           // honeypot field: bots fill it, people never see it
+        if (gv($_POST, 'website') !== '') {    
             sendResponse(true, 'Thank you! Your message has been sent.');
         }
         if (!in_array($subject, TICKET_SUBJECTS, true)) $errors['subject'] = 'Please choose a subject.';

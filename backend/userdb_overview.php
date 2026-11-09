@@ -2,13 +2,15 @@
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
 require_once __DIR__ . '/core/announcements.php';
+require_once __DIR__ . '/core/circulation.php';
+require_once __DIR__ . '/core/dashboard.php';
 $user    = require_login_page();
 $profile = current_profile();
-// Published announcements for this user's audience (Library Updates = everything except Events)
+circulation_upkeep();                       
+$dash    = student_dashboard($user['user_id']);   
 $updates = published_announcements_for($user['role'], 3, 'Events', true);
 $events  = published_announcements_for($user['role'], 3, 'Events');
 
-/** One announcement row with the date badge, in the original markup. */
 function overview_ann_item(array $a, bool $last): void {
     $d = DateTime::createFromFormat('Y-m-d', $a['date']) ?: new DateTime(); ?>
                             <li class="list-group-item bg-transparent text-reset <?= $last ? 'border-0' : 'border-light border-opacity-25' ?> d-flex align-items-center gap-3 px-4 py-3">
@@ -50,9 +52,11 @@ render_head('User Dashboard', ['userdb.css']);
                         <h2 class="card-header h4 text-center py-3 bg-transparent border-light border-opacity-25">Recent Activity</h2>
                         <div class="card-body">
                             <ul class="fs-5 mb-0">
-                                <li>4 pending books</li>
-                                <li>2 books approved for reservation</li>
-                                <li>Account information successfully updated.</li>
+<?php if (!$dash['activity']): ?>
+                                <li>No recent activity yet.</li>
+<?php endif; foreach ($dash['activity'] as $a): ?>
+                                <li><?= e($a['title']) ?> <small class="opacity-75">· <?= e($a['when']) ?></small></li>
+<?php endforeach; ?>
                             </ul>
                         </div>
                     </div>
@@ -95,7 +99,7 @@ render_head('User Dashboard', ['userdb.css']);
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <span class="neutralBox d-inline-block p-4 rounded-3"></span>
-                                    <p class="display-4 mb-0">0</p>
+                                    <p class="display-4 mb-0"><?= (int)$dash['stats']['total_borrowed'] ?></p>
                                 </div>
                                 <p class="text-end fs-5 mb-0 mt-3">Total Books Borrowed</p>
                             </div>
@@ -107,7 +111,7 @@ render_head('User Dashboard', ['userdb.css']);
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <span class="greenBox d-inline-block p-4 rounded-3"></span>
-                                    <p class="display-4 mb-0">0</p>
+                                    <p class="display-4 mb-0"><?= (int)$dash['stats']['current'] ?></p>
                                 </div>
                                 <p class="text-end fs-5 mb-0 mt-3">Current Borrows</p>
                             </div>
@@ -119,21 +123,21 @@ render_head('User Dashboard', ['userdb.css']);
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <span class="yellowBox d-inline-block p-4 rounded-3"></span>
-                                    <p class="display-4 mb-0">0</p>
+                                    <p class="display-4 mb-0"><?= (int)$dash['stats']['due_week'] ?></p>
                                 </div>
                                 <p class="text-end fs-5 mb-0 mt-3">Books Due This Week</p>
                             </div>
                         </div>
                     </div>
-                    <!--For this ,, di ko pa knows ano ipapalit kong feature so ung active reading time nalang ng user-->
+                    <!--Books finished in the reader-->
                     <div class="col">
                         <div class="cardsColor card border-0 shadow rounded-4 h-100">
                             <div class="card-body d-flex flex-column">
                                 <div class="d-flex justify-content-between align-items-start">
                                     <span class="greenBox d-inline-block p-4 rounded-3"></span>
-                                    <p class="display-4 mb-0">0</p>
+                                    <p class="display-4 mb-0"><?= (int)$dash['stats']['finished'] ?></p>
                                 </div>
-                                <p class="text-end fs-5 mb-0 mt-3">Active Reading Time</p>
+                                <p class="text-end fs-5 mb-0 mt-3">Books Finished</p>
                             </div>
                         </div>
                     </div>
@@ -144,14 +148,26 @@ render_head('User Dashboard', ['userdb.css']);
             <section>
                 <div class="d-flex justify-content-between align-items-baseline mt-5 mb-3">
                     <h2 class="h1 fw-semibold mb-0">Bookmarks</h2>
-                    <a href="#" class="fs-5"><u>Browse Library ></u></a>
+                    <a href="user_librarydb.php?view=library" class="fs-5"><u>Browse Library ></u></a>
                 </div>
 
                 <!--Books area-->
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
+<?php foreach ($dash['bookmarks'] as $b):
+        $cover = trim((string)$b['Cover_Image']) !== '' ? (filter_var($b['Cover_Image'], FILTER_VALIDATE_URL) ? $b['Cover_Image'] : '../' . ltrim($b['Cover_Image'], '/'))
+                                                        : '../frontend/assets/icons/library-default.png'; ?>
                     <div class="col">
-                        <a href="#" class="d-block ratio bookCover rounded-2 overflow-hidden shadow" aria-label="Add a bookmark"></a>
-                        <a href="#" class="textArea">
+                        <a href="user_librarydb.php?view=mybooks" class="d-block ratio bookCover rounded-2 overflow-hidden shadow" aria-label="<?= e($b['Title']) ?>">
+                            <img src="<?= e($cover) ?>" alt="" class="w-100 h-100 object-fit-cover" loading="lazy">
+                        </a>
+                        <a href="user_librarydb.php?view=mybooks" class="textArea">
+                            <h3 class="h6 fw-bold mt-3 mb-0 text-truncate"><?= e($b['Title']) ?></h3>
+                        </a>
+                    </div>
+<?php endforeach; ?>
+                    <div class="col">
+                        <a href="user_librarydb.php?view=library" class="d-block ratio bookCover rounded-2 overflow-hidden shadow" aria-label="Add a bookmark"></a>
+                        <a href="user_librarydb.php?view=library" class="textArea">
                             <h3 class="h6 fw-bold mt-3 mb-0">+ Add Book</h3>
                         </a>
                     </div>

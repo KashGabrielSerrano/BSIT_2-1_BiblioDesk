@@ -1,14 +1,4 @@
 <?php
-/**
- * backend/core/announcements.php — shared announcement logic (needs core/bootstrap.php first).
- * Used by announcement_controller.php, notification_controller.php and the student overview.
- *
- * Statuses: Draft (hidden), Scheduled (published automatically once Publish_At passes),
- * Published (visible to its Audience: All / Students / Staff).
- * Publishing notifies the audience once; moving back to Draft or deleting removes those
- * notifications again. Each announcement's notifications are tied to it by Link = '#announcement-<id>'.
- */
-
 const ANNOUNCEMENT_CATEGORIES = ['System Update', 'Library Policy', 'Events', 'Collections'];
 const ANNOUNCEMENT_STATUSES   = ['Draft', 'Scheduled', 'Published'];
 const ANNOUNCEMENT_AUDIENCES  = ['All', 'Students', 'Staff'];

@@ -6,8 +6,6 @@ $user       = require_login_page();
 $menu       = menu_for_role($user['role']);
 $is_student = $user['role'] === 'Student';
 
-// Real details of the logged-in user (decrypted). Saving changes is not wired up yet (accountpage.js
-// only simulates it); that needs an update endpoint in a later stage.
 $profile = current_profile();
 $p = [
     'name'      => $profile['full_name'],

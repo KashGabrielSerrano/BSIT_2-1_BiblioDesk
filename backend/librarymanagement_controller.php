@@ -3,12 +3,10 @@
 /* 1. BOOTSTRAP, HEADERS & DEPENDENCIES                                       */
 /* ========================================================================== */
 
-ob_start();   // lets sendResponse() discard stray notices before the JSON is sent
+ob_start();
 
-// Session, config, DB, SystemOperators and the shared helpers
-// (sendResponse, gv, db_all, like_term, enc, dec, guards) all come from the core.
 require_once __DIR__ . '/core/bootstrap.php';
-require_once __DIR__ . '/core/circulation.php';   // copies / availability (Stage 8)
+require_once __DIR__ . '/core/circulation.php';   
 
 header('Content-Type: application/json; charset=utf-8');
 header('X-Content-Type-Options: nosniff');
@@ -553,7 +551,6 @@ function handle_update_book(mysqli $con): void {
         throw $e;
     }
 
-    // The row now points at new files: remove the ones it no longer uses from Supabase.
     $stale = [];
     if (($old[0]['Cover_Image'] ?? null) !== $d['cover_image']) {
         $stale[] = $old[0]['Cover_Image'] ?? null;
@@ -582,9 +579,6 @@ function handle_delete_book(mysqli $con): void {
     }
 
     $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
-
-    // NOTE: FK constraints CASCADE to bookmarks, favorites, reading progress/history, reports and
-    // the book's finished loan / reservation / fine history.
     $stmt = $con->prepare('DELETE FROM book_table WHERE Book_ID = ?');
     $stmt->bind_param('i', $book_id);
     $stmt->execute();
@@ -640,7 +634,7 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
         $params
     );
 
-    // Sensitive columns are encrypted, so decrypt first and search in PHP.
+    // Sensitive columns are encrypted, so decrypt first and search
     $accounts = [];
     foreach ($rows as $r) {
         $acct = [
@@ -845,6 +839,13 @@ function handle_update_user_role(): void {
     }
     $user_id = (int)gv($_POST, 'user_id');
     $role    = gv($_POST, 'role');
+    if ($user_id <= 0 && ($email = strtolower(gv($_POST, 'email'))) !== '') {
+        $found = db_one("SELECT User_ID FROM user_table WHERE Email = ?", 's', [enc(so(), $email)]);
+        if (!$found) {
+            sendResponse(false, 'No account uses that email. The person must register first.', [], 404);
+        }
+        $user_id = (int)$found['User_ID'];
+    }
     if ($user_id <= 0 || !in_array($role, ['Student', 'Librarian'], true)) {
         sendResponse(false, 'Accounts can only be switched between Student and Librarian.', [], 400);
     }

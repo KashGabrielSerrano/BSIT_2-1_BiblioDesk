@@ -1,8 +1,12 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
+require_once __DIR__ . '/core/circulation.php';
+require_once __DIR__ . '/core/dashboard.php';
 $user = require_role_page(['Librarian', 'Admin']);
 $is_admin = $user['role'] === 'Admin';
+circulation_upkeep();
+$dash = staff_dashboard($user['role']);
 render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['root.css', 'admindb_overview.css?v=2']);
 ?>
     <!-- SIDEBAR -->
@@ -106,28 +110,17 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                 </div>
                 <form id="qaLibrarianForm" novalidate>
                     <div class="modal-body">
-                        <div class="mb-3">
-                            <label class="form-label" for="qaLibName">Full name</label>
-                            <input class="form-control" type="text" id="qaLibName" maxlength="80">
-                            <div class="invalid-feedback"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label" for="qaLibEmail">Email</label>
-                            <input class="form-control" type="email" id="qaLibEmail" maxlength="120">
-                            <div class="invalid-feedback"></div>
-                        </div>
+                        <p class="small mb-3">Librarians are made from <strong>registered, active</strong> accounts: enter the email the person signed up with and their account switches to Librarian.</p>
                         <div class="mb-1">
-                            <label class="form-label" for="qaLibStatus">Account status</label>
-                            <select class="form-select" id="qaLibStatus">
-                                <option value="Active">Active</option>
-                                <option value="Pending">Pending approval</option>
-                            </select>
+                            <label class="form-label" for="qaLibEmail">Account email</label>
+                            <input class="form-control" type="email" id="qaLibEmail" maxlength="150" autocomplete="off">
+                            <div class="invalid-feedback"></div>
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <a class="qaFullLink me-auto" href="AdminAccManagedb.php">Open Account Manage</a>
+                        <a class="qaFullLink me-auto" href="librarymanagement.php#accounts">Open Account Management</a>
                         <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn qaPrimary">Add Librarian</button>
+                        <button type="submit" class="btn qaPrimary">Make Librarian</button>
                     </div>
                 </form>
             </div>
@@ -298,7 +291,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
             <div class="col-12 col-lg-8">
                 <div class="darkCard card border-0 shadow rounded-4 h-100">
                     <div class="card-body p-4 p-md-5 d-flex flex-column justify-content-center">
-                        <h1 class="display-6 fw-semibold mb-3">Sofia Balthazar-Winslow I</h1>
+                        <h1 class="display-6 fw-semibold mb-3"><?= e(current_profile()['full_name']) ?></h1>
                         <h2 class="h4 fw-semibold mb-3"><?= $is_admin ? 'System Administrator' : 'Librarian' ?></h2>
                         <p class="fs-5 mb-0 d-flex align-items-center gap-2">
                             Account Status:
@@ -407,7 +400,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="greenBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statUsers">0</p>
+                                <p class="display-6 mb-0" id="statUsers"><?= (int)$dash['stats']['users'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Total Active Users</p>
                         </div>
@@ -419,7 +412,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="neutralBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statInventory">0</p>
+                                <p class="display-6 mb-0" id="statInventory"><?= (int)$dash['stats']['inventory'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Library Inventory</p>
                         </div>
@@ -431,7 +424,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="greenBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statBorrows">0</p>
+                                <p class="display-6 mb-0" id="statBorrows"><?= (int)$dash['stats']['borrows'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Active Borrows</p>
                         </div>
@@ -443,7 +436,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="greenBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statAvailable">0</p>
+                                <p class="display-6 mb-0" id="statAvailable"><?= (int)$dash['stats']['available'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Available Inventory</p>
                         </div>
@@ -455,7 +448,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="greenBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statLibrarians">0</p>
+                                <p class="display-6 mb-0" id="statLibrarians"><?= (int)$dash['stats']['librarians'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Active Librarians Count</p>
                         </div>
@@ -467,7 +460,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="yellowBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statRegistration">0</p>
+                                <p class="display-6 mb-0" id="statRegistration"><?= (int)$dash['stats']['registration'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Pending Registrations</p>
                         </div>
@@ -479,7 +472,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="yellowBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statReservations">0</p>
+                                <p class="display-6 mb-0" id="statReservations"><?= (int)$dash['stats']['reservations'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Pending Reservations</p>
                         </div>
@@ -491,7 +484,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                         <div class="card-body d-flex flex-column">
                             <div class="d-flex justify-content-between align-items-start">
                                 <span class="neutralBox d-inline-block p-3 rounded-3"></span>
-                                <p class="display-6 mb-0" id="statTotalBorrows">0</p>
+                                <p class="display-6 mb-0" id="statTotalBorrows"><?= (int)$dash['stats']['total_borrows'] ?></p>
                             </div>
                             <p class="text-end small mb-0 mt-3">Total Borrows To Date</p>
                         </div>
@@ -505,4 +498,10 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
     <!-- FOOTER -->
     <?php render_footer('staff'); ?>
 
+    <script>
+        // Real dashboard data for admin_popular.js / admin_quickactions.js (rendered by core/dashboard.php)
+        window.biblioDashboard = <?= json_encode(['popular' => $dash['popular'], 'users' => $dash['users'], 'logs' => $dash['logs'],
+                                                  'categories' => BOOK_CATEGORY_LIST, 'isAdmin' => $is_admin],
+                                                 JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+    </script>
 <?php render_scripts(['admin_popular.js', 'admin_quickactions.js', 'admin_todo.js']); ?>

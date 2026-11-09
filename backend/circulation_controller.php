@@ -28,7 +28,7 @@ if ($action !== 'export_csv') {
 }
 circulation_upkeep();
 
-/** Load a loan (with its book title) or stop with 404. */
+/** Load a loan (with its book title) or stop with error. */
 function find_loan(int $id): array {
     $l = db_one("SELECT l.*, b.Title, b.Author FROM loan_table l JOIN book_table b ON b.Book_ID = l.Book_ID WHERE l.Loan_ID = ?", 'i', [$id]);
     if (!$l) sendResponse(false, 'Loan not found.', [], 404);
