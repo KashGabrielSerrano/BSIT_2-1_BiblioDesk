@@ -359,16 +359,12 @@ COMMIT;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 
 
--- ============================================================================
--- Stage 4 features: appended verbatim from migrations/001_features.sql
--- (a fresh install gets every table from this one file; existing databases run the
---  migration file instead - it is safe to run either way)
--- ============================================================================
+
 SET NAMES utf8mb4;
 SET time_zone = '+00:00';
 
 -- ----------------------------------------------------------------------------
--- 0. Migration bookkeeping (so the team can see which migrations a DB has)
+-- 0. Migration bookkeeping 
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `schema_migrations` (
   `Version`    varchar(50) NOT NULL,
@@ -377,7 +373,7 @@ CREATE TABLE IF NOT EXISTS `schema_migrations` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------------------------------------------------------
--- 1. book_table: number of physical copies (D1). Digital books keep 0.
+-- 1. book_table: number of physical copies. Digital books keep 0.
 --    "Available" copies are CALCULATED (Total_Copies - active loans - Ready holds),
 --    never stored, so the numbers cannot drift apart.
 -- ----------------------------------------------------------------------------
@@ -442,7 +438,7 @@ CREATE TABLE IF NOT EXISTS `reservation_table` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------------------------------------------------------
--- 4. Fines (D2). Overdue: min(max_fine_per_loan, (days late - grace_days) x fine_per_day).
+-- 4. Fines. Overdue: min(max_fine_per_loan, (days late - grace_days) x fine_per_day).
 --    Lost: fixed lost_book_fee. Damaged: amount typed by staff. Paid at the counter.
 --    One fine per reason per loan.
 -- ----------------------------------------------------------------------------
@@ -531,7 +527,7 @@ CREATE TABLE IF NOT EXISTS `helpdesk_ticket_table` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- ----------------------------------------------------------------------------
--- 8. Global system settings (A2, Admin only). Values are strings; the app validates them.
+-- 8. Global system settings (Admin only). Values are strings; the app validates them.
 -- ----------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `system_settings` (
   `Setting_Key`   varchar(64) NOT NULL,
@@ -574,3 +570,33 @@ CREATE TABLE IF NOT EXISTS `activity_log` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT IGNORE INTO `schema_migrations` (`Version`) VALUES ('001_features');
+
+-- ============================================================================
+-- 002_collections.sql — student "My Collections" (named shelves of books)
+-- Safe to run more than once (IF NOT EXISTS / INSERT IGNORE).
+-- Import in phpMyAdmin after 001_features.sql.
+-- ============================================================================
+
+-- One row per collection a user creates ("School Related", "Thesis"...). Names are unique per user.
+CREATE TABLE IF NOT EXISTS `user_collections` (
+  `Collection_ID` int(11) NOT NULL AUTO_INCREMENT,
+  `User_ID`       int(11) NOT NULL,
+  `Name`          varchar(30) NOT NULL,
+  `Created_At`    timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`Collection_ID`),
+  UNIQUE KEY `uq_collection_name` (`User_ID`,`Name`),
+  CONSTRAINT `fk_collections_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- Books in a collection (any book: physical or digital). Deleting a collection or a book removes its rows.
+CREATE TABLE IF NOT EXISTS `user_collection_books` (
+  `Collection_ID` int(11) NOT NULL,
+  `Book_ID`       int(11) NOT NULL,
+  `Added_At`      timestamp NOT NULL DEFAULT current_timestamp(),
+  PRIMARY KEY (`Collection_ID`,`Book_ID`),
+  KEY `fk_collection_books_book` (`Book_ID`),
+  CONSTRAINT `fk_collection_books_collection` FOREIGN KEY (`Collection_ID`) REFERENCES `user_collections` (`Collection_ID`) ON DELETE CASCADE,
+  CONSTRAINT `fk_collection_books_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+INSERT IGNORE INTO `schema_migrations` (`Version`) VALUES ('002_collections');

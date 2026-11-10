@@ -578,3 +578,26 @@ hr {
       opacity 0.3s ease;
   }
 }
+
+/* -- My Collections: "Add To Collections" checklist in the book modal (frontend/js/collections.js) -- */
+.collection-panel {
+  background: rgba(0, 0, 0, 0.04);
+  border-radius: 12px;
+  padding: 10px 14px;
+}
+.collection-panel-list {
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+/* -- My Collections: remove-from-collection button on a book card -- */
+.collection-remove {
+  position: absolute;
+  top: 6px;
+  right: calc(var(--bs-gutter-x) * 0.5 + 6px);
+  z-index: 3;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  line-height: 1;
+}

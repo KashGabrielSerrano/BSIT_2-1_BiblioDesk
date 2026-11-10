@@ -17,6 +17,7 @@ if (!in_array($view, ['library', 'mybooks'], true)) {
 $continue_reading_books = [];
 $bookmark_books         = [];
 $favorite_books         = [];
+$collections            = [];
 $history_books          = [];
 
 $new_arrivals           = [];
@@ -106,6 +107,15 @@ if ($view === 'mybooks') {
     $stmt->execute();
     $favorite_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
+
+    // 3b. My Collections (user_collections, migration 002): rendered by frontend/js/collections.js
+    $collections = array_map(fn($r) => ['id' => (int)$r['Collection_ID'], 'name' => $r['Name'], 'books' => (int)$r['Books']],
+        db_all($con, "SELECT c.Collection_ID, c.Name, COUNT(cb.Book_ID) AS Books
+                        FROM user_collections c
+                        LEFT JOIN user_collection_books cb ON cb.Collection_ID = c.Collection_ID
+                       WHERE c.User_ID = ?
+                       GROUP BY c.Collection_ID, c.Name
+                       ORDER BY c.Created_At, c.Collection_ID", 'i', [$user_id]));
 
     // 4. Fetch History
     $hist_query = "SELECT b.*, h.Last_Opened
@@ -314,14 +324,9 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                 <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
                     <h2 class="h3 fw-semibold mb-0">My Collections</h2>
                 </div>
+                <!-- the user's collections are drawn here by frontend/js/collections.js (before the "+ Add" card) -->
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center" id="collectionsRow">
-                    <div class="col">
-                        <a href="#" class="collection-card ratio shadow position-relative d-block rounded-2 overflow-hidden" style="background-color: #5bc0de;"></a>
-                        <div class="textArea">
-                            <h3 class="h6 fw-bold mt-3 mb-0">School Related</h3>
-                        </div>
-                    </div>
-                    <div class="col">
+                    <div class="col" id="addCollectionCol">
                         <a href="#" class="collection-card ratio rounded-2 overflow-hidden shadow position-relative d-block text-white" style="background-color: #ce861a; cursor: pointer;" data-bs-toggle="modal" data-bs-target="#createCollectionModal">
                             <div class="d-flex flex-column justify-content-center align-items-center">
                                 <i class="bi bi-plus-circle fs-1 mb-1"></i>
@@ -501,7 +506,19 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
 
                                 <button type="button" id="modalBookBorrow" class="bookModal-btn-read border-0 d-none">Borrow</button>
                                 <p id="modalCircInfo" class="small w-100 mb-0 order-last" hidden role="status"></p>
-                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none">Add To Collections</a>
+                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none" role="button"
+                                   aria-expanded="false" aria-controls="modalCollectionPanel">Add To Collections</a>
+                                <!-- My Collections: tick the collections this book belongs to (frontend/js/collections.js) -->
+                                <div id="modalCollectionPanel" class="collection-panel w-100 mt-2 order-last" hidden>
+                                    <p class="small fw-semibold mb-1">Add this book to:</p>
+                                    <div id="modalCollectionList" class="collection-panel-list mb-2"></div>
+                                    <form id="modalCollectionNew" class="input-group input-group-sm" novalidate>
+                                        <input type="text" name="name" class="form-control" maxlength="30" autocomplete="off"
+                                               placeholder="New collection name" aria-label="New collection name" required>
+                                        <button type="submit" class="btn btn-dark">Create &amp; add</button>
+                                    </form>
+                                    <p id="modalCollectionMsg" class="small mt-1 mb-0" hidden role="status"></p>
+                                </div>
                                 <button type="button" id="modalBookBookmark" class="btn border-0 p-2 d-none" aria-label="Bookmark">
                                     <i class="bi bi-bookmark fs-4"></i>
                                 </button>
@@ -550,8 +567,8 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                     <div class="modal-body">
                         <div class="mb-3">
                             <label for="collectionNameInput" class="form-label fw-semibold">Collection Name</label>
-                            <input type="text" class="form-control" id="collectionNameInput" placeholder="School Related" maxlength="13" autocomplete="off" required>
-                            <div class="invalid-feedback">Enter a collection name.</div>
+                            <input type="text" class="form-control" id="collectionNameInput" placeholder="School Related" maxlength="30" autocomplete="off" required>
+                            <div class="invalid-feedback" id="collectionNameError">Enter a collection name.</div>
                         </div>
                     </div>
                     <div class="modal-footer border-0">
@@ -562,6 +579,38 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             </div>
         </div>
     </div>
+
+    <!-- ONE COLLECTION: its books, rename, delete (frontend/js/collections.js) -->
+    <div class="modal fade collectionModal" id="collectionViewModal" tabindex="-1" aria-labelledby="collectionViewTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header border-0 flex-wrap gap-2">
+                    <h5 class="modal-title fw-bold me-auto text-break" id="collectionViewTitle">Collection</h5>
+                    <button type="button" class="btn btn-sm btn-outline-dark rounded-pill px-3" id="collectionRenameBtn">Rename</button>
+                    <button type="button" class="btn btn-sm btn-outline-danger rounded-pill px-3" id="collectionDeleteBtn">Delete</button>
+                    <button type="button" class="btn-close ms-1" data-bs-dismiss="modal" aria-label="Close"></button>
+                    <form id="collectionRenameForm" class="input-group input-group-sm w-100" hidden novalidate>
+                        <input type="text" name="name" class="form-control" maxlength="30" autocomplete="off" aria-label="New collection name" required>
+                        <button type="submit" class="btn btn-success">Save</button>
+                        <button type="button" class="btn btn-secondary" data-rename-cancel>Cancel</button>
+                    </form>
+                    <div id="collectionDeleteConfirm" class="w-100 small" hidden>
+                        Delete this collection? The books stay in the library.
+                        <button type="button" class="btn btn-sm btn-danger rounded-pill px-3 ms-2" id="collectionDeleteYes">Delete</button>
+                        <button type="button" class="btn btn-sm btn-secondary rounded-pill px-3" data-delete-cancel>Cancel</button>
+                    </div>
+                    <p id="collectionViewMsg" class="small text-danger w-100 mb-0" hidden role="status"></p>
+                </div>
+                <div class="modal-body">
+                    <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center" id="collectionBooks"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        // The user's collections from the DB (drawn by frontend/js/collections.js)
+        window.bdCollections = <?= json_encode($collections, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+    </script>
     <?php endif; ?>
 
     <!-- FOOTER -->
@@ -572,7 +621,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
         window.appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
     </script>
     <!-- QR code is drawn in the browser (no third-party service sees the book link) -->
-<?php render_scripts(['mybooks.js', 'report_issue.js', 'circulation_student.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
+<?php render_scripts(['mybooks.js', 'collections.js', 'report_issue.js', 'circulation_student.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
     <script>
         (() => {
             const modal    = document.getElementById('bookDetailsModal');

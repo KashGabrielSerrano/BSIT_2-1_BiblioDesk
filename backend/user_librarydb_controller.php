@@ -178,5 +178,126 @@ if ($action === 'save_progress') {
     sendResponse(true, 'Thank you! Your report was sent to the library. You will get a notification when it is updated.');
 }
 
+
+/* ---------------------------- My Collections ----------------------------
+ * VERY IMPORTANT!
+ * A user's own named shelves of books (user_collections / user_collection_books, migration 002 file).
+ * Any book can go in a collection, physical or digital. Every query is scoped to the logged-in user.
+ */
+const COLLECTION_NAME_MAX = 30;
+const COLLECTIONS_PER_USER = 30;
+const BOOKS_PER_COLLECTION = 200;
+
+/** The collection when it belongs to the current user, otherwise a 404 response. */
+function own_collection(int $user_id, int $collection_id): array {
+    $c = db_one("SELECT Collection_ID, Name FROM user_collections WHERE Collection_ID = ? AND User_ID = ?",
+                'ii', [$collection_id, $user_id]);
+    if (!$c) {
+        sendResponse(false, 'Collection not found.', [], 404);
+    }
+    return $c;
+}
+
+/** Validated collection name, or a 422 response. $except = the collection being renamed. */
+function collection_name(int $user_id, int $except = 0): string {
+    $name = preg_replace('/\s+/u', ' ', gv($_POST, 'name'));
+    if ($name === '') {
+        sendResponse(false, 'Enter a collection name.', [], 422);
+    }
+    if (mb_strlen($name) > COLLECTION_NAME_MAX) {
+        sendResponse(false, 'Collection names can be at most ' . COLLECTION_NAME_MAX . ' characters.', [], 422);
+    }
+    // case-insensitive (utf8mb4_general_ci), so "School" and "school" count as the same name
+    if (db_one("SELECT 1 FROM user_collections WHERE User_ID = ? AND Name = ? AND Collection_ID <> ?",
+               'isi', [$user_id, $name, $except])) {
+        sendResponse(false, 'You already have a collection with that name.', [], 422);
+    }
+    return $name;
+}
+
+/** Put a book in a collection (no-op when it is already there). */
+function collection_add_book(int $collection_id, int $book_id): void {
+    $count = (int)(db_one("SELECT COUNT(*) AS c FROM user_collection_books WHERE Collection_ID = ?", 'i', [$collection_id])['c'] ?? 0);
+    if ($count >= BOOKS_PER_COLLECTION) {
+        sendResponse(false, 'A collection can hold at most ' . BOOKS_PER_COLLECTION . ' books.', [], 422);
+    }
+    db_exec("INSERT IGNORE INTO user_collection_books (Collection_ID, Book_ID) VALUES (?, ?)", 'ii', [$collection_id, $book_id]);
+}
+
+if ($action === 'list_collections') {
+    // With book_id: also says which collections already hold that book (for the "Add To Collections" panel)
+    $book_id = max(0, intval($_GET['book_id'] ?? 0));
+    $rows = db_all($con,
+        "SELECT c.Collection_ID, c.Name, COUNT(cb.Book_ID) AS Books, COALESCE(MAX(cb.Book_ID = ?), 0) AS Has_Book
+           FROM user_collections c
+           LEFT JOIN user_collection_books cb ON cb.Collection_ID = c.Collection_ID
+          WHERE c.User_ID = ?
+          GROUP BY c.Collection_ID, c.Name
+          ORDER BY c.Created_At, c.Collection_ID", 'ii', [$book_id, $user_id]);
+    sendResponse(true, 'Collections loaded.', ['collections' => array_map(fn($r) => [
+        'id' => (int)$r['Collection_ID'], 'name' => $r['Name'], 'books' => (int)$r['Books'], 'has_book' => (bool)$r['Has_Book'],
+    ], $rows)]);
+
+} elseif ($action === 'create_collection') {
+    $count = (int)(db_one("SELECT COUNT(*) AS c FROM user_collections WHERE User_ID = ?", 'i', [$user_id])['c'] ?? 0);
+    if ($count >= COLLECTIONS_PER_USER) {
+        sendResponse(false, 'You can have at most ' . COLLECTIONS_PER_USER . ' collections.', [], 422);
+    }
+    $name = collection_name($user_id);
+    // Optional: put a book in it straight away (creating from the book's "Add To Collections" panel)
+    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    if ($book_id > 0 && !verifyBookExists($con, $book_id)) {
+        sendResponse(false, 'Book not found.', [], 404);
+    }
+    db_exec("INSERT INTO user_collections (User_ID, Name) VALUES (?, ?)", 'is', [$user_id, $name]);
+    $id = (int)$con->insert_id;
+    if ($book_id > 0) {
+        collection_add_book($id, $book_id);
+    }
+    sendResponse(true, "Collection \"{$name}\" created.",
+                 ['collection' => ['id' => $id, 'name' => $name, 'books' => $book_id > 0 ? 1 : 0, 'has_book' => $book_id > 0]]);
+
+} elseif ($action === 'rename_collection') {
+    $c = own_collection($user_id, max(0, intval($_POST['collection_id'] ?? 0)));
+    $name = collection_name($user_id, (int)$c['Collection_ID']);
+    db_exec("UPDATE user_collections SET Name = ? WHERE Collection_ID = ? AND User_ID = ?", 'sii', [$name, $c['Collection_ID'], $user_id]);
+    sendResponse(true, 'Collection renamed.', ['name' => $name]);
+
+} elseif ($action === 'delete_collection') {
+    $c = own_collection($user_id, max(0, intval($_POST['collection_id'] ?? 0)));
+    // the books stay in the library; only this shelf (and its rows, by cascade) goes
+    db_exec("DELETE FROM user_collections WHERE Collection_ID = ? AND User_ID = ?", 'ii', [$c['Collection_ID'], $user_id]);
+    sendResponse(true, "Collection \"{$c['Name']}\" deleted.");
+
+} elseif ($action === 'set_collection_book') {
+    // in=1 adds the book, in=0 removes it
+    $c = own_collection($user_id, max(0, intval($_POST['collection_id'] ?? 0)));
+    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    if (!verifyBookExists($con, $book_id)) {
+        sendResponse(false, 'Book not found.', [], 404);
+    }
+    if (($_POST['in'] ?? '') === '1') {
+        collection_add_book((int)$c['Collection_ID'], $book_id);
+        sendResponse(true, "Added to \"{$c['Name']}\".", ['in' => true]);
+    }
+    db_exec("DELETE FROM user_collection_books WHERE Collection_ID = ? AND Book_ID = ?", 'ii', [$c['Collection_ID'], $book_id]);
+    sendResponse(true, "Removed from \"{$c['Name']}\".", ['in' => false]);
+
+} elseif ($action === 'collection_books') {
+    $c = own_collection($user_id, max(0, intval($_GET['collection_id'] ?? 0)));
+    $rows = db_all($con,
+        "SELECT b.Book_ID, b.Title, b.Author, b.Description, b.ISBN, b.Category, b.Publisher, b.Cover_Image,
+                (b.Drive_Link IS NOT NULL AND b.Drive_Link <> '') AS Has_File
+           FROM user_collection_books cb
+           JOIN book_table b ON b.Book_ID = cb.Book_ID
+          WHERE cb.Collection_ID = ?
+          ORDER BY cb.Added_At DESC, b.Book_ID DESC", 'i', [$c['Collection_ID']]);
+    sendResponse(true, 'Books loaded.', ['name' => $c['Name'], 'books' => array_map(fn($b) => [
+        'id' => (int)$b['Book_ID'], 'title' => $b['Title'], 'author' => $b['Author'] ?? '', 'desc' => $b['Description'] ?? '',
+        'isbn' => $b['ISBN'] ?? '', 'genre' => $b['Category'] ?? '', 'publisher' => $b['Publisher'] ?? '',
+        'cover' => trim((string)($b['Cover_Image'] ?? '')), 'has_file' => (bool)$b['Has_File'],
+    ], $rows)]);
+}
+
 http_response_code(400);
 sendResponse(false, 'Invalid action.');
