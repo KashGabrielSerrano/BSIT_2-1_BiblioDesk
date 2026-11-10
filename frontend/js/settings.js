@@ -17,7 +17,8 @@
     const borrowHistory = [];
 
     const DEFAULTS = {
-        profile: { name: 'Victor Magtanggol', email: 'victor.magtanggol@email.com', phone: '', program: 'BS Information Technology', year: '1st Year', avatar: null },
+        // the logged-in user's real details, rendered by settings.php (window.bdProfile)
+        profile: Object.assign({ name: '', email: '', phone: '', program: '', year: '1st Year', avatar: null }, window.bdProfile || {}),
         notify:  { due: true, dueDays: '1', reservations: true, announcements: true, activity: true, email: false },
         prefs:   { theme: 'light', textSize: 'default', reduceMotion: false, libraryView: 'grid', genres: [], trackReading: true }
     };

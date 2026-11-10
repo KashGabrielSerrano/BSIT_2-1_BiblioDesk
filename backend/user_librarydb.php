@@ -211,7 +211,7 @@ if ($view === 'library') {
  * @return string
  */
 function renderBookCard(array $row, string $ratioClass = ''): string {
-    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getCoverImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+    $cover = htmlspecialchars(getCoverImageUrl($row['Cover_Image'] ?? null));   // library icon when there is no cover
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
     $bookId  = htmlspecialchars((string)($row['Book_ID'] ?? ''));
@@ -385,7 +385,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                         <?php if (!empty($new_arrivals)): ?>
                             <?php foreach ($new_arrivals as $row): ?>
                                 <?php
-                                    $cover = !empty($row['Cover_Image']) ? htmlspecialchars(getCoverImageUrl($row['Cover_Image'])) : '../frontend/assets/temporary/temporaryimage_1.jpg';
+                                    $cover = htmlspecialchars(getCoverImageUrl($row['Cover_Image'] ?? null));
                                     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
                                 ?>
                                 <div class="newarrivals-item book-trigger"

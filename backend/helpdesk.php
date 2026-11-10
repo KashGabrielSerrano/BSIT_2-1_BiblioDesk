@@ -100,9 +100,10 @@ render_head($is_staff ? 'BiblioDesk - Admin Helpdesk' : 'BiblioDesk - Helpdesk',
                     <div class="card-body p-4 p-md-5 text-center">
                         <h3 class="h4 fw-bold mb-3">Getting Started Guide</h3>
                         <p class="mx-auto mb-0" style="max-width: 600px; line-height: 1.7;">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Non mollitia consequatur excepturi
-                            et facilis ut qui mollitia similique odio. Accusamus fugiat placeat deleniti eos qui lorem
-                            sunt.
+                            Open <strong>Library</strong> to browse the catalog. Digital books open in the reader with
+                            <strong>Read Now</strong>; physical books can be <strong>borrowed</strong> or
+                            <strong>reserved</strong> and are picked up at the library counter. Track loans, due dates
+                            and fines under <strong>My Books</strong>, and watch the bell for approvals and reminders.
                         </p>
                     </div>
                 </div>

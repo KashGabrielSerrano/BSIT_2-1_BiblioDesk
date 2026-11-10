@@ -256,11 +256,11 @@ require_once __DIR__ . '/core/bootstrap.php';
                             <div class="d-none" aria-hidden="true"><label for="website">Leave this empty</label><input type="text" id="website" name="website" tabindex="-1" autocomplete="off"></div>
                             <div class="mb-3">
                                 <label for="name" class="form-label">Name:</label>
-                                <input type="text" id="name" name="name" maxlength="100" class="name form-control contactInput" placeholder="Victor Magtanggol" required>
+                                <input type="text" id="name" name="name" maxlength="100" class="name form-control contactInput" placeholder="Your full name" required>
                             </div>
                             <div class="mb-3">
                                 <label for="email" class="form-label">Email:</label>
-                                <input type="email" id="email" name="email" maxlength="150" class="email form-control contactInput" placeholder="insert.your.email@gmail.com" required>
+                                <input type="email" id="email" name="email" maxlength="150" class="email form-control contactInput" placeholder="your.email@gmail.com" required>
                             </div>
                             <div class="mb-3">
                                 <label for="subject" class="form-label">Subject/Concern:</label>

@@ -3,6 +3,7 @@ require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
 $user = require_login_page();
 $menu = menu_for_role($user['role']);
+$profile = current_profile();
 render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css'],
     '    <script src="../frontend/js/prefs.js"></script>');
 ?>
@@ -74,14 +75,15 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="col-md-6">
                                 <label for="pfStudentNo" class="fieldLabel">Student No.</label>
-                                <input type="text" id="pfStudentNo" class="form-control stField" value="R2025******" disabled aria-describedby="pfStudentNoHelp">
+                                <input type="text" id="pfStudentNo" class="form-control stField" value="<?= e($profile['student_id'] ?: '—') ?>" disabled aria-describedby="pfStudentNoHelp">
                                 <p class="helpText" id="pfStudentNoHelp">Only the library can change this.</p>
                             </div>
                             <div class="col-md-6">
                                 <label for="pfProgram" class="fieldLabel">Program</label>
                                 <select id="pfProgram" class="form-select stField">
-                                    <option>BS Information Technology</option>
-                                    <option>BS Computer Science</option>
+<?php foreach (DEPARTMENT_LABELS as $label): ?>
+                                    <option><?= e($label) ?></option>
+<?php endforeach; ?>
                                     <option>Other</option>
                                 </select>
                             </div>
@@ -377,4 +379,10 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
             </div>
         </div>
 
+    <script>
+        // Real details of the logged-in user for the Profile panel defaults (frontend/js/settings.js)
+        window.bdProfile = <?= json_encode(['name' => $profile['full_name'], 'email' => $profile['email'],
+                                            'program' => $profile['department_label'] ?: 'Other'],
+                                           JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+    </script>
 <?php render_scripts($user['role'] === 'Admin' ? ['settings.js', 'admin_settings.js'] : ['settings.js']); ?>
