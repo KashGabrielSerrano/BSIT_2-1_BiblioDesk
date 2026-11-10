@@ -1,0 +1,77 @@
+/*
+cc = color coding
+qs = quick stats
+nb = no book
+ne = non-educational books
+ed = educational books
+ra = research articles
+rec = recommendations
+*/
+:root{
+    --main-color: #2C251D;
+    --main-bg-color: #F4F0EA;
+    --secondary-color: #352C21;
+
+    --button-yellow: #FFD94E;
+    --button-yellow-hover: #d1af33;
+
+    --cc-dates: #45746F;
+    --cc-book-ne: #9E7B58;
+    --cc-book-ed: #488C3E;
+    --cc-book-ra: #3E7DA7;
+    --cc-book-rec:#7b522e;
+    --cc-nb-ne: #C0B19D;
+    --cc-nb-ed: #89C87F;
+    --cc-nb-ra: #82B5D6;
+    --cc-qs-neutral: #8A7B68;
+    --cc-qs-red: #C23D3D;
+    --cc-qs-yellow: #C28A3D;
+    --cc-qs-green: #488C3E;
+
+    --cc-rec:#FFE4C4;
+
+    --fcolor-main: #000000;
+    --fcolor-secondary: #ffffff;
+    --fcolor-placeholders: #6b6969;
+
+    --sidebar-default: 80px;
+    --sidebar-expand: 250px;
+    --topbar-height: 80px;
+
+/* Login, Registration, read, addto, bookmark */
+    --btn: #2E4E0D;
+    --btn-read: #2E4E0D;
+    --btn-addto: #b15024;
+    --btn-bookmark: #5b5a9e;
+    --btn-remove: #cf1818;
+
+/* OTP alerts */
+    --alert-danger-bg: #FEF2F2;
+    --alert-danger-text: #991B1B;
+    --alert-danger-border: #FECACA;
+    --alert-success-bg: #F0FDF4;
+    --alert-success-text: #166534;
+    --alert-success-border: #BBF7D0;
+
+/* OTP modal */
+    --dark-header: #1A1611;
+    --dark-border: #332D25;
+    --ink: #1F1B16;
+    --muted-alt: #6C757D;
+    --line: #E5E0D8;
+    --input-bg: #FBFAF8;
+    --placeholder: #A49D94;
+    --disabled-bg: #D1CCC5;
+    --disabled-text: #9CA3AF;
+    --backdrop: #12100E;
+
+/* Text and base */
+    --brown: #4D463D;
+    --text: #333333;
+    --muted: #797575;
+    --gray: #626262;
+    --link: #3B52CA;
+    --link-hover: #1D3399;
+    --hover: #8B7E6C;
+    --danger: #C0392B;
+}
