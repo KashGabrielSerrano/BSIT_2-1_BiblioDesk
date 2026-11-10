@@ -4,7 +4,7 @@ const STAFF_MENU = [
     'announcements' => ['admin_announcement.php', 'announcement.png',  'announcements page',      'Announcements'],
     'library'       => ['librarymanagement.php',  'lib-default.png',   'library management page', 'Library Management'],
     'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management'],
-    'logs'          => ['adminlog.php',           'due.png',           'report logs page',        'Report Logs'],
+    'logs'          => ['librarymanagement.php#reports', 'due.png',     'report logs page',        'Report Logs'],
     'helpdesk'      => ['helpdesk.php',           'help-default.png',  'helpdesk page',           'Helpdesk'],
 ];
 
@@ -24,11 +24,6 @@ function e(?string $s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
-/**
- * Opens the document: doctype, <head> with Bootstrap, Bootstrap Icons, the shared notif.css and the
- * page stylesheets (file names inside frontend/css/), then <body>.
- * $extra_head: raw HTML for the end of <head> (e.g. a script that must run before first paint).
- */
 function render_head(string $title, array $css = [], string $extra_head = ''): void { ?>
 <!DOCTYPE html>
 <html lang="en">

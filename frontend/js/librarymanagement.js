@@ -1,13 +1,3 @@
-/**
- * frontend/js/librarymanagement.js
- * Client logic for the Librarian SPA (backend/librarymanagement.php).
- * Replaces: librarymanagementdb.js, accountmgmt.js (librarian usage), librarianlog.js
- *
- * Tabs      : switchMainTab('catalog' | 'accounts' | 'reports')
- * Catalog   : loadCatalog(), add / edit / delete book
- * Accounts  : loadAccountTab(), updateAccountStatus()
- * Reports   : loadReports()
- */
 (() => {
     'use strict';
 
@@ -320,8 +310,6 @@
                 .forEach((name) => {
                     form.elements[name].value = book[name] ?? '';
                 });
-            // A legacy free-text category that is not in the dropdown leaves the select blank:
-            // fall back to the placeholder so the librarian is prompted to pick a valid one.
             if (form.elements.category.selectedIndex < 0) form.elements.category.value = '';
             syncDigitalRequired(form);
             bootstrap.Modal.getOrCreateInstance($('editBookModal')).show();
@@ -704,9 +692,7 @@
         switchMainTab(location.hash.slice(1) || 'catalog');
     }
 
-    // Public API (spec'd function names, also handy from the browser console while testing)
     Object.assign(window, { switchMainTab, loadCatalog, loadAccountTab, updateAccountStatus, loadReports });
-    // shared with circulation_staff.js (same page)
     window.lmConfirm = confirmAction;
     window.lmNotify = notify;
 
