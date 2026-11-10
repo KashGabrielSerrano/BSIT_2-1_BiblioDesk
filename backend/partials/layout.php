@@ -6,7 +6,9 @@ const STAFF_MENU = [
     'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management'],
     'logs'          => ['librarymanagement.php#reports', 'due.png',     'report logs page',        'Report Logs'],
     'helpdesk'      => ['helpdesk.php',           'help-default.png',  'helpdesk page',           'Helpdesk'],
+    'activity'      => ['adminlog.php',           'pending-reserve.png', 'activity log page',     'Activity Log'],
 ];
+const ADMIN_ONLY_MENU = ['activity'];
 
 const STUDENT_MENU = [
     'overview' => ['userdb_overview.php',             'ow-default.png',      'overview page',        'Overview'],
@@ -48,7 +50,10 @@ function render_head(string $title, array $css = [], string $extra_head = ''): v
 
 /** Sidebar (offcanvas on mobile). $active is a key of the menu (see top of file). */
 function render_sidebar(string $menu, string $active = ''): void {
-    $items = $menu === 'staff' ? STAFF_MENU : STUDENT_MENU; ?>
+    $items = $menu === 'staff' ? STAFF_MENU : STUDENT_MENU;
+    if (($menu === 'staff') && (current_user()['role'] ?? '') !== 'Admin') {
+        $items = array_diff_key($items, array_flip(ADMIN_ONLY_MENU));
+    } ?>
     <!-- SIDEBAR -->
     <aside class="offcanvas-md offcanvas-start d-flex flex-column text-light" tabindex="-1" id="sidebar"
         aria-labelledby="sidebarLabel" data-bs-scroll="true">

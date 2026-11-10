@@ -501,6 +501,7 @@ function handle_add_book(mysqli $con): void {
         throw $e;
     }
 
+    log_activity('book_added', 'book', (int)$new_id, $d['title'] . ($d['is_digital'] === 'No' ? " ({$d['total_copies']} copies)" : ' (digital)'));
     sendResponse(true, 'Book added to the catalog.', ['book_id' => $new_id], 201);
 }
 
@@ -561,6 +562,7 @@ function handle_update_book(mysqli $con): void {
     release_stored_files($con, $stale, $book_id);
 
     promote_reservations($book_id);   // added copies go to the next people in line
+    log_activity('book_updated', 'book', $book_id, $d['title'] . ($d['is_digital'] === 'No' ? " ({$d['total_copies']} copies)" : ' (digital)'));
     sendResponse(true, 'Book updated.');
 }
 
@@ -578,7 +580,7 @@ function handle_delete_book(mysqli $con): void {
         sendResponse(false, 'This book has active loans, requests or reservations. Finish those first.', [], 409);
     }
 
-    $old = db_all($con, 'SELECT Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
+    $old = db_all($con, 'SELECT Title, Cover_Image, Drive_Link FROM book_table WHERE Book_ID = ?', 'i', [$book_id]);
     $stmt = $con->prepare('DELETE FROM book_table WHERE Book_ID = ?');
     $stmt->bind_param('i', $book_id);
     $stmt->execute();
@@ -590,6 +592,7 @@ function handle_delete_book(mysqli $con): void {
     }
     release_stored_files($con, [$old[0]['Cover_Image'] ?? null, $old[0]['Drive_Link'] ?? null]);
 
+    log_activity('book_deleted', 'book', $book_id, (string)($old[0]['Title'] ?? ''));
     sendResponse(true, 'Book deleted.');
 }
 

@@ -155,7 +155,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                     <p class="small mt-3 mb-0 qaCount" id="qaUserCount"></p>
                 </div>
                 <div class="modal-footer">
-                    <a class="qaFullLink me-auto" href="AdminAccManagedb.php">Open Account Manage</a>
+                    <a class="qaFullLink me-auto" href="librarymanagement.php#accounts">Open Account Management</a>
                     <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -187,7 +187,7 @@ render_head(($is_admin ? 'Admin' : 'Librarian') . ' Overview | BiblioDesk', ['ro
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <a class="qaFullLink me-auto" href="adminlog.php">Open Report Logs</a>
+                    <a class="qaFullLink me-auto" href="librarymanagement.php#reports">Open Report Logs</a>
                     <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
