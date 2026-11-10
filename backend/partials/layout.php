@@ -2,11 +2,14 @@
 const STAFF_MENU = [
     'overview'      => ['staff_overview.php',     'ow-default.png',    'overview page',           'Overview'],
     'announcements' => ['admin_announcement.php', 'announcement.png',  'announcements page',      'Announcements'],
-    'library'       => ['librarymanagement.php',  'lib-default.png',   'library management page', 'Library Management'],
+    // Library Management = the Digital Catalog tab
+    'library'       => ['librarymanagement.php#catalog', 'lib-default.png', 'library management page', 'Library Management', 'catalog'],
     // User Management = the account list (Library Management -> Account Management tab)
-    'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management'],
+    'users'         => ['librarymanagement.php#accounts', 'business-mail.png', 'accounts management page', 'User Management', 'accounts'],
     // Report Logs = the book report list (Library Management -> Report Logs tab)
-    'logs'          => ['librarymanagement.php#reports', 'due.png',     'report logs page',        'Report Logs'],
+    'logs'          => ['librarymanagement.php#reports', 'due.png',     'report logs page',        'Report Logs', 'reports'],
+    // Circulation = borrowing, reservations and fines (Library Management -> Circulation tab)
+    'circulation'   => ['librarymanagement.php#circulation', 'bi-arrow-left-right', 'circulation page', 'Circulation', 'circulation'],
     'helpdesk'      => ['helpdesk.php',           'help-default.png',  'helpdesk page',           'Helpdesk'],
     'activity'      => ['adminlog.php',           'pending-reserve.png', 'activity log page',     'Activity Log'],
 ];
@@ -41,6 +44,7 @@ function render_head(string $title, array $css = [], string $extra_head = ''): v
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="../frontend/css/notif.css">
+    <link rel="stylesheet" href="../frontend/css/root.css">
 <?php foreach ($css as $file): ?>
     <link rel="stylesheet" href="../frontend/css/<?= e($file) ?>">
 <?php endforeach; ?>
@@ -85,12 +89,19 @@ function render_sidebar(string $menu, string $active = ''): void {
 
             <nav aria-label="Main">
                 <ul class="nav flex-column gap-3 pt-4">
-<?php foreach ($items as $key => [$href, $icon, $alt, $label]): $on = $key === $active; ?>
+<?php foreach ($items as $key => $item):
+    [$href, $icon, $alt, $label] = $item;
+    $tab = $item[4] ?? '';          // Library Management tab this item opens (staff menu only)
+    $on  = $key === $active; ?>
                     <li class="nav-item">
                         <a class="nav-link sideAct d-flex align-items-center gap-3 px-3 py-0 text-light"
-                            href="<?= e($href) ?>"<?= $on ? ' aria-current="page"' : '' ?>>
+                            href="<?= e($href) ?>"<?= $tab !== '' ? ' data-main-tab="' . e($tab) . '"' : '' ?><?= $on ? ' aria-current="page"' : '' ?>>
                             <span class="sideIcon rounded-circle d-flex align-items-center justify-content-center<?= $on ? ' bg-light' : '' ?>">
+<?php if (str_starts_with($icon, 'bi-')): ?>
+                                <i class="bi <?= e($icon) ?>" role="img" aria-label="<?= e($alt) ?>"></i>
+<?php else: ?>
                                 <img src="../frontend/assets/icons/<?= e($icon) ?>" alt="<?= e($alt) ?>" width="28">
+<?php endif; ?>
                             </span>
                             <span class="sideText"><?= e($label) ?></span>
                         </a>

@@ -75,3 +75,17 @@ rec = recommendations
     --hover: #8B7E6C;
     --danger: #C0392B;
 }
+
+
+/* =============================================================================
+   Sidebar icons (Bootstrap Icons) This is just for the Circulation icon (cant find a good icon for it, so used boostrap icons)
+ */
+.sideIcon .bi{
+    font-size: 1.6rem;
+    line-height: 1;
+    color: inherit;                                 /* light, like the PNG icons (the link is .text-light) */
+}
+
+.sideIcon.bg-light .bi{
+    color: var(--main-color);                       /* active: dark glyph on the light circle */
+}
