@@ -269,10 +269,11 @@ function renderEmptyState(string $icon, string $title, string $text): string {
         . '</div>';
 }
 
-function renderSectionHeader(string $icon, string $title, string $subtitle): string {
+function renderSectionHeader(string $icon, string $title, string $subtitle, string $headingId = ''): string {
+    $idAttr = $headingId !== '' ? ' id="' . htmlspecialchars($headingId) . '"' : '';
     return '<div class="lib-section-head d-flex align-items-center gap-3 mb-4 text-start">'
         . '<span class="lib-section-icon" aria-hidden="true"><i class="bi ' . htmlspecialchars($icon) . '"></i></span>'
-        . '<div><h2 class="h4 fw-bold mb-0">' . htmlspecialchars($title) . '</h2>'
+        . '<div><h2' . $idAttr . ' class="h4 fw-bold mb-0">' . htmlspecialchars($title) . '</h2>'
         . '<p class="small text-muted mb-0">' . htmlspecialchars($subtitle) . '</p></div>'
         . '</div>';
 }
@@ -290,6 +291,13 @@ function renderShelf(array $books, string $ratioClass, string $emptyText = 'No b
         $html .= renderBookCard($row, $ratioClass);
     }
     return $html . '</div>';
+}
+
+function renderBookShelf(array $books, string $icon, string $emptyTitle, string $emptyText): string {
+    if (empty($books)) {
+        return renderEmptyState($icon, $emptyTitle, $emptyText);
+    }
+    return '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">' . renderBookGrid($books) . '</div>';
 }
 ?>
 <?php
@@ -310,36 +318,35 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             <!-- ============================================================================ -->
             <!-- VIEW: MY BOOKS                                                               -->
             <!-- ============================================================================ -->
-            <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <h1 class="fw-bold mb-0 p-1">My Books</h1>
-                </div>
-            </div>
+            <header class="lib-hero mt-2">
+                <p class="lib-eyebrow mb-2"><i class="bi bi-collection me-2" aria-hidden="true"></i>BiblioDesk</p>
+                <h1 class="fw-bold display-5 mb-2">My Books</h1>
+                <p class="lib-hero-lead mb-4">Your loans, reading progress, collections, bookmarks and favorites, all in one place.</p>
+                <nav class="lib-jump-row" aria-label="Jump to a section">
+                    <a class="lib-jump" href="#my-loans"><i class="bi bi-card-checklist me-1" aria-hidden="true"></i>Loans</a>
+                    <a class="lib-jump" href="#lib-continue"><i class="bi bi-play-circle me-1" aria-hidden="true"></i>Continue Reading</a>
+                    <a class="lib-jump" href="#lib-collections"><i class="bi bi-collection me-1" aria-hidden="true"></i>Collections</a>
+                    <a class="lib-jump" href="#lib-bookmarks"><i class="bi bi-bookmark me-1" aria-hidden="true"></i>Bookmarks</a>
+                    <a class="lib-jump" href="#lib-favorites"><i class="bi bi-heart me-1" aria-hidden="true"></i>Favorites</a>
+                    <a class="lib-jump" href="#lib-history"><i class="bi bi-clock-history me-1" aria-hidden="true"></i>History</a>
+                </nav>
+            </header>
 
             <!-- My Loans & Reservations - frontend/js/circulation_student.js -->
-            <section id="my-loans" aria-labelledby="myLoansHeading">
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 id="myLoansHeading" class="h3 fw-semibold mb-0">My Loans &amp; Reservations</h2>
-                </div>
+            <section class="lib-panel" id="my-loans" aria-labelledby="myLoansHeading">
+                <?= renderSectionHeader('bi-card-checklist', 'My Loans & Reservations', 'Books you have borrowed or reserved', 'myLoansHeading') ?>
                 <div id="myLoans"><p class="text-muted">Loading your loans…</p></div>
             </section>
 
             <!-- Continue Reading -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Continue Reading</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderBookGrid($continue_reading_books); ?>
-                </div>
+            <section class="lib-panel" id="lib-continue">
+                <?= renderSectionHeader('bi-play-circle', 'Continue Reading', 'Pick up where you left off') ?>
+                <?php echo renderBookShelf($continue_reading_books, 'bi-play-circle', 'Nothing in progress', 'Books you start reading will show up here.'); ?>
             </section>
-            <hr class="my-5">
 
             <!-- My Collections Section -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">My Collections</h2>
-                </div>
+            <section class="lib-panel" id="lib-collections">
+                <?= renderSectionHeader('bi-collection', 'My Collections', 'Your own shelves, grouped your way') ?>
                 <!-- the user's collections are drawn here by frontend/js/collections.js (before the "+ Add" card) -->
                 <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center" id="collectionsRow">
                     <div class="col" id="addCollectionCol">
@@ -354,38 +361,23 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                     </div>
                 </div>
             </section>
-            <hr class="my-5">
 
             <!-- Bookmarks -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Bookmarks</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderBookGrid($bookmark_books); ?>
-                </div>
+            <section class="lib-panel" id="lib-bookmarks">
+                <?= renderSectionHeader('bi-bookmark', 'Bookmarks', 'Books you saved for later') ?>
+                <?php echo renderBookShelf($bookmark_books, 'bi-bookmark', 'No bookmarks yet', 'Bookmark a book from its details window to find it here.'); ?>
             </section>
-            <hr class="my-5">
 
             <!-- Favorites -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Favorites</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderBookGrid($favorite_books); ?>
-                </div>
+            <section class="lib-panel" id="lib-favorites">
+                <?= renderSectionHeader('bi-heart', 'Favorites', 'The books you love most') ?>
+                <?php echo renderBookShelf($favorite_books, 'bi-heart', 'No favorites yet', 'Tap the heart on a book to add it here.'); ?>
             </section>
-            <hr class="my-5">
 
             <!-- History -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">History</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderBookGrid($history_books); ?>
-                </div>
+            <section class="lib-panel" id="lib-history">
+                <?= renderSectionHeader('bi-clock-history', 'History', 'Books you opened recently') ?>
+                <?php echo renderBookShelf($history_books, 'bi-clock-history', 'No reading history yet', 'Books you open will be listed here.'); ?>
             </section>
 
         <?php else: ?>
