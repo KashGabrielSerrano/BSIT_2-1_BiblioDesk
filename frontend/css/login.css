@@ -1,0 +1,694 @@
+* {
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    min-height: 100vh;
+    background-color: var(--main-color);
+}
+
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 140px;
+    width: 100%;
+    min-height: 100vh;
+    padding: 16px;
+}
+
+.logo-panel {
+    flex: 0 1 480px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.logo {
+    width: auto;
+    max-width: 450px;
+    max-height: 40vh;
+    height: auto;
+    object-fit: contain;
+}
+
+.tagline {
+    color: var(--fcolor-secondary);
+    font-size: 20px;
+    letter-spacing: 3px;
+    margin-top: 30px;
+    line-height: 1.4;
+}
+
+h1 {
+    font-size: 32px;
+    font-weight: bold;
+    color: var(--brown);
+    margin-bottom: 24px;
+    text-align: center;
+}
+
+hr {
+    border: 0;
+    height: 1px;
+    background: var(--brown);
+    opacity: 1;
+    margin: 60px 0;
+}
+
+
+/* Form */
+.form-wrapper {
+    flex: 0 1 560px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: stretch;
+}
+
+form {
+    background-color: var(--fcolor-secondary);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    width: 100%;
+    justify-content: center;
+    min-height: 550px;
+    padding: 50px 60px;
+}
+
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 4px 0 0;
+    padding-bottom: 40px;
+    font-size: 14px;
+}
+
+.form-field {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.form-items {
+    width: 100%;
+    margin-bottom: 20px;
+}
+
+.form-items label {
+    display: block;
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--brown);
+    margin-bottom: 7px;
+}
+
+.form-items input {
+    width: 100%;
+    padding: 12px 14px;
+    border-radius: 8px;
+    background-color: var(--fcolor-secondary);
+    font-size: 0.95rem;
+    color: var(--text);
+    outline: none;
+    border: 1px solid var(--fcolor-main);
+}
+
+.form-items input::placeholder {
+    color: var(--muted);
+}
+
+.form-items input:focus {
+    border-color: var(--brown);
+    box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+}
+
+
+/* Submit */
+form button[type="submit"] {
+    display: block;
+    width: 100%;
+    padding: 12px;
+    background-color: var(--btn);
+    color: var(--fcolor-secondary);
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+form button[type="submit"]:hover {
+    background-color: var(--hover);
+}
+
+
+/* Password */
+.form-field label,
+.forgot-password {
+    color: var(--brown);
+    font-size: 14px;
+}
+
+.forgot-password {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.password-container {
+    position: relative;
+    width: 100%;
+}
+
+.password-container input {
+    padding-right: 45px;
+}
+
+.password-toggle-icon {
+    position: absolute;
+    top: 50%;
+    right: 14px;
+    transform: translateY(-50%);
+    cursor: pointer;
+    color: var(--muted);
+    font-size: 1.1rem;
+    z-index: 10;
+}
+
+.password-toggle-icon:hover {
+    color: var(--brown);
+}
+
+
+/* Register and Terms */
+.register {
+    font-size: 15px;
+    font-weight: normal;
+    color: var(--text);
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.register a {
+    color: var(--link);
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.terms {
+    font-size: 13px;
+    font-weight: normal;
+    color: var(--gray);
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 15px;
+}
+
+.terms a {
+    color: var(--gray);
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+
+/* OTP Verification Modal */
+#otpModal {
+  z-index: 1060 !important;
+}
+
+#otpModal .modal-dialog {
+  position: relative;
+  z-index: 1061 !important;
+  max-width: 440px;
+}
+
+/*Main Modal Card */
+#otpModal .modal-content {
+  background-color: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1062 !important;
+}
+
+/*OTP Header */
+#otpModal .bibliodesk-modal-header {
+  background-color: var(--dark-header) !important;
+  color: var(--fcolor-secondary) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+}
+
+#otpModal .bibliodesk-modal-header .modal-title {
+  color: var(--fcolor-secondary) !important;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#otpModal .bibliodesk-modal-header i {
+  color: var(--hover) !important;
+}
+
+/*OTP Modal Body & Footer */
+#otpModal .modal-body {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--text) !important;
+  position: relative !important;
+  z-index: 1063 !important;
+}
+
+#otpModal .modal-footer {
+  background-color: var(--fcolor-secondary) !important;
+  border-bottom-left-radius: 13px !important;
+  border-bottom-right-radius: 13px !important;
+}
+
+#otpModal .text-dark,
+#otpModal #otpEmailDisplay {
+  color: var(--ink) !important;
+  word-break: break-all;
+}
+
+#otpModal .text-muted {
+  color: var(--muted-alt) !important;
+}
+
+#otpModal .border-top {
+  border-color: var(--line) !important;
+}
+
+/*OTP Code Input */
+#otpModal .bibliodesk-otp-input {
+  background-color: var(--input-bg) !important;
+  color: var(--ink) !important;
+  border: 2px solid var(--hover) !important;
+  border-radius: 8px !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 6px !important;
+  font-weight: bold;
+  caret-color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#otpModal .bibliodesk-otp-input:focus {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--ink) !important;
+  border-color: var(--btn) !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
+  outline: none !important;
+}
+
+#otpModal .bibliodesk-otp-input::placeholder {
+  color: var(--placeholder) !important;
+}
+
+/*Expiry Timer */
+#otpModal #otpExpiryTimer {
+  color: var(--danger) !important;
+}
+
+/*Submit Button for OTP */
+#otpModal .bibliodesk-btn-primary {
+  background-color: var(--btn) !important;
+  color: var(--fcolor-secondary) !important;
+  border: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#otpModal .bibliodesk-btn-primary:hover:not(:disabled) {
+  background-color: var(--hover) !important;
+  color: var(--fcolor-secondary) !important;
+}
+
+#otpModal .bibliodesk-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+#otpModal .bibliodesk-btn-primary:disabled {
+  background-color: var(--disabled-bg) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/*Resend Code */
+#otpModal .bibliodesk-resend-link {
+  color: var(--link) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: color 0.2s ease;
+}
+
+#otpModal .bibliodesk-resend-link:hover:not(:disabled) {
+  color: var(--link-hover) !important;
+  text-decoration: underline !important;
+}
+
+#otpModal .bibliodesk-resend-link:disabled {
+  color: var(--disabled-text) !important;
+  cursor: not-allowed;
+}
+
+/* Alert Box Inside Modal */
+#otpModal #otpAlert.alert-danger {
+  background-color: var(--alert-danger-bg) !important;
+  color: var(--alert-danger-text) !important;
+  border: 1px solid var(--alert-danger-border) !important;
+}
+
+#otpModal #otpAlert.alert-success {
+  background-color: var(--alert-success-bg) !important;
+  color: var(--alert-success-text) !important;
+  border: 1px solid var(--alert-success-border) !important;
+}
+
+/* Backdrop & Background Logo Dimming */
+.modal-backdrop.show {
+  opacity: 0.75 !important;
+  background-color: var(--backdrop) !important;
+}
+
+body.modal-open .logo-panel {
+  opacity: 0.15 !important;
+  transition: opacity 0.25s ease;
+}
+
+/* Forgot Password Modal */
+#forgotModal {
+  z-index: 1060 !important;
+}
+
+#forgotModal .modal-dialog {
+  position: relative;
+  z-index: 1061 !important;
+  max-width: 440px;
+}
+
+#forgotModal .modal-content {
+  background-color: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1062 !important;
+}
+
+#forgotModal .bibliodesk-modal-header {
+  background-color: var(--main-color) !important;
+  color: var(--fcolor-secondary) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+}
+
+#forgotModal .bibliodesk-modal-header .modal-title {
+  color: var(--fcolor-secondary) !important;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#forgotModal .bibliodesk-modal-header .modal-title i {
+  color: var(--hover) !important;
+}
+
+#forgotModal .modal-body {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--text) !important;
+  position: relative !important;
+  z-index: 1063 !important;
+}
+
+#forgotModal .modal-footer {
+  background-color: var(--fcolor-secondary) !important;
+  border-bottom-left-radius: 13px !important;
+  border-bottom-right-radius: 13px !important;
+}
+
+#forgotModal .text-dark,
+#forgotModal #fpEmailDisplay {
+  color: var(--ink) !important;
+  word-break: break-all;
+}
+
+#forgotModal .text-muted {
+  color: var(--muted-alt) !important;
+}
+
+#forgotModal .border-top {
+  border-color: var(--line) !important;
+}
+
+#forgotModal .form-label {
+  color: var(--brown);
+}
+
+#forgotModal .fp-input {
+  border: 1px solid var(--fcolor-main);
+  border-radius: 8px;
+  color: var(--text);
+  background-color: var(--fcolor-secondary);
+  font-size: 0.95rem;
+}
+
+#forgotModal .fp-input::placeholder {
+  color: var(--muted);
+}
+
+#forgotModal .fp-input:focus {
+  border-color: var(--brown);
+  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+  outline: none;
+}
+
+#forgotModal .fp-input.is-invalid {
+  border-color: var(--danger);
+}
+
+#forgotModal .password-container input {
+  padding-right: 45px;
+}
+
+#forgotModal .bibliodesk-otp-input {
+  background-color: var(--input-bg) !important;
+  color: var(--ink) !important;
+  border: 2px solid var(--hover) !important;
+  border-radius: 8px !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 6px !important;
+  font-weight: bold;
+  caret-color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#forgotModal .bibliodesk-otp-input:focus {
+  background-color: var(--fcolor-secondary) !important;
+  border-color: var(--btn) !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
+  outline: none !important;
+}
+
+#forgotModal .bibliodesk-otp-input.is-invalid {
+  border-color: var(--danger) !important;
+}
+
+#forgotModal .bibliodesk-otp-input::placeholder {
+  color: var(--placeholder) !important;
+}
+
+#forgotModal #fpExpiryTimer {
+  color: var(--danger) !important;
+}
+
+#forgotModal .bibliodesk-btn-primary {
+  background-color: var(--btn) !important;
+  color: var(--fcolor-secondary) !important;
+  border: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#forgotModal .bibliodesk-btn-primary:hover:not(:disabled) {
+  background-color: var(--hover) !important;
+}
+
+#forgotModal .bibliodesk-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+#forgotModal .bibliodesk-btn-primary:disabled {
+  background-color: var(--disabled-bg) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+#forgotModal .bibliodesk-resend-link,
+#forgotModal .fp-link {
+  color: var(--link) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: color 0.2s ease;
+}
+
+#forgotModal .bibliodesk-resend-link:hover:not(:disabled),
+#forgotModal .fp-link:hover {
+  color: var(--link-hover) !important;
+  text-decoration: underline !important;
+}
+
+#forgotModal .bibliodesk-resend-link:disabled {
+  color: var(--disabled-text) !important;
+  cursor: not-allowed;
+}
+
+#forgotModal #fpAlert.alert-danger {
+  background-color: var(--alert-danger-bg) !important;
+  color: var(--alert-danger-text) !important;
+  border: 1px solid var(--alert-danger-border) !important;
+}
+
+#forgotModal #fpAlert.alert-success {
+  background-color: var(--alert-success-bg) !important;
+  color: var(--alert-success-text) !important;
+  border: 1px solid var(--alert-success-border) !important;
+}
+
+.fp-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+}
+
+.fp-dots span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--line);
+  transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.fp-dots span.active {
+  background: var(--btn);
+  transform: scale(1.25);
+}
+
+.fp-rules li.ok {
+  color: var(--alert-success-text);
+}
+
+/* Media Queries */
+@media (max-height: 700px) {
+    .login-container {
+        padding: 10px;
+    }
+    form {
+        padding: 24px 40px;
+    }
+    h1 {
+        font-size: 26px;
+        margin-bottom: 14px;
+    }
+    .form-items {
+        margin-bottom: 12px;
+    }
+    .form-items label {
+        margin-bottom: 4px;
+    }
+    .form-items input {
+        padding: 10px 14px;
+    }
+    form button[type="submit"] {
+        padding: 10px;
+    }
+    hr {
+        margin: 35px 0;
+    }
+    .terms {
+        margin-top: 8px;
+    }
+    .logo {
+        max-height: 35vh;
+    }
+    .tagline {
+        margin-top: 16px;
+        font-size: 18px;
+    }
+}
+
+@media (max-width: 992px) {
+    .tagline {
+        font-size: 18px;
+    }
+    h1 {
+        font-size: 26px;
+    }
+}
+
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        min-height: 100vh;
+        height: auto;
+        padding: 10px;
+        gap: 20px;
+    }
+
+    .logo-panel {
+        flex: 0 0 auto;
+        width: 100%;
+        height: 180px;
+        padding: 20px;
+    }
+
+    .logo {
+        max-width: 160px;
+        max-height: 120px;
+    }
+
+    .tagline {
+        font-size: 15px;
+        margin-top: 10px;
+    }
+
+    form {
+        padding: 25px 20px;
+    }
+
+    h1 {
+        font-size: 22px;
+        margin-bottom: 16px;
+    }
+
+    .form-wrapper {
+        flex: 0 1 auto;
+        max-width: 100%;
+    }
+}
