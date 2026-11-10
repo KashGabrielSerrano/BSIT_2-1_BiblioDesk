@@ -1,38 +1,3 @@
-/* =============================================================================
-   librarian.css
-   One stylesheet for the Librarian SPA (backend/librarymanagement.php).
-
-   TABLE OF CONTENTS
-     1. Tokens ............ Account Management colors + notification aliases
-     2. Base .............. reset, body, main, footer
-     3. Sidebar ........... offcanvas + desktop hover-expand
-     4. Topbar ............ bar + mobile two-row layout
-     5. Shared controls ... inputs, focus states, pills/badges, toast, empty state
-     6. Tabs .............. main tab strip, account sub-tabs, count badges
-     7. Panel: Catalog .... add-book card, search, sort button, table
-     8. Panel: Accounts ... search, table, status pills, row actions
-     9. Panel: Reports .... stat cards, toolbar, filter panel, log table, pager
-    10. Notification bell . dropdown styles (not on the page yet, ready for later)
-
-   Each section keeps its own @media rules at the bottom, so everything for one
-   area is in one place.
-
-   QUICK FIND: WANT TO CHANGE...             GO TO
-     page, card, text, button colors ....... root.css (not this file)
-     sidebar / topbar sizes ................ root.css (--sidebar-*, --topbar-height)
-     account table + pill colors ........... section 1 (--am-* tokens)
-     badge colors (issue / status) ......... section 5
-     tab underline, sub-tab pills .......... section 6
-     catalog search box, sort, table ....... section 7
-     account search, table, buttons ........ section 8
-     report cards, filter, log rows ........ section 9
-     notification dropdown ................. section 10
-
-   CLASS RENAMES (the view uses the new names):
-     .searchBox in the catalog panel  ->  .catalogSearchBox
-     .searchBox in the accounts panel ->  .accountSearchBox
-   ============================================================================= */
-
 @import url(root.css);
 
 
@@ -1120,5 +1085,77 @@ footer{
         margin: .5rem 0 0 !important;
         max-height: calc(100vh - 160px);
         overflow-y: auto !important;
+    }
+}
+
+
+/* =============================================================================
+   11. PANEL: CIRCULATION
+   ============================================================================= */
+
+/* ----- Cell text ----- */
+.circName{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--fcolor-main);
+}
+
+.circSub{
+    margin: .15rem 0 0;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--brown);
+}
+
+/* ----- More pill colors (.pill.active / .pending / .suspended are in section 8) ----- */
+.pill.ok{ background: var(--am-pill-approved); }
+.pill.warn{ background: var(--am-pill-pending); }
+.pill.bad{ background: var(--am-pill-denied); }
+.pill.neutral{ background: var(--cc-qs-neutral); }
+
+/* Shrink-to-fit pill for short counts and "3 day(s) late" notes */
+.pill.auto{
+    width: auto;
+    max-width: none;
+    min-width: 44px;
+    padding: .3rem .8rem;
+    font-size: .75rem;
+}
+
+.actBtn.neutral{ background: var(--main-color); }
+
+.actBtn:disabled{
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+}
+
+.circTable .acctActions{
+    gap: .6rem;
+    padding: 1.1rem 0;
+}
+
+.circTable .actBtn{
+    min-width: 132px;
+    padding: .5rem 1.1rem;
+    font-size: .85rem;
+}
+
+@media (max-width: 767.98px){
+    .circTable .acctActions{
+        gap: .45rem;
+        padding: .8rem 0;
+    }
+
+    .circTable .actBtn{
+        min-width: 0;
+        width: 100%;
+        max-width: 95px;
+        padding: .3rem .5rem;
+        font-size: .72rem;
     }
 }

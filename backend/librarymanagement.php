@@ -384,10 +384,11 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                 <li class="nav-item" role="presentation"><button class="nav-link" type="button" role="tab" data-circ-section="fines" aria-selected="false">Fines <span class="tabBadge red" data-circ-count="fines">0</span></button></li>
             </ul>
             <p class="small mb-2" id="circInfo" aria-live="polite"></p>
-            <div class="table-responsive rounded-4 shadow-sm">
-                <table class="table align-middle mb-0 bg-white" id="circTable">
-                    <thead class="table-dark"><tr id="circHead"></tr></thead>
-                    <tbody id="circRows"><tr><td class="py-4 text-center">Loading…</td></tr></tbody>
+            <p class="scrollHint">Swipe sideways to see all columns &rarr;</p>
+            <div class="amTableWrap">
+                <table class="amTable circTable fiveCol" id="circTable">
+                    <thead><tr id="circHead"></tr></thead>
+                    <tbody id="circRows"><tr class="emptyRow"><td colspan="5">Loading…</td></tr></tbody>
                 </table>
             </div>
         </div>
@@ -486,7 +487,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
             <div class="modal-content border-secondary shadow-lg rounded-4"
                 style="background-color: var(--main-bg-color);">
                 <div class="modal-body text-center p-4 p-md-5">
-                    <div class="mb-3 text-danger fs-1"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div id="confirmIconWrap" class="mb-3 text-danger fs-1"><i id="confirmIcon" class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i></div>
                     <h3 class="fw-bold mb-2" id="confirmTitle">Are you sure?</h3>
                     <p class="mb-4" id="confirmMessage"></p>
                     <div class="d-flex justify-content-center gap-3">
@@ -496,6 +497,29 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                             id="confirmOkBtn">Confirm</button>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- INPUT MODAL (decline reason, damage fine): window.lmPrompt() in librarymanagement.js.-->
+    <div class="modal fade" id="promptModal" tabindex="-1" aria-labelledby="promptTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-secondary shadow-lg rounded-4"
+                style="background-color: var(--main-bg-color);">
+                <form id="promptForm" novalidate>
+                    <div class="modal-body p-4 p-md-5">
+                        <div id="promptIconWrap" class="text-center mb-3 fs-1"><i id="promptIcon" class="bi bi-pencil-square" aria-hidden="true"></i></div>
+                        <h3 class="fw-bold mb-2 text-center" id="promptTitle">Title</h3>
+                        <p class="text-center mb-4 d-none" id="promptMessage"></p>
+                        <div id="promptFields" class="d-flex flex-column gap-3 text-start"></div>
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <button type="button" class="btn px-4 py-2 fw-semibold rounded-3 text-white"
+                                style="background-color: var(--muted);" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn px-4 py-2 fw-semibold rounded-3 text-white"
+                                id="promptOkBtn" style="background-color: var(--btn);">Save</button>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

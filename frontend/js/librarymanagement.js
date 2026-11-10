@@ -113,18 +113,23 @@
         return data;
     }
 
-    /** Promise-based Bootstrap confirm dialog. Resolves true only if the user confirms. */
-    function confirmAction({ title, message, confirmLabel = 'Confirm', variant = 'danger' }) {
+    function confirmAction({ title, message, confirmLabel = 'Confirm', variant = 'danger', icon = 'bi-exclamation-triangle-fill', iconColor = '' }) {
         return new Promise((resolve) => {
             const el = $('confirmModal');
             const modal = bootstrap.Modal.getOrCreateInstance(el);
             const okBtn = $('confirmOkBtn');
+            const iconWrap = $('confirmIconWrap');
+            const brand = variant === 'brand';
             let decided = false;
 
+            $('confirmIcon').className = 'bi ' + icon;
+            iconWrap.className = 'mb-3 fs-1' + (iconColor ? '' : ' text-danger');
+            iconWrap.style.color = iconColor;
             $('confirmTitle').textContent = title;
             $('confirmMessage').textContent = message;
             okBtn.textContent = confirmLabel;
-            okBtn.className = 'btn px-4 py-2 rounded-3 fw-semibold btn-' + variant;
+            okBtn.className = 'btn px-4 py-2 rounded-3 fw-semibold ' + (brand ? 'text-white' : 'btn-' + variant);
+            okBtn.style.backgroundColor = brand ? 'var(--btn)' : '';
 
             const onOk = () => {
                 decided = true;
@@ -137,6 +142,80 @@
             };
             okBtn.addEventListener('click', onOk, { once: true });
             el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+            modal.show();
+        });
+    }
+
+    function promptAction({ title, message = '', fields = [], confirmLabel = 'Save', icon = 'bi-pencil-square', variant = 'brand' }) {
+        return new Promise((resolve) => {
+            const el = $('promptModal');
+            const modal = bootstrap.Modal.getOrCreateInstance(el);
+            const form = $('promptForm');
+            const box = $('promptFields');
+            const okBtn = $('promptOkBtn');
+            const iconWrap = $('promptIconWrap');
+            const danger = variant === 'danger';
+            let decided = false;
+
+            $('promptIcon').className = 'bi ' + icon;
+            iconWrap.className = 'text-center mb-3 fs-1' + (danger ? ' text-danger' : '');
+            iconWrap.style.color = danger ? '' : 'var(--btn)';
+            $('promptTitle').textContent = title;
+            const msg = $('promptMessage');
+            msg.textContent = message;
+            msg.classList.toggle('d-none', !message);
+            okBtn.textContent = confirmLabel;
+            okBtn.className = 'btn px-4 py-2 fw-semibold rounded-3 ' + (danger ? 'btn-danger' : 'text-white');
+            okBtn.style.backgroundColor = danger ? '' : 'var(--btn)';
+
+            box.innerHTML = fields.map((f, i) => {
+                const attrs = `id="promptField${i}" name="${escapeHtml(f.name)}" class="form-control" ` +
+                    `placeholder="${escapeHtml(f.placeholder || '')}" maxlength="${f.maxlength || 255}" autocomplete="off"` +
+                    (f.inputmode ? ` inputmode="${escapeHtml(f.inputmode)}"` : '');
+                const control = f.type === 'textarea'
+                    ? `<textarea ${attrs} rows="3"></textarea>`
+                    : `<input type="text" ${attrs}>`;
+                const error = `<div class="invalid-feedback" data-error-for="${i}"></div>`;
+                const field = f.prefix
+                    ? `<div class="input-group"><span class="input-group-text">${escapeHtml(f.prefix)}</span>${control}${error}</div>`
+                    : control + error;
+                return `<div>
+                    <label class="form-label fw-semibold" for="promptField${i}">${escapeHtml(f.label)}${f.required ? '' : ' <span class="fw-normal text-muted">(optional)</span>'}</label>
+                    ${field}
+                    ${f.hint ? `<div class="form-text">${escapeHtml(f.hint)}</div>` : ''}
+                </div>`;
+            }).join('');
+
+            const onSubmit = (e) => {
+                e.preventDefault();
+                const values = {};
+                let firstBad = null;
+                fields.forEach((f, i) => {
+                    const input = $('promptField' + i);
+                    const value = input.value.trim();
+                    let error = '';
+                    if (f.required && !value) error = f.requiredMessage || `${f.label} is required.`;
+                    else if (value && f.validate) error = f.validate(value) || '';
+                    input.classList.toggle('is-invalid', !!error);
+                    box.querySelector(`[data-error-for="${i}"]`).textContent = error;
+                    if (error && !firstBad) firstBad = input;
+                    values[f.name] = value;
+                });
+                if (firstBad) { firstBad.focus(); return; }
+                decided = true;
+                modal.hide();
+                resolve(values);
+            };
+            const onHidden = () => {
+                form.removeEventListener('submit', onSubmit);
+                if (!decided) resolve(null);
+            };
+            form.addEventListener('submit', onSubmit);
+            el.addEventListener('hidden.bs.modal', onHidden, { once: true });
+            el.addEventListener('shown.bs.modal', () => {
+                const first = box.querySelector('input, textarea');
+                if (first) first.focus();
+            }, { once: true });
             modal.show();
         });
     }
@@ -704,6 +783,7 @@
 
     Object.assign(window, { switchMainTab, loadCatalog, loadAccountTab, updateAccountStatus, loadReports });
     window.lmConfirm = confirmAction;
+    window.lmPrompt = promptAction;
     window.lmNotify = notify;
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
