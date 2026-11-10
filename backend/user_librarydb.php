@@ -261,19 +261,35 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
     </div>';
 }
 
+function renderEmptyState(string $icon, string $title, string $text): string {
+    return '<div class="lib-empty text-center">'
+        . '<span class="lib-empty-icon" aria-hidden="true"><i class="bi ' . htmlspecialchars($icon) . '"></i></span>'
+        . '<h3 class="h6 fw-bold mb-1">' . htmlspecialchars($title) . '</h3>'
+        . '<p class="small text-muted mb-0">' . htmlspecialchars($text) . '</p>'
+        . '</div>';
+}
+
+function renderSectionHeader(string $icon, string $title, string $subtitle): string {
+    return '<div class="lib-section-head d-flex align-items-center gap-3 mb-4 text-start">'
+        . '<span class="lib-section-icon" aria-hidden="true"><i class="bi ' . htmlspecialchars($icon) . '"></i></span>'
+        . '<div><h2 class="h4 fw-bold mb-0">' . htmlspecialchars($title) . '</h2>'
+        . '<p class="small text-muted mb-0">' . htmlspecialchars($subtitle) . '</p></div>'
+        . '</div>';
+}
+
 /**
  * Render a whole shelf of book cards, or an empty-state message when the category has no books.
  * @param array<int, array<string, mixed>> $books
  */
-function renderShelf(array $books, string $ratioClass): string {
+function renderShelf(array $books, string $ratioClass, string $emptyText = 'No books in this section yet.'): string {
     if (empty($books)) {
-        return '<div class="col-12 py-4 text-center text-muted fs-6">No books in this section yet.</div>';
+        return renderEmptyState('bi-journal-bookmark', 'Nothing on this shelf yet', $emptyText);
     }
-    $html = '';
+    $html = '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">';
     foreach ($books as $row) {
         $html .= renderBookCard($row, $ratioClass);
     }
-    return $html;
+    return $html . '</div>';
 }
 ?>
 <?php
@@ -376,17 +392,24 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             <!-- ============================================================================ -->
             <!-- VIEW: DIGITAL LIBRARY                                                        -->
             <!-- ============================================================================ -->
-            <div class="libraryHeader d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4 mb-4">
-                <div class="d-flex align-items-center gap-3">
-                    <h1 class="fw-bold mb-0 p-1">Digital Library</h1>
-                </div>
-            </div>
+            <header class="lib-hero mt-2">
+                <p class="lib-eyebrow mb-2"><i class="bi bi-collection me-2" aria-hidden="true"></i>BiblioDesk</p>
+                <h1 class="fw-bold display-5 mb-2">Digital Library</h1>
+                <p class="lib-hero-lead mb-4">Browse the newest arrivals, find your next read, and save books to your own shelves.</p>
+                <nav class="lib-jump-row" aria-label="Jump to a shelf">
+                    <a class="lib-jump" href="#lib-new"><i class="bi bi-stars me-1" aria-hidden="true"></i>New Arrivals</a>
+                    <a class="lib-jump" href="#lib-rec"><i class="bi bi-hand-thumbs-up me-1" aria-hidden="true"></i>Recommendations</a>
+                    <a class="lib-jump" href="#lib-edu"><i class="bi bi-mortarboard me-1" aria-hidden="true"></i>Educational</a>
+                    <a class="lib-jump" href="#lib-nonedu"><i class="bi bi-cup-hot me-1" aria-hidden="true"></i>Non-Educational</a>
+                    <a class="lib-jump" href="#lib-research"><i class="bi bi-journal-text me-1" aria-hidden="true"></i>Research</a>
+                </nav>
+            </header>
 
             <!-- NEW ARRIVALS -->
-            <section class="new-arrivals-section text-center py-4">
-                <h2 class="fw-bold mb-4 display-5">NEW ARRIVALS</h2>
+            <section class="new-arrivals-section lib-panel text-center" id="lib-new">
+                <?= renderSectionHeader('bi-stars', 'New Arrivals', 'The latest books added to the library') ?>
                 <div class="newarrivals-wrapper mx-auto">
-                    <div class="newarrivals-container" id="newarrivalsContainer">
+                    <div class="newarrivals-container<?= empty($new_arrivals) ? ' d-none' : '' ?>" id="newarrivalsContainer">
                         <?php if (!empty($new_arrivals)): ?>
                             <?php foreach ($new_arrivals as $row): ?>
                                 <?php
@@ -409,54 +432,44 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
+                    <?php if (empty($new_arrivals)): ?>
+                        <?= renderEmptyState('bi-inbox', 'No new arrivals yet', 'New books will show up here as soon as the librarians add them.') ?>
+                    <?php endif; ?>
                 </div>
             </section>
 
             <!-- RECOMMENDATIONS -->
-            <section class="recommendations-section">
-                <div class="recommendations-wrapper mx-auto">
-                    <div class="d-flex justify-content-between align-items-baseline mt-3 mb-3">
-                        <h2 class="h3 fw-semibold mb-0 mt-3">Recommendations</h2>
-                    </div>
-                    <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                        <?php foreach ($recommendations as $row): ?>
-                            <?php echo renderBookCard($row, 'recCover'); ?>
-                        <?php endforeach; ?>
-                    </div>
-                </div>
+            <section class="recommendations-section lib-panel lib-panel-rec" id="lib-rec">
+                <?= renderSectionHeader('bi-hand-thumbs-up', 'Recommendations', 'Picks from the BiblioDesk collection') ?>
+                <?php
+                    $rec_html = '';
+                    foreach ($recommendations as $row) {
+                        $rec_html .= renderBookCard($row, 'recCover');
+                    }
+                    if ($rec_html === '') {
+                        echo renderEmptyState('bi-hand-thumbs-up', 'No recommendations yet', 'Recommended books will appear here once the library has some titles.');
+                    } else {
+                        echo '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">' . $rec_html . '</div>';
+                    }
+                ?>
             </section>
-            <hr class="my-5">
 
             <!-- EDUCATIONAL BOOKS -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Educational Books</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderShelf($educational, 'eduCover'); ?>
-                </div>
+            <section class="lib-panel" id="lib-edu">
+                <?= renderSectionHeader('bi-mortarboard', 'Educational Books', 'Textbooks and study material') ?>
+                <?php echo renderShelf($educational, 'eduCover', 'No educational books have been added yet.'); ?>
             </section>
-            <hr class="my-5">
 
             <!-- NON-EDUCATIONAL BOOKS -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Non-Educational Books</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderShelf($non_educational, 'noneduCover'); ?>
-                </div>
+            <section class="lib-panel" id="lib-nonedu">
+                <?= renderSectionHeader('bi-cup-hot', 'Non-Educational Books', 'Fiction, hobbies and leisure reading') ?>
+                <?php echo renderShelf($non_educational, 'noneduCover', 'No non-educational books have been added yet.'); ?>
             </section>
-            <hr class="my-5">
 
             <!-- RESEARCH ARTICLES -->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-4 mb-3">
-                    <h2 class="h3 fw-semibold mb-0">Research Articles</h2>
-                </div>
-                <div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
-                    <?php echo renderShelf($research, 'rsCover'); ?>
-                </div>
+            <section class="lib-panel" id="lib-research">
+                <?= renderSectionHeader('bi-journal-text', 'Research Articles', 'Papers, studies and journals') ?>
+                <?php echo renderShelf($research, 'rsCover', 'No research articles have been added yet.'); ?>
             </section>
         <?php endif; ?>
 
