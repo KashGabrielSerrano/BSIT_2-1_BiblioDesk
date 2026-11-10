@@ -13,9 +13,12 @@ require_csrf();
 
 $action = $_POST['action'] ?? $_GET['action'] ?? '';
 
-// Helper function to verify book exists and is accessible
-function verifyBookExists(mysqli $con, int $book_id): bool {
-    $stmt = $con->prepare("SELECT Book_ID FROM book_table WHERE Book_ID = ? AND Is_digital = 'Yes' AND Drive_Link IS NOT NULL AND Drive_Link != ''");
+function verifyBookExists(mysqli $con, int $book_id, bool $readable_only = false): bool {
+    $sql = "SELECT Book_ID FROM book_table WHERE Book_ID = ?";
+    if ($readable_only) {
+        $sql .= " AND Is_digital = 'Yes' AND Drive_Link IS NOT NULL AND Drive_Link != ''";
+    }
+    $stmt = $con->prepare($sql);
     $stmt->bind_param("i", $book_id);
     $stmt->execute();
     $res = $stmt->get_result();
@@ -29,7 +32,7 @@ if ($action === 'save_progress') {
     $current_page = max(1, intval($_POST['current_page'] ?? 1));
     $total_pages = max(1, intval($_POST['total_pages'] ?? 1));
 
-    if (!verifyBookExists($con, $book_id)) {
+    if (!verifyBookExists($con, $book_id, true)) {
         http_response_code(404);
         sendResponse(false, 'Book not found or file missing.');
     }
