@@ -261,6 +261,16 @@
             copies.hidden = digital;
             form.elements.total_copies.required = !digital;
         }
+        // Physical books have no PDF: hide the PDF upload + link and clear anything chosen in them
+        const pdf = form.querySelector('[data-pdf-field]');
+        if (pdf) {
+            pdf.hidden = !digital;
+            [form.elements.pdf_file, form.elements.drive_link].forEach((el) => {
+                if (!el) return;
+                el.disabled = !digital;
+                if (!digital) el.value = '';
+            });
+        }
     }
 
     /** Friendly pre-check of chosen files; returns false (and toasts) if one is unacceptable. */

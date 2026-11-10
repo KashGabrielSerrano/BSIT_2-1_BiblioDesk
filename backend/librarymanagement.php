@@ -122,7 +122,8 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     <input type="text" id="addCover" name="cover_image" class="form-control"
                                         maxlength="255" placeholder="https://.../cover.jpg">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
+                                <!-- PDF only for digital books: hidden and disabled while "No - physical copy only" is chosen -->
+                                <div class="form-group col-md-6 text-white fw-semibold" data-pdf-field>
                                     <label class="form-label" for="addPdfFile">PDF Document:</label>
                                     <input type="file" id="addPdfFile" name="pdf_file" class="form-control mb-2"
                                         accept="application/pdf,.pdf">
@@ -459,7 +460,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                 <label class="visually-hidden" for="editCover">Cover Image URL</label>
                                 <input type="text" id="editCover" name="cover_image" class="form-control" maxlength="255">
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" data-pdf-field>
                                 <label class="form-label fw-semibold" for="editPdfFile">PDF Document</label>
                                 <input type="file" id="editPdfFile" name="pdf_file" class="form-control mb-2"
                                     accept="application/pdf,.pdf">

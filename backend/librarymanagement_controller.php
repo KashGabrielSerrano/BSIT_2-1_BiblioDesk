@@ -252,10 +252,15 @@ function read_book_input(bool $has_pdf_upload = false): array {
         'total_copies'=> gv($_POST, 'total_copies'),
     ];
 
-    // A PDF uploaded with this request replaces any typed link and makes the book digital.
-    if ($has_pdf_upload) {
+    // Physical books never have a PDF (no upload, no link); a PDF upload is only for digital books
+    // and replaces any typed link.
+    if ($d['is_digital'] === 'No') {
+        if ($has_pdf_upload) {
+            return [$d, 'Physical books cannot have a PDF. Choose "Yes - PDF available online" to upload one.'];
+        }
         $d['drive_link'] = '';
-        $d['is_digital'] = 'Yes';
+    } elseif ($has_pdf_upload) {
+        $d['drive_link'] = '';
     }
 
     if ($d['title'] === '')       return [$d, 'Title is required.'];
