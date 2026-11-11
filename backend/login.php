@@ -46,37 +46,50 @@ if ($user = current_user()) {
             <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
             
             <div class="form-fields">
-                <h1>Log In</h1>
-                <div id="loginAlert" class="alert bg-danger text-white d-none align-items-center mb-3" role="alert">
+                <div class="text-center">
+                    <span class="login-badge" aria-hidden="true"><i class="bi bi-book-half"></i></span>
+                    <h1>Log In</h1>
+                    <p class="login-subtitle">Welcome back! Log in to continue to your library.</p>
+                </div>
+
+                <div id="loginAlert" class="alert d-none align-items-center gap-2 py-2 px-3 mb-3" role="alert">
+                    <i class="bi bi-exclamation-triangle-fill flex-shrink-0" aria-hidden="true"></i>
                     <p class="mb-0" id="loginAlertText"></p>
-                    <button type="button" class="btn-close ms-auto btn-close-white" onclick="document.getElementById('loginAlert').classList.add('d-none')"></button>
+                    <button type="button" class="btn-close ms-auto" aria-label="Close" onclick="document.getElementById('loginAlert').classList.add('d-none')"></button>
                 </div>
-                
+
                 <div class="form-items">
-                    <label for="email" class="form-label">Personal Email</label>
-                    <input type="email" class="form-control" id="email" name="email" placeholder="bibliodesk@example.com" required>
+                    <label for="email" class="form-label">Email Address</label>
+                    <div class="field-wrap">
+                        <i class="bi bi-envelope-fill field-icon" aria-hidden="true"></i>
+                        <input type="email" class="form-control" id="email" name="email" placeholder="bibliodesk@example.com" autocomplete="email" required>
+                    </div>
                 </div>
-                
+
                 <div class="form-items">
                     <label for="password" class="form-label">Password</label>
                     <div class="password-container">
-                        <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Enter your password" required>
-                        <span id="togglePassword" class="password-toggle-icon" data-target="password">
+                        <i class="bi bi-lock-fill field-icon" aria-hidden="true"></i>
+                        <input type="password" class="form-control" id="password" name="password" minlength="6" placeholder="Enter your password" autocomplete="current-password" required>
+                        <button type="button" id="togglePassword" class="password-toggle-icon" data-target="password" aria-label="Show or hide password">
                             <i class="bi bi-eye-slash" id="toggleIcon"></i>
-                        </span>
+                        </button>
                     </div>
                 </div>
+
                 <div class="form-options">
-                    <div class="form-field">
-                        <input type="checkbox" id="checkLabel" name="remember" />
-                        <label for="checkLabel">Remember me</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="checkLabel" name="remember">
+                        <label class="form-check-label" for="checkLabel">Remember me</label>
                     </div>
                     <a href="javascript:void(0);" class="forgot-password" data-bs-toggle="modal" data-bs-target="#forgotModal">Forgot Password?</a>
                 </div>
-                <button type="submit" id="btnLogin">Login</button>
+
+                <button type="submit" id="btnLogin"><i class="bi bi-box-arrow-in-right" aria-hidden="true"></i> Login</button>
+
                 <hr>
                 <p class="register">Don't have an account? <a href="registration.php">REGISTER NOW</a></p>
-                <p class="terms">By proceeding, you agree to our <a href="terms_privacy.php?view=terms">Terms of Use</a> <br> 
+                <p class="terms">By proceeding, you agree to our <a href="terms_privacy.php?view=terms">Terms of Use</a><br>
                                  and confirm that you have read our <a href="terms_privacy.php?view=privacy">Privacy Policy</a>.</p>
             </div>
         </form>
@@ -89,6 +102,7 @@ if ($user = current_user()) {
         <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
             <div class="modal-header bibliodesk-modal-header">
                 <h5 class="modal-title d-flex align-items-center" id="forgotModalTitle">
+                    <i id="fpTitleIcon" class="bi bi-key-fill me-2 fs-4" aria-hidden="true"></i>
                     <span id="fpTitleText">Forgot Password</span>
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>

@@ -52,6 +52,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (btnLogin) {
                 btnLogin.disabled = true;
+                if (btnLogin.dataset.label === undefined) btnLogin.dataset.label = btnLogin.innerHTML;  
                 btnLogin.innerHTML = `<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Logging in...`;
             }
 
@@ -93,7 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
             } finally {
                 if (btnLogin) {
                     btnLogin.disabled = false;
-                    btnLogin.textContent = 'Login';
+                    btnLogin.innerHTML = btnLogin.dataset.label || 'Login';
                 }
             }
         });
