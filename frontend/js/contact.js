@@ -38,8 +38,11 @@
             if (!form.reportValidity()) return;
 
             var btn = form.querySelector('button[type="submit"]');
-            var label = btn ? btn.textContent : '';
-            if (btn) { btn.disabled = true; btn.textContent = 'Sending…'; }
+            var label = btn ? btn.innerHTML : '';   // HTML, so an icon inside the button comes back after sending
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Sending…';
+            }
 
             var fd = new FormData();
             fd.set('action', 'submit');
@@ -60,7 +63,7 @@
                     }
                 })
                 .catch(function () { showResult(form, false, 'Server connection error. Please try again.'); })
-                .then(function () { if (btn) { btn.disabled = false; btn.textContent = label; } });
+                .then(function () { if (btn) { btn.disabled = false; btn.innerHTML = label; } });
         });
     });
 

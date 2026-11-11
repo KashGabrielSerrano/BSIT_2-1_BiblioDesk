@@ -10,8 +10,18 @@ body{
     background-color: var(--main-bg-color);
 }
 
+:root{
+    --bs-warning-rgb: 194, 138, 61;      /* --cc-qs-yellow  */
+    --bs-success-rgb: 72, 140, 62;       /* --cc-qs-green   */
+    --bs-secondary-rgb: 138, 123, 104;   /* --cc-qs-neutral */
+}
+
 main{
     padding: 0 90px;
+}
+
+@media (max-width: 768px){
+    main{ padding: 0 12px; }
 }
 
 .topbar{
@@ -20,13 +30,39 @@ main{
 }
 
 .formContain{
-    padding: 0 50px 50px 50px;
+    padding: 0 1.5rem 1.5rem;
+}
+
+@media (min-width: 1200px){
+    .formContain{ padding: 0 3rem 3rem; }
+}
+
+/* ----- Left column: contact cards ----- */
+.contactItem{
+    background-color: var(--fcolor-secondary);
+    transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.contactItem:hover{
+    transform: translateY(-2px);
+    box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .15) !important;
 }
 
 .contactIcon{
-    width: 100px;
-    height: 100px;
+    width: 72px;
+    height: 72px;
     background-color: var(--secondary-color);
+    color: var(--fcolor-secondary);
+    font-size: 2rem;
+}
+
+/* ----- Form card header icon ----- */
+.formIcon{
+    width: 48px;
+    height: 48px;
+    background-color: rgba(255, 216, 77, .15);
+    color: var(--button-yellow);
+    font-size: 1.4rem;
 }
 
 .contactCard{
@@ -47,8 +83,59 @@ main{
 
 .contactInput:focus{
     background-color: var(--fcolor-secondary);
-    color: var(--fcolor-secondary);
-    box-shadow: 0 0 0 0.25rem rgba(255, 216, 77, 0.45);
+    color: var(--fcolor-main);
+    border-color: var(--button-yellow);
+    box-shadow: 0 0 0 0.25rem rgba(255, 216, 77, 0.35);
+}
+
+textarea.contactInput{
+    resize: vertical;
+    min-height: 7rem;
+}
+
+/* ----- Icons inside the fields ----- */
+.fieldIcon,
+.fieldLock{
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 5;
+    color: var(--cc-qs-neutral);
+    pointer-events: none;
+}
+
+.fieldIcon{ left: 1.1rem; }
+/* textbox  */
+.fieldIcon.top{
+    top: calc(2px + .9rem);
+    height: 1.5rem;
+    display: flex;
+    align-items: center;
+    transform: none;
+}
+.fieldLock{ right: 1.1rem; color: rgba(251, 250, 248, .55); }
+
+.contactInput.withIcon{ padding-left: 2.9rem; }
+.contactInput.withLock{ padding-right: 2.9rem; }
+select.contactInput{ padding-right: 2.5rem; }
+
+/* Dropdown: grey until a subject is chosen, dark options in the list */
+select.contactInput:invalid{ color: var(--fcolor-placeholders); }
+select.contactInput option{ color: var(--fcolor-main); }
+
+/* ----- Name + email: locked (Values are read from account details) ----- */
+.contactInput:disabled,
+.contactInput[readonly],
+.contactInput[readonly]:focus{
+    background-color: rgba(251, 250, 248, .1);
+    border-color: rgba(251, 250, 248, .25);
+    color: rgba(251, 250, 248, .85);
+    -webkit-text-fill-color: rgba(251, 250, 248, .85); 
+    opacity: 1;
+    box-shadow: none;
+    cursor: not-allowed;
+    -webkit-user-select: none;
+    user-select: none;
 }
 
 .btnContain{
@@ -68,7 +155,15 @@ main{
 .sendBtn:focus{
     background-color: var(--button-yellow-hover);
     border-color: var(--main-color);
-    color: var(--fcolor-secondary);
+    color: var(--fcolor-main);
+}
+
+/* My messages section */
+#myMessages > p{
+    padding: 2rem 1.5rem;
+    border: 1px dashed var(--hover);
+    border-radius: .75rem;
+    text-align: center;
 }
 
 #sidebar{
