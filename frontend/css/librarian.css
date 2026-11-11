@@ -591,14 +591,21 @@ footer{
     border-radius: 0 18px 18px 0;
 }
 
-/* "No accounts" / loading / error row */
-.emptyRow td{
-    height: 90px;
-    font-size: 1rem;
-    text-align: center;
-    border: 2px dashed rgba(43, 36, 30, .4);
-    border-radius: 18px;
+/* "No accounts" / "No requests" / loading / error row (Accounts, Circulation, Catalog).
+   This has the Same look as the Report Logs empty state! (.emptyState): a dashed rounded box with centered, muted text.
+ */
+.amTable tbody .emptyRow td,
+.amTable tbody .emptyRow td:first-child,
+.amTable tbody .emptyRow td:last-child{
+    height: auto;
+    padding: 3rem 1.5rem;
+    border: 1px dashed var(--hover);
+    border-radius: .75rem;
     background: transparent !important;
+    color: var(--muted);
+    font-size: .95rem;
+    font-weight: 400;
+    text-align: center;
 }
 
 /* ----- Name cell ----- */
