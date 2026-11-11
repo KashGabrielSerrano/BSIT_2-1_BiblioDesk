@@ -1,13 +1,14 @@
 * {
   box-sizing: border-box;
-  font-family: Arial, Helvetica, sans-serif;
   margin: 0;
   padding: 0;
 }
 
 body {
   min-height: 100vh;
-  background: var(--main-color);
+  background-color: var(--main-color);
+  background-image: radial-gradient(circle at 25% 45%, rgba(158, 123, 88, .18), transparent 55%);
+  background-repeat: no-repeat;
 }
 
 /* Layout */
@@ -48,19 +49,66 @@ body {
 }
 
 h1 {
-  font-weight: bold;
-  font-size: 32px;
-  color: var(--brown);
-  margin-bottom: 24px;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--main-color);
+  margin-bottom: .35rem;
   text-align: center;
+}
+
+.reg-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background-color: var(--main-color);
+  color: var(--button-yellow);
+  font-size: 1.6rem;
+}
+
+.reg-subtitle {
+  margin-bottom: 1.25rem;
+  font-size: .95rem;
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Step indicator: "Step 1 of 3" + progress bar (updated by Registration.js) */
+.reg-steps {
+  margin-bottom: 1.5rem;
+}
+
+.reg-steps .step-count {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--brown);
+}
+
+.reg-steps .step-name {
+  font-size: .85rem;
+  color: var(--muted);
+}
+
+.reg-steps .progress {
+  height: 6px;
+  background-color: var(--line);
+  border-radius: 50rem;
+}
+
+.reg-steps .progress-bar {
+  background-color: var(--btn);
+  transition: width .3s ease;
 }
 
 hr {
   border: 0;
   height: 1px;
-  background: var(--brown);
+  background: var(--line);
   opacity: 1;
-  margin: 30px 0;
+  margin: 1.5rem 0;
 }
 
 /* Card */
@@ -74,71 +122,115 @@ hr {
 
 form {
   background: var(--fcolor-secondary);
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
   display: flex;
   flex-direction: column;
   justify-content: center;
   width: 100%;
-  min-height: 550px;
-  padding: 50px 60px;
+  padding: 2.75rem 3rem;
   text-align: left;
 }
 
 /* Inputs */
 .form-items {
   width: 100%;
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 }
 
 .form-items label {
   display: block;
-  font-size: 15px;
-  font-weight: bold;
+  font-size: .9rem;
+  font-weight: 600;
   color: var(--brown);
-  margin-bottom: 7px;
+  margin-bottom: .4rem;
 }
 
-.form-items input,
+/* Icon inside a field */
+.field-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.field-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  z-index: 5;
+  color: var(--cc-qs-neutral);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+/* The checkbox lives inside .form-items too, so the text-field look is scoped to everything but checkboxes */
+.form-items input:not([type="checkbox"]),
 .form-items select {
   width: 100%;
-  padding: 12px 14px;
-  border: 1px solid var(--fcolor-main);
-  border-radius: 8px;
-  background: var(--fcolor-secondary);
+  padding: .8rem 1rem .8rem 2.85rem;
+  border: 1px solid var(--hover);
+  border-radius: 10px;
+  background-color: var(--input-bg);
   color: var(--text);
   font-size: 0.95rem;
   outline: none;
 }
 
-.form-items input::placeholder,
+.form-items select {
+  padding-right: 2.5rem;
+}
+
+.form-items input::placeholder {
+  color: var(--placeholder);
+}
+
 .form-items select:invalid {
-  color: var(--muted);
+  color: var(--placeholder);
 }
 
 .form-items select option {
   color: var(--text);
 }
 
-.form-items input:focus,
+.form-items input:not([type="checkbox"]):focus,
 .form-items select:focus {
-  border-color: var(--brown);
-  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+  border-color: var(--btn);
+  box-shadow: 0 0 0 .25rem rgba(46, 78, 13, .2);
 }
 
 .form-items input.is-invalid,
-.form-items select.is-invalid {
+.form-items select.is-invalid,
+.form-items input.is-invalid:focus,
+.form-items select.is-invalid:focus {
   border-color: var(--danger);
 }
 
+.form-items input.is-invalid:focus,
+.form-items select.is-invalid:focus {
+  box-shadow: 0 0 0 .25rem rgba(192, 57, 43, .2);
+}
+
 .form-items input.flatpickr-input[readonly] {
-  background: var(--fcolor-secondary);
+  background-color: var(--input-bg);
   cursor: pointer;
 }
 
-.flatpickr-calendar,
-.flatpickr-calendar * {
-  font-family: Arial, Helvetica, sans-serif;
+/* Birthday calendar in the BiblioDesk colors */
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+  background: var(--btn);
+  border-color: var(--btn);
+  color: var(--fcolor-secondary);
+}
+
+.flatpickr-day.today {
+  border-color: var(--hover);
+}
+
+.flatpickr-day.today:hover {
+  background: var(--hover);
+  border-color: var(--hover);
+  color: var(--fcolor-secondary);
 }
 
 /* Password toggle */
@@ -147,22 +239,27 @@ form {
   width: 100%;
 }
 
-.password-container input {
-  padding-right: 45px;
+.form-items .password-container input {
+  padding-right: 2.9rem;
 }
 
 .password-toggle-icon {
   position: absolute;
   top: 50%;
-  right: 14px;
+  right: .9rem;
   transform: translateY(-50%);
+  padding: .25rem;
+  background: none;
+  border: 0;
+  line-height: 1;
   cursor: pointer;
   color: var(--muted);
   font-size: 1.1rem;
   z-index: 10;
 }
 
-.password-toggle-icon:hover {
+.password-toggle-icon:hover,
+.password-toggle-icon:focus-visible {
   color: var(--brown);
 }
 
@@ -172,7 +269,9 @@ form {
 }
 
 .form-page.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  min-height: 22rem;          /* same card height on every step, so the buttons stay put */
   animation: fadeIn 0.3s ease;
 }
 
@@ -189,64 +288,90 @@ form {
 
 .step-actions {
   display: flex;
-  gap: 12px;
-  margin-top: 10px;
+  gap: .75rem;
+  margin-top: auto;           /* pushes the buttons to the bottom of the step */
+  padding-top: .5rem;
 }
 
 .step-actions button {
   flex: 1;
-  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .8rem;
   background: var(--btn);
   color: var(--fcolor-secondary);
-  border: none;
-  border-radius: 8px;
-  font-size: 16px;
+  border: 1px solid var(--btn);
+  border-radius: 10px;
+  font-size: 1rem;
   font-weight: 600;
   cursor: pointer;
-  text-align: center;
+  transition: background-color 0.2s ease, transform 0.1s ease;
 }
 
-.step-actions button:hover {
+.step-actions button:hover:not(:disabled) {
   background: var(--hover);
+  border-color: var(--hover);
+}
+
+.step-actions button:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.step-actions button:disabled {
+  opacity: .8;
+  cursor: not-allowed;
 }
 
 .step-actions button[data-action="prev"] {
-  background: var(--fcolor-secondary);
+  background: transparent;
   color: var(--brown);
-  border: 1px solid var(--brown);
+  border: 1px solid var(--hover);
 }
 
-.step-actions button[data-action="prev"]:hover {
+.step-actions button[data-action="prev"]:hover:not(:disabled) {
   background: var(--brown);
+  border-color: var(--brown);
   color: var(--fcolor-secondary);
 }
 
 /* Footer text */
 .register {
-  font-size: 15px;
+  font-size: .95rem;
   color: var(--text);
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: .75rem;
 }
 
 .register a {
-  color: var(--link);
-  font-weight: bold;
+  color: var(--btn);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register a:hover {
+  color: var(--hover);
   text-decoration: underline;
 }
 
 .terms {
-  font-size: 13px;
+  font-size: .8rem;
   color: var(--gray);
   text-align: center;
-  line-height: 1.4;
-  margin-top: 15px;
+  line-height: 1.5;
+  margin-top: 1rem;
+  margin-bottom: 0;
 }
 
 .terms a {
-  color: var(--gray);
-  font-weight: bold;
+  color: var(--brown);
+  font-weight: 600;
   text-decoration: underline;
+}
+
+.terms a:hover {
+  color: var(--btn);
 }
 
 /* OTP Verification Modal */
@@ -418,47 +543,124 @@ body.modal-open .logo-panel {
   transition: opacity 0.25s ease;
 }
 
-/* Global Styling for Bootstrap Checkbox */
+/* Terms checkbox: Bootstrap checkbox in the BiblioDesk green */
+.form-check-input {
+    border-color: var(--hover);
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--btn);
+    border-color: var(--btn);
+}
+
+.form-check-input:focus {
+    border-color: var(--btn);
+    box-shadow: 0 0 0 .25rem rgba(46, 78, 13, .2);
+}
+
 .form-items .form-check {
     display: flex;
     align-items: flex-start;
-    gap: 0.6rem;
-    padding-left: 0 !important;
-    margin-top: 0.5rem;
+    gap: .6rem;
+    padding-left: 0;
+    margin: 0;
 }
 
-.form-items input[type="checkbox"].form-check-input {
-    appearance: auto;
-    -webkit-appearance: checkbox;
-    accent-color: #2C251D !important;
-    width: 1.15em !important;
-    height: 1.15em !important;
-    min-width: 1.15em !important;
-    max-width: 1.15em !important;
-    margin: 0.15em 0 0 0 !important;
-    float: none !important;
+.form-items .form-check .form-check-input {
+    float: none;
+    margin: .2rem 0 0;
     flex-shrink: 0;
-    cursor: pointer;
-}
-
-.form-items .form-check-input.is-invalid ~ .form-check-label,
-.form-items .form-check.is-invalid .form-check-label,
-.form-items .form-check-label.is-invalid {
-    color: inherit !important;
-}
-
-.form-items input[type="checkbox"].form-check-input:focus,
-.form-items input[type="checkbox"].form-check-input:focus-visible,
-.form-items input[type="checkbox"].form-check-input:active {
-    outline: none !important;
-    box-shadow: none !important;
-    border-color: transparent !important;
 }
 
 .form-items .form-check-label {
+    color: var(--brown);
+    line-height: 1.5;
     cursor: pointer;
-    line-height: 1.4;
     user-select: none;
+}
+
+.form-items .form-check-input.is-invalid ~ .form-check-label {
+    color: var(--brown);
+}
+
+.terms-link {
+    color: var(--btn);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.terms-link:hover {
+    color: var(--hover);
+}
+
+/* Buttons in the Terms and Notice modals */
+.btn-brand {
+    background-color: var(--btn);
+    color: var(--fcolor-secondary);
+    border: 0;
+    font-weight: 600;
+}
+
+.btn-brand:hover,
+.btn-brand:focus-visible {
+    background-color: var(--hover);
+    color: var(--fcolor-secondary);
+}
+
+/* Terms of Use / Privacy Policy modal */
+#termsPrivacyModal .modal-content {
+    border-radius: 14px !important;
+    overflow: hidden;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+}
+
+#termsPrivacyModal .bibliodesk-modal-header {
+    background-color: var(--dark-header);
+    color: var(--fcolor-secondary);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+#termsPrivacyModal .bibliodesk-modal-header .modal-title {
+    color: var(--fcolor-secondary);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+#termsPrivacyModal .bibliodesk-modal-header i {
+    color: var(--hover);
+}
+
+#termsPrivacyModal .modal-body,
+#termsPrivacyModal .modal-footer {
+    background-color: var(--fcolor-secondary);
+    color: var(--text);
+}
+
+/* Notice modal (validation and server messages) */
+#errorModal .modal-content {
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    background-color: var(--fcolor-secondary);
+    color: var(--text);
+}
+
+#errorModal .modal-header {
+    border-bottom: 1px solid var(--line);
+}
+
+#errorModal .modal-footer {
+    border-top: 0;
+}
+
+#errorModal .text-danger {
+    color: var(--danger) !important;
+}
+
+#errorModal .text-success {
+    color: var(--btn) !important;
 }
 
 /* Responsive */
@@ -471,7 +673,18 @@ body.modal-open .logo-panel {
   }
   h1 {
     font-size: 26px;
-    margin-bottom: 14px;
+  }
+  .reg-badge {
+    display: none;           
+  }
+  .reg-subtitle {
+    margin-bottom: 1rem;
+  }
+  .reg-steps {
+    margin-bottom: 1rem;
+  }
+  .form-page.active {
+    min-height: 0;
   }
   .form-items {
     margin-bottom: 12px;
@@ -479,15 +692,16 @@ body.modal-open .logo-panel {
   .form-items label {
     margin-bottom: 4px;
   }
-  .form-items input,
+  .form-items input:not([type="checkbox"]),
   .form-items select {
-    padding: 10px 14px;
+    padding-top: 10px;        
+    padding-bottom: 10px;
   }
   .step-actions button {
     padding: 10px;
   }
   hr {
-    margin: 20px 0;
+    margin: 1.25rem 0;
   }
   .terms {
     margin-top: 8px;
@@ -534,8 +748,7 @@ body.modal-open .logo-panel {
     padding: 25px 20px;
   }
   h1 {
-    font-size: 22px;
-    margin-bottom: 16px;
+    font-size: 1.6rem;
   }
   .form-wrapper {
     flex: 0 0 auto;

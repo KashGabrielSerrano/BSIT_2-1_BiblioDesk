@@ -81,10 +81,28 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    // Step indicator ("Step 1 of 3" + progress bar above the fields)
+    const STEP_TITLES = ["Your name", "School details", "Secure your account"];
+    const stepLabel = document.getElementById("stepLabel");
+    const stepTitle = document.getElementById("stepTitle");
+    const stepProgress = document.getElementById("stepProgress");
+
+    function updateProgress() {
+        const total = pages.length;
+        const step = currentPage + 1;
+        if (stepLabel) stepLabel.textContent = "Step " + step + " of " + total;
+        if (stepTitle) stepTitle.textContent = STEP_TITLES[currentPage] || "";
+        if (stepProgress) {
+            stepProgress.setAttribute("aria-valuenow", step);
+            stepProgress.firstElementChild.style.width = (step / total * 100) + "%";
+        }
+    }
+
     // Page Step Logic
     function showPage() {
         pages.forEach(function (page) { page.classList.remove("active"); });
         pages[currentPage].classList.add("active");
+        updateProgress();
     }
 
     function validateCurrentPage(actionWord) {
