@@ -1,10 +1,7 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
-
-require_role_page(['Librarian', 'Admin']);
-?>
-<?php
 require_once __DIR__ . '/partials/layout.php';
+require_role_page(['Librarian', 'Admin']);
 render_head('BiblioDesk - Library Management', ['librarian.css']);
 ?>
     <!-- ========================================================================== -->
@@ -60,83 +57,179 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
 
             <!-- Add Book -->
             <section class="my-4">
-                <div class="panelCard card shadow border-secondary rounded-4 overflow-hidden">
-                    <div class="card-body p-4" style="background-color: var(--main-color);">
-                        <h2 class="card-header text-white border-bottom border-secondary mb-4 bg-transparent px-0">
-                            Add New Digital Book</h2>
+                <div class="card shadow border-0 rounded-4 overflow-hidden mb-5" style="background-color: var(--main-color);">
+                    <!-- Header with Icon & Subtitle -->
+                    <div class="card-header bg-transparent border-bottom border-light border-opacity-25 py-3 px-4 d-flex flex-wrap align-items-center justify-content-between gap-3">
+                        <div class="d-flex align-items-center gap-3">
+                            <div class="d-inline-flex align-items-center justify-content-center rounded-3 bg-white bg-opacity-10 text-white" style="width: 44px; height: 44px;">
+                                <i class="bi bi-journal-plus fs-4 text-warning"></i>
+                            </div>
+                            <div>
+                                <h2 class="h4 text-white fw-bold mb-0">Add New Digital Book</h2>
+                                <p class="text-white-50 small mb-0">Register a new physical book or upload digital e-book materials to the catalog</p>
+                            </div>
+                        </div>
+                    </div>
 
+                    <div class="card-body p-4 p-lg-5">
                         <form id="addBookForm" data-book-form novalidate>
                             <div class="row g-3">
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addTitle">Book Title:</label>
-                                    <input type="text" id="addTitle" name="title" class="form-control" required
-                                        maxlength="255" placeholder="Title">
+                                <!-- Section 1: Book Information -->
+                                <div class="col-12 mb-1 d-flex align-items-center gap-2 text-warning fw-semibold">
+                                    <i class="bi bi-info-circle-fill"></i>
+                                    <span class="text-uppercase small tracking-wide">Book Information</span>
+                                    <hr class="flex-grow-1 border-light border-opacity-25 my-0 ms-2">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addAuthor">Author:</label>
-                                    <input type="text" id="addAuthor" name="author" class="form-control" required
-                                        maxlength="255" placeholder="Author">
+
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addTitle">
+                                        <i class="bi bi-book-half me-1 text-warning"></i> Book Title <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="addTitle" name="title" class="form-control rounded-3 py-2 px-3 bg-light border-0 shadow-sm" required
+                                        maxlength="255" placeholder="e.g. Introduction to Algorithms">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addIsbn">ISBN:</label>
-                                    <input type="text" id="addIsbn" name="isbn" class="form-control" maxlength="20"
-                                        placeholder="978-3-16-148410-0">
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addAuthor">
+                                        <i class="bi bi-person-fill me-1 text-warning"></i> Author <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="text" id="addAuthor" name="author" class="form-control rounded-3 py-2 px-3 bg-light border-0 shadow-sm" required
+                                        maxlength="255" placeholder="e.g. Thomas H. Cormen">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addPublisher">Publisher:</label>
-                                    <input type="text" id="addPublisher" name="publisher" class="form-control"
-                                        maxlength="150" placeholder="Publisher (optional)">
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addIsbn">
+                                        <i class="bi bi-upc-scan me-1 text-warning"></i> ISBN
+                                    </label>
+                                    <input type="text" id="addIsbn" name="isbn" class="form-control rounded-3 py-2 px-3 bg-light border-0 shadow-sm" maxlength="20"
+                                        placeholder="e.g. 978-0-262-03384-8">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addCategory">Category:</label>
-                                    <select id="addCategory" name="category" class="form-select" required>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addPublisher">
+                                        <i class="bi bi-building me-1 text-warning"></i> Publisher
+                                    </label>
+                                    <input type="text" id="addPublisher" name="publisher" class="form-control rounded-3 py-2 px-3 bg-light border-0 shadow-sm"
+                                        maxlength="150" placeholder="e.g. MIT Press (optional)">
+                                </div>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addCategory">
+                                        <i class="bi bi-tags-fill me-1 text-warning"></i> Category <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="addCategory" name="category" class="form-select rounded-3 py-2 px-3 bg-light border-0 shadow-sm" required>
                                         <option value="" selected disabled>Select a category</option>
                                         <option value="Educational">Educational</option>
                                         <option value="Non-Educational">Non-Educational</option>
                                         <option value="Research Articles">Research Articles</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addIsDigital">Digital Access:</label>
-                                    <select id="addIsDigital" name="is_digital" class="form-select">
-                                        <option value="Yes" selected>Yes – PDF available online</option>
-                                        <option value="No">No – physical copy only</option>
+                                <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addIsDigital">
+                                        <i class="bi bi-hdd-network-fill me-1 text-warning"></i> Digital Access
+                                    </label>
+                                    <select id="addIsDigital" name="is_digital" class="form-select rounded-3 py-2 px-3 bg-light border-0 shadow-sm">
+                                        <option value="Yes" selected>Yes - PDF available online</option>
+                                        <option value="No">No - physical copy only</option>
                                     </select>
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold" data-copies-field hidden>
-                                    <label class="form-label" for="addCopies">Physical copies:</label>
-                                    <input type="number" id="addCopies" name="total_copies" class="form-control" min="0" max="1000" step="1" value="1">
-                                    <div class="form-text text-white-50">How many copies students can borrow.</div>
+                                <div class="form-group col-md-6" data-copies-field hidden>
+                                    <label class="form-label text-white small fw-semibold" for="addCopies">
+                                        <i class="bi bi-stack me-1 text-warning"></i> Physical Copies <span class="text-danger">*</span>
+                                    </label>
+                                    <input type="number" id="addCopies" name="total_copies" class="form-control rounded-3 py-2 px-3 bg-light border-0 shadow-sm" min="0" max="1000" step="1" value="1">
+                                    <div class="form-text text-white-50"><i class="bi bi-info-circle me-1"></i> How many copies students can borrow from the desk.</div>
                                 </div>
-                                <div class="form-group col-12 text-white fw-semibold">
-                                    <label class="form-label" for="addDescription">Description:</label>
-                                    <textarea id="addDescription" name="description" class="form-control" rows="3"
-                                        required maxlength="5000" placeholder="Enter book summary..."></textarea>
+
+                                <!-- Section 2: Description -->
+                                <div class="col-12 mt-4 mb-1 d-flex align-items-center gap-2 text-warning fw-semibold">
+                                    <i class="bi bi-card-text"></i>
+                                    <span class="text-uppercase small tracking-wide">Summary &amp; Description</span>
+                                    <hr class="flex-grow-1 border-light border-opacity-25 my-0 ms-2">
                                 </div>
-                                <div class="form-group col-md-6 text-white fw-semibold">
-                                    <label class="form-label" for="addCoverFile">Cover Image:</label>
-                                    <input type="file" id="addCoverFile" name="cover_file" class="form-control mb-2"
-                                        accept="image/jpeg,image/png,image/webp">
-                                    <div class="form-text text-white-50 mb-2">JPG, PNG or WEBP, up to 5 MB. Or paste an image URL instead:</div>
-                                    <label class="visually-hidden" for="addCover">Cover Image URL</label>
-                                    <input type="text" id="addCover" name="cover_image" class="form-control"
-                                        maxlength="255" placeholder="https://.../cover.jpg">
+                                <div class="form-group col-12">
+                                    <label class="form-label text-white small fw-semibold" for="addDescription">
+                                        <i class="bi bi-text-paragraph me-1 text-warning"></i> Description <span class="text-danger">*</span>
+                                    </label>
+                                    <textarea id="addDescription" name="description" class="form-control rounded-3 p-3 bg-light border-0 shadow-sm" rows="3"
+                                        required maxlength="5000" placeholder="Enter an informative book overview, chapter highlights, or subject topics..."></textarea>
                                 </div>
-                                <!-- PDF only for digital books: hidden and disabled while "No - physical copy only" is chosen -->
-                                <div class="form-group col-md-6 text-white fw-semibold" data-pdf-field>
-                                    <label class="form-label" for="addPdfFile">PDF Document:</label>
-                                    <input type="file" id="addPdfFile" name="pdf_file" class="form-control mb-2"
-                                        accept="application/pdf,.pdf">
-                                    <div class="form-text text-white-50 mb-2">PDF, up to 20 MB. Or paste a Supabase https link instead:</div>
-                                    <label class="visually-hidden" for="addDrive">PDF Document URL (https)</label>
-                                    <input type="url" id="addDrive" name="drive_link" class="form-control"
-                                        maxlength="255"
-                                        placeholder="https://<project>.supabase.co/storage/v1/object/public/...pdf">
+
+                                <!-- Section 3: Media & Digital Files -->
+                                <div class="col-12 mt-4 mb-1 d-flex align-items-center gap-2 text-warning fw-semibold">
+                                    <i class="bi bi-paperclip"></i>
+                                    <span class="text-uppercase small tracking-wide">Media &amp; Attachments</span>
+                                    <hr class="flex-grow-1 border-light border-opacity-25 my-0 ms-2">
                                 </div>
-                                <div class="form-group col-12 pt-3 d-flex justify-content-end">
-                                    <button type="submit"
-                                        class="submitBookBtn px-4 py-2 fw-semibold rounded-3 text-white border-0"
-                                        style="background-color: var(--btn);">Save &amp; Publish Book</button>
+
+                                <!-- Cover Image Card -->
+                                <div class="form-group col-md-6">
+                                    <div class="p-3 rounded-4 bg-black bg-opacity-25 border border-light border-opacity-10 h-100 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 mb-2 text-white fw-semibold">
+                                                <i class="bi bi-image-fill text-warning fs-5"></i>
+                                                <span>Cover Image</span>
+                                            </div>
+                                            <label class="form-label text-white-50 small mb-1" for="addCoverFile">Choose image file (JPG, PNG or WEBP, up to 5 MB):</label>
+                                            <input type="file" id="addCoverFile" name="cover_file" class="form-control rounded-3 bg-light border-0 mb-2"
+                                                accept="image/jpeg,image/png,image/webp">
+                                        </div>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 my-2 text-white-50 small">
+                                                <hr class="flex-grow-1 border-light border-opacity-25 my-0">
+                                                <span class="text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Or paste image URL</span>
+                                                <hr class="flex-grow-1 border-light border-opacity-25 my-0">
+                                            </div>
+                                            <label class="visually-hidden" for="addCover">Cover Image URL</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white bg-opacity-10 text-white border-0"><i class="bi bi-link-45deg"></i></span>
+                                                <input type="text" id="addCover" name="cover_image" class="form-control rounded-end-3 bg-light border-0 py-2"
+                                                    maxlength="255" placeholder="https://.../cover.jpg">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- PDF Document Card -->
+                                <div class="form-group col-md-6" data-pdf-field>
+                                    <div class="p-3 rounded-4 bg-black bg-opacity-25 border border-light border-opacity-10 h-100 d-flex flex-column justify-content-between">
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 mb-2 text-white fw-semibold">
+                                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                                                <span>PDF Document</span>
+                                            </div>
+                                            <label class="form-label text-white-50 small mb-1" for="addPdfFile">Choose PDF document (up to 20 MB):</label>
+                                            <input type="file" id="addPdfFile" name="pdf_file" class="form-control rounded-3 bg-light border-0 mb-2"
+                                                accept="application/pdf,.pdf">
+                                        </div>
+                                        <div>
+                                            <div class="d-flex align-items-center gap-2 my-2 text-white-50 small">
+                                                <hr class="flex-grow-1 border-light border-opacity-25 my-0">
+                                                <span class="text-uppercase" style="font-size: 0.72rem; letter-spacing: 0.05em;">Or paste storage link</span>
+                                                <hr class="flex-grow-1 border-light border-opacity-25 my-0">
+                                            </div>
+                                            <label class="visually-hidden" for="addDrive">PDF Document URL (https)</label>
+                                            <div class="input-group">
+                                                <span class="input-group-text bg-white bg-opacity-10 text-white border-0"><i class="bi bi-cloud-arrow-up"></i></span>
+                                                <input type="url" id="addDrive" name="drive_link" class="form-control rounded-end-3 bg-light border-0 py-2"
+                                                    maxlength="255"
+                                                    placeholder="https://<project>.supabase.co/storage/v1/object/public/...pdf">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Form Footer / Buttons -->
+                                <div class="col-12 pt-4 border-top border-light border-opacity-25 mt-4 d-flex flex-wrap justify-content-between align-items-center gap-3">
+                                    <span class="text-white-50 small">
+                                        <i class="bi bi-asterisk text-danger me-1"></i> Fields marked with an asterisk are required
+                                    </span>
+                                    <div class="d-flex align-items-center gap-2">
+                                        <button type="reset" class="btn btn-outline-light rounded-pill px-4 py-2 fw-semibold d-inline-flex align-items-center gap-2">
+                                            <i class="bi bi-arrow-counterclockwise"></i> Reset
+                                        </button>
+                                        <button type="submit"
+                                            class="submitBookBtn btn text-white rounded-pill px-4 py-2 fw-semibold shadow d-inline-flex align-items-center gap-2"
+                                            style="background-color: var(--btn);">
+                                            <i class="bi bi-check-circle-fill"></i> Save &amp; Publish Book
+                                        </button>
+                                    </div>
                                 </div>
                             </div>
                         </form>
@@ -146,56 +239,65 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
 
             <!-- Catalog list -->
             <section class="catalog-container my-4 mt-5">
-                <div class="card shadow border-0 rounded-4 overflow-hidden mb-5"
-                    style="background-color: var(--main-color);">
-                    <div class="card-body p-4">
-                        <div class="border-bottom border-secondary pb-3 mb-4 d-flex justify-content-between align-items-baseline">
-                            <h2 class="text-white fw-bold mb-0">Catalog List</h2>
-                            <span id="catalogCount" class="text-white-50 small" aria-live="polite"></span>
+                <!-- Catalog Header -->
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="catChip" aria-hidden="true"><i class="bi bi-collection-fill"></i></span>
+                            <div>
+                                <h2 class="h4 fw-bold mb-0">Catalog List</h2>
+                                <p class="small mb-0 opacity-75">Browse, search, edit, and manage registered digital &amp; physical books</p>
+                            </div>
                         </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <span class="small d-none d-sm-inline opacity-75">Total:</span>
+                            <span id="catalogCount" class="pill auto neutral" aria-live="polite">0 books</span>
+                        </div>
+                    </div>
 
-                        <div class="d-flex flex-wrap align-items-center gap-2 mb-4">
+                    <!-- Search & Sort Controls -->
+                    <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
                             <form class="searchForm flex-grow-1" role="search" onsubmit="return false;"
-                                style="min-width: 200px;">
-                                <div class="catalogSearchBox w-100">
-                                    <i class="bi bi-search"></i>
-                                    <input type="search" id="catalogSearch" class="form-control rounded-3 py-2"
-                                        placeholder="Search title, author, ISBN, category" aria-label="Search library"
+                                style="min-width: 240px;">
+                                <div class="input-group catSearch">
+                                    <span class="input-group-text ps-3 pe-2 text-secondary">
+                                        <i class="bi bi-search"></i>
+                                    </span>
+                                    <input type="search" id="catalogSearch" class="form-control py-2 ps-2 pe-3"
+                                        placeholder="Search title, author, ISBN, category..." aria-label="Search library"
                                         autocomplete="off">
                                 </div>
                             </form>
 
                             <div class="dropdown">
                                 <button
-                                    class="btn filterBtn d-flex align-items-center gap-2 dropdown-toggle text-white rounded-3 py-2 px-3"
+                                    class="btn filterBtn d-flex align-items-center gap-2 dropdown-toggle text-white rounded-pill py-2 px-4 shadow fw-semibold"
                                     type="button" data-bs-toggle="dropdown" aria-expanded="false"
                                     style="background-color: var(--btn);">
-                                    <i class="bi bi-funnel"></i> <span id="catalogSortLabel">Newest To Oldest</span>
+                                    <i class="bi bi-funnel-fill"></i> <span id="catalogSortLabel">Newest To Oldest</span>
                                 </button>
-                                <ul class="dropdown-menu dropdown-menu-end shadow">
-                                    <li><a class="dropdown-item js-catalog-sort" href="#" data-sort="newest">Newest To Oldest</a></li>
-                                    <li><a class="dropdown-item js-catalog-sort" href="#" data-sort="oldest">Oldest To Newest</a></li>
+                                <ul class="dropdown-menu dropdown-menu-end shadow rounded-4 mt-2 py-2">
+                                    <li><a class="dropdown-item js-catalog-sort py-2 px-3 fw-medium d-flex align-items-center gap-2" href="#" data-sort="newest"><i class="bi bi-sort-down text-success"></i> Newest To Oldest</a></li>
+                                    <li><a class="dropdown-item js-catalog-sort py-2 px-3 fw-medium d-flex align-items-center gap-2" href="#" data-sort="oldest"><i class="bi bi-sort-up text-secondary"></i> Oldest To Newest</a></li>
                                 </ul>
                             </div>
                         </div>
 
-                        <div class="table-responsive table-container rounded-3 overflow-hidden shadow-sm">
-                            <table class="table table-hover align-middle mb-0 text-center catalogTable">
-                                <thead>
-                                    <tr>
-                                        <th class="border-end border-muted">Cover</th>
-                                        <th class="border-end border-muted text-start">Title</th>
-                                        <th class="border-end border-muted">Author</th>
-                                        <th class="border-end border-muted">Category</th>
-                                        <th class="border-end border-muted">Digital Access</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="catalogBody"></tbody>
-                            </table>
-                        </div>
+                    <!-- Catalog Table (same table system as Accounts and Circulation) -->
+                    <p class="scrollHint">Swipe sideways to see all columns &rarr;</p>
+                    <div class="amTableWrap">
+                        <table class="amTable rowTable catTable fiveCol" id="catalogTable">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Book</th>
+                                    <th scope="col">Author</th>
+                                    <th scope="col">Category</th>
+                                    <th scope="col">Digital Access</th>
+                                    <th scope="col">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="catalogBody"></tbody>
+                        </table>
                     </div>
-                </div>
             </section>
         </div>
 
@@ -386,7 +488,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
             <p class="small mb-2" id="circInfo" aria-live="polite"></p>
             <p class="scrollHint">Swipe sideways to see all columns &rarr;</p>
             <div class="amTableWrap">
-                <table class="amTable circTable fiveCol" id="circTable">
+                <table class="amTable circTable rowTable fiveCol" id="circTable">
                     <thead><tr id="circHead"></tr></thead>
                     <tbody id="circRows"><tr class="emptyRow"><td colspan="5">Loading…</td></tr></tbody>
                 </table>
@@ -401,35 +503,43 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
     <!-- EDIT BOOK MODAL -->
     <div class="modal fade" id="editBookModal" tabindex="-1" aria-labelledby="editBookModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
-            <div class="modal-content" style="background-color: var(--main-bg-color);">
-                <div class="modal-header text-white border-secondary" style="background-color: var(--main-color);">
-                    <h5 class="modal-title" id="editBookModalLabel">Edit Book</h5>
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden" style="background-color: var(--main-bg-color);">
+                <div class="modal-header text-white px-4 py-3 border-0" style="background-color: var(--main-color);">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-pencil-square fs-5 text-warning"></i>
+                        <h5 class="modal-title fw-bold" id="editBookModalLabel">Edit Book</h5>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
                         aria-label="Close"></button>
                 </div>
                 <form id="editBookForm" data-book-form novalidate>
-                    <div class="modal-body">
+                    <div class="modal-body p-4">
                         <input type="hidden" name="book_id" value="">
                         <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editTitle">Book Title</label>
-                                <input type="text" id="editTitle" name="title" class="form-control" required maxlength="255">
+                            <div class="col-12 mb-1 d-flex align-items-center gap-2 fw-semibold" style="color: var(--brown);">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <span class="text-uppercase small tracking-wide">Book Information</span>
+                                <hr class="flex-grow-1 border-secondary my-0 ms-2">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editAuthor">Author</label>
-                                <input type="text" id="editAuthor" name="author" class="form-control" required maxlength="255">
+                                <label class="form-label fw-semibold small" for="editTitle"><i class="bi bi-book-half me-1 text-secondary"></i> Book Title <span class="text-danger">*</span></label>
+                                <input type="text" id="editTitle" name="title" class="form-control rounded-3" required maxlength="255">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editIsbn">ISBN</label>
-                                <input type="text" id="editIsbn" name="isbn" class="form-control" maxlength="20">
+                                <label class="form-label fw-semibold small" for="editAuthor"><i class="bi bi-person-fill me-1 text-secondary"></i> Author <span class="text-danger">*</span></label>
+                                <input type="text" id="editAuthor" name="author" class="form-control rounded-3" required maxlength="255">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editPublisher">Publisher</label>
-                                <input type="text" id="editPublisher" name="publisher" class="form-control" maxlength="150">
+                                <label class="form-label fw-semibold small" for="editIsbn"><i class="bi bi-upc-scan me-1 text-secondary"></i> ISBN</label>
+                                <input type="text" id="editIsbn" name="isbn" class="form-control rounded-3" maxlength="20">
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editCategory">Category</label>
-                                <select id="editCategory" name="category" class="form-select" required>
+                                <label class="form-label fw-semibold small" for="editPublisher"><i class="bi bi-building me-1 text-secondary"></i> Publisher</label>
+                                <input type="text" id="editPublisher" name="publisher" class="form-control rounded-3" maxlength="150">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small" for="editCategory"><i class="bi bi-tags-fill me-1 text-secondary"></i> Category <span class="text-danger">*</span></label>
+                                <select id="editCategory" name="category" class="form-select rounded-3" required>
                                     <option value="" disabled>Select a category</option>
                                     <option value="Educational">Educational</option>
                                     <option value="Non-Educational">Non-Educational</option>
@@ -437,44 +547,56 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                 </select>
                             </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editIsDigital">Digital Access</label>
-                                <select id="editIsDigital" name="is_digital" class="form-select">
+                                <label class="form-label fw-semibold small" for="editIsDigital"><i class="bi bi-hdd-network-fill me-1 text-secondary"></i> Digital Access</label>
+                                <select id="editIsDigital" name="is_digital" class="form-select rounded-3">
                                     <option value="Yes">Yes - PDF available online</option>
                                     <option value="No">No - physical copy only</option>
                                 </select>
                             </div>
                             <div class="col-md-6" data-copies-field hidden>
-                                <label class="form-label fw-semibold" for="editCopies">Physical copies</label>
-                                <input type="number" id="editCopies" name="total_copies" class="form-control" min="0" max="1000" step="1">
-                                <div class="form-text">Cannot go below the copies currently borrowed or held for pickup.</div>
+                                <label class="form-label fw-semibold small" for="editCopies"><i class="bi bi-stack me-1 text-secondary"></i> Physical copies</label>
+                                <input type="number" id="editCopies" name="total_copies" class="form-control rounded-3" min="0" max="1000" step="1">
+                                <div class="form-text small">Cannot go below the copies currently borrowed or held for pickup.</div>
                             </div>
                             <div class="col-12">
-                                <label class="form-label fw-semibold" for="editDescription">Description</label>
-                                <textarea id="editDescription" name="description" class="form-control" rows="3" required
+                                <label class="form-label fw-semibold small" for="editDescription"><i class="bi bi-text-paragraph me-1 text-secondary"></i> Description <span class="text-danger">*</span></label>
+                                <textarea id="editDescription" name="description" class="form-control rounded-3" rows="3" required
                                     maxlength="5000"></textarea>
                             </div>
+                            <div class="col-12 mt-4 mb-1 d-flex align-items-center gap-2 fw-semibold" style="color: var(--brown);">
+                                <i class="bi bi-paperclip"></i>
+                                <span class="text-uppercase small tracking-wide">Media &amp; Attachments</span>
+                                <hr class="flex-grow-1 border-secondary my-0 ms-2">
+                            </div>
                             <div class="col-md-6">
-                                <label class="form-label fw-semibold" for="editCoverFile">Cover Image</label>
-                                <input type="file" id="editCoverFile" name="cover_file" class="form-control mb-2"
-                                    accept="image/jpeg,image/png,image/webp">
-                                <div class="form-text mb-2">Choose a file to replace the current cover (JPG, PNG or WEBP, up to 5 MB), or edit the URL below.</div>
-                                <label class="visually-hidden" for="editCover">Cover Image URL</label>
-                                <input type="text" id="editCover" name="cover_image" class="form-control" maxlength="255">
+                                <div class="uploadPanel">
+                                    <div class="d-flex align-items-center gap-3 mb-3">
+                                        <img id="editCoverPreview" src="../frontend/assets/icons/library-default.png" alt="Current cover" class="catalogThumb catThumbLg flex-shrink-0">
+                                        <label class="form-label fw-semibold small mb-0" for="editCoverFile"><i class="bi bi-image me-1 text-warning"></i> Cover Image</label>
+                                    </div>
+                                    <input type="file" id="editCoverFile" name="cover_file" class="form-control rounded-3 mb-2"
+                                        accept="image/jpeg,image/png,image/webp">
+                                    <div class="form-text small mb-2">Replace cover (JPG, PNG or WEBP, up to 5 MB), or edit URL below:</div>
+                                    <label class="visually-hidden" for="editCover">Cover Image URL</label>
+                                    <input type="text" id="editCover" name="cover_image" class="form-control rounded-3" maxlength="255" placeholder="https://.../cover.jpg">
+                                </div>
                             </div>
                             <div class="col-md-6" data-pdf-field>
-                                <label class="form-label fw-semibold" for="editPdfFile">PDF Document</label>
-                                <input type="file" id="editPdfFile" name="pdf_file" class="form-control mb-2"
-                                    accept="application/pdf,.pdf">
-                                <div class="form-text mb-2">Choose a file to replace the current PDF (up to 20 MB), or edit the https link below.</div>
-                                <label class="visually-hidden" for="editDrive">PDF Document URL (https)</label>
-                                <input type="url" id="editDrive" name="drive_link" class="form-control" maxlength="255">
+                                <div class="uploadPanel">
+                                    <label class="form-label fw-semibold small mb-3 d-block" for="editPdfFile"><i class="bi bi-file-earmark-pdf me-1 text-danger"></i> PDF Document</label>
+                                    <input type="file" id="editPdfFile" name="pdf_file" class="form-control rounded-3 mb-2"
+                                        accept="application/pdf,.pdf">
+                                    <div class="form-text small mb-2">Replace PDF (up to 20 MB), or edit storage link below:</div>
+                                    <label class="visually-hidden" for="editDrive">PDF Document URL (https)</label>
+                                    <input type="url" id="editDrive" name="drive_link" class="form-control rounded-3" maxlength="255" placeholder="https://<project>.supabase.co/...pdf">
+                                </div>
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer border-secondary">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" id="editBookSaveBtn" class="btn text-white"
-                            style="background-color: var(--btn);">Save Changes</button>
+                    <div class="modal-footer border-top bg-light bg-opacity-50 px-4 py-3">
+                        <button type="button" class="btn btn-outline-secondary rounded-pill px-4 py-2 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" id="editBookSaveBtn" class="btn text-white rounded-pill px-4 py-2 fw-semibold shadow-sm d-inline-flex align-items-center gap-1"
+                            style="background-color: var(--btn);"><i class="bi bi-check-lg"></i> Save Changes</button>
                     </div>
                 </form>
             </div>

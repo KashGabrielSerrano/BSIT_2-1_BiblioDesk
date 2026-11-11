@@ -66,8 +66,10 @@
     function setBusy(btn, busy) {
         if (!btn) return;
         btn.disabled = busy;
-        btn.dataset.label = btn.dataset.label || btn.textContent;
-        btn.textContent = busy ? 'Please wait…' : btn.dataset.label;
+        if (btn.dataset.label === undefined) btn.dataset.label = btn.innerHTML;
+        btn.innerHTML = busy
+            ? '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Please wait…'
+            : btn.dataset.label;
     }
 
     function notify(message, type = 'success') {
@@ -268,34 +270,61 @@
     /* Catalog                                                                */
     /* ====================================================================== */
 
+    const CATEGORY_PILL = {
+        'Educational':       { cls: 'catEd', icon: 'bi-mortarboard-fill',       label: 'Educational' },
+        'Non-Educational':   { cls: 'catNe', icon: 'bi-journal-bookmark-fill',  label: 'Non-Educational' },
+        'Research Articles': { cls: 'catRa', icon: 'bi-file-earmark-text-fill', label: 'Research' }
+    };
+
+    function categoryBadge(category) {
+        const cat = (category || '').trim();
+        const hit = CATEGORY_PILL[cat];
+        if (!hit) return `<span class="pill auto neutral">${escapeHtml(cat || '—')}</span>`;
+        return `<span class="pill auto ${hit.cls}"><i class="bi ${hit.icon} me-1" aria-hidden="true"></i>${hit.label}</span>`;
+    }
+
     function digitalBadge(book) {
-        if (book.is_digital === 'Yes' && book.drive_link) return '<span class="status-badge-green">PDF Linked</span>';
-        if (book.is_digital === 'Yes') return '<span class="status-badge-red">Link Missing</span>';
+        const pill = (kind, icon, label) =>
+            `<span class="pill auto ${kind}"><i class="bi ${icon} me-1" aria-hidden="true"></i>${label}</span>`;
+        if (book.is_digital === 'Yes' && book.drive_link) return pill('ok', 'bi-file-earmark-pdf-fill', 'PDF Linked');
+        if (book.is_digital === 'Yes') return pill('bad', 'bi-exclamation-triangle-fill', 'Link Missing');
         if (book.total_copies > 0) {
             const avail = book.available == null ? book.total_copies : book.available;
-            return `<span class="${avail > 0 ? 'status-badge-amber' : 'status-badge-red'}">Physical · ${avail}/${book.total_copies} available</span>`;
+            return pill(avail > 0 ? 'warn' : 'bad', 'bi-box-seam', `Physical · ${avail}/${book.total_copies}`);
         }
-        return '<span class="status-badge-amber">Not Digital</span>';
+        return pill('warn', 'bi-book', 'Not Digital');
     }
 
     function catalogRowHtml(b) {
+        const isbn = b.isbn
+            ? `<p class="rowSub font-monospace"><i class="bi bi-upc-scan me-1" aria-hidden="true"></i>${escapeHtml(b.isbn)}</p>` : '';
+        const publisher = b.publisher
+            ? `<p class="rowSub"><i class="bi bi-building me-1" aria-hidden="true"></i>${escapeHtml(b.publisher)}</p>` : '';
+
         return `
         <tr data-id="${b.book_id}">
-            <td class="border-end border-muted">
-                <img src="${escapeHtml(coverSrc(b.cover_image))}" alt="" class="rounded catalogThumb">
+            <td class="cB">
+                <div class="d-flex align-items-center gap-3">
+                    <img src="${escapeHtml(coverSrc(b.cover_image))}" alt="" class="catalogThumb flex-shrink-0">
+                    <div class="text-start">
+                        <p class="rowName">${escapeHtml(b.title)}</p>
+                        ${isbn}
+                    </div>
+                </div>
             </td>
-            <td class="border-end border-muted text-start">${escapeHtml(b.title)}</td>
-            <td class="border-end border-muted">${escapeHtml(b.author)}</td>
-            <td class="border-end border-muted">${escapeHtml(b.category || '—')}</td>
-            <td class="border-end border-muted">${digitalBadge(b)}</td>
-            <td>
-                <div class="d-flex justify-content-center gap-2">
-                    <button type="button" class="btn btn-sm btn-outline-dark js-edit-book" data-id="${b.book_id}">
-                        <i class="bi bi-pencil-square"></i> Edit
+            <td class="cA">
+                <p class="rowName">${escapeHtml(b.author)}</p>
+                ${publisher}
+            </td>
+            <td class="cB">${categoryBadge(b.category)}</td>
+            <td class="cA">${digitalBadge(b)}</td>
+            <td class="cB">
+                <div class="acctActions">
+                    <button type="button" class="actBtn neutral js-edit-book" data-id="${b.book_id}" title="Edit book details">
+                        <i class="bi bi-pencil-square me-1" aria-hidden="true"></i>Edit
                     </button>
-                    <button type="button" class="btn btn-sm btn-danger js-delete-book"
-                            data-id="${b.book_id}" data-title="${escapeHtml(b.title)}">
-                        <i class="bi bi-trash"></i> Delete
+                    <button type="button" class="actBtn remove js-delete-book" data-id="${b.book_id}" data-title="${escapeHtml(b.title)}" title="Delete book">
+                        <i class="bi bi-trash3-fill me-1" aria-hidden="true"></i>Delete
                     </button>
                 </div>
             </td>
@@ -305,7 +334,7 @@
     async function loadCatalog() {
         const seq = ++state.seq.catalog;
         const body = $('catalogBody');
-        body.innerHTML = '<tr><td colspan="6" class="py-4 text-muted">Loading catalog…</td></tr>';
+        body.innerHTML = '<tr class="emptyRow"><td colspan="5">Loading catalog…</td></tr>';
 
         try {
             const data = await api('get_catalog', {
@@ -316,10 +345,10 @@
             $('catalogCount').textContent = data.count + (data.count === 1 ? ' book' : ' books');
             body.innerHTML = data.books.length
                 ? data.books.map(catalogRowHtml).join('')
-                : '<tr><td colspan="6" class="py-4 text-muted">No books found.</td></tr>';
+                : '<tr class="emptyRow"><td colspan="5">No books found. Try a different search, or add a new book above.</td></tr>';
         } catch (err) {
             if (seq !== state.seq.catalog) return;
-            body.innerHTML = `<tr><td colspan="6" class="py-4 text-danger">${escapeHtml(err.message)}</td></tr>`;
+            body.innerHTML = `<tr class="emptyRow"><td colspan="5" class="text-danger"><i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>${escapeHtml(err.message)}</td></tr>`;
         }
     }
 
@@ -390,6 +419,14 @@
         }
     }
 
+    /** Edit modal: show the cover the book has currently, and follow the URL field as it is edited. */
+    function updateCoverPreview(url) {
+        const img = $('editCoverPreview');
+        if (!img) return;
+        delete img.dataset.fallback;
+        img.src = coverSrc(url);
+    }
+
     async function openEditModal(bookId) {
         try {
             const { book } = await api('get_book', { params: { book_id: bookId } });
@@ -401,6 +438,7 @@
                 });
             if (form.elements.category.selectedIndex < 0) form.elements.category.value = '';
             syncDigitalRequired(form);
+            updateCoverPreview(form.elements.cover_image.value);
             bootstrap.Modal.getOrCreateInstance($('editBookModal')).show();
         } catch (err) {
             notify(err.message, 'error');
@@ -704,6 +742,7 @@
         document.querySelectorAll('form[data-book-form]').forEach((form) => {
             form.elements.is_digital.addEventListener('change', () => syncDigitalRequired(form));
             form.elements.pdf_file.addEventListener('change', () => syncDigitalRequired(form));
+            form.addEventListener('reset', () => setTimeout(() => syncDigitalRequired(form), 0));
             syncDigitalRequired(form);
         });
         $('catalogSearch').addEventListener('input', debounce(loadCatalog));
@@ -728,6 +767,16 @@
                 e.target.src = FALLBACK_COVER;
             }
         }, true);
+
+        // Edit modal: cover preview (falls back to the default cover when the URL/Image does not load)
+        const coverPreview = $('editCoverPreview');
+        coverPreview.addEventListener('error', () => {
+            if (!coverPreview.dataset.fallback) {
+                coverPreview.dataset.fallback = '1';
+                coverPreview.src = FALLBACK_COVER;
+            }
+        });
+        $('editCover').addEventListener('input', debounce((e) => updateCoverPreview(e.target.value), 400));
 
         // Accounts
         document.querySelectorAll('[data-account-tab]').forEach((btn) => {

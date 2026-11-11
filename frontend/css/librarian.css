@@ -35,6 +35,18 @@
     --border-light: var(--line);
 }
 
+/* Bootstrap theme colors -> BiblioDesk palette.
+   text-warning / text-danger / text-success / text-secondary / bg-light (used all over
+   Library Management) read these variables, so overriding them here re-colors every one
+   of them without touching the markup. */
+:root{
+    --bs-warning-rgb: 194, 138, 61;      /* --cc-qs-yellow  */
+    --bs-danger-rgb: 194, 61, 61;        /* --cc-qs-red     */
+    --bs-success-rgb: 72, 140, 62;       /* --cc-qs-green   */
+    --bs-secondary-rgb: 138, 123, 104;   /* --cc-qs-neutral */
+    --bs-light-rgb: 251, 250, 248;       /* --input-bg      */
+}
+
 
 /* =============================================================================
    2. BASE
@@ -192,6 +204,13 @@ footer{
 .form-group textarea:focus{
     border-color: var(--cc-qs-green);
     box-shadow: none;
+}
+
+/* The Add Book outline */
+.form-group .form-control:focus-visible,
+.form-group .form-select:focus-visible{
+    outline: 3px solid rgba(72, 140, 62, .6);
+    outline-offset: 1px;
 }
 
 /* ----- Pills & badges (catalog, accounts and reports all use these) ----- */
@@ -356,7 +375,7 @@ footer{
    7. PANEL: DIGITAL CATALOG
    ============================================================================= */
 
-/* ----- Search box (icon inside a rounded input) ----- */
+/* ----- Search box & Input groups ----- */
 .catalogSearchBox{
     position: relative;
     width: 380px;
@@ -388,15 +407,17 @@ footer{
 .filterBtn{
     background-color: var(--btn);
     color: var(--fcolor-secondary);
-    border-radius: 16px;
-    padding: 6px 18px;
+    border-radius: 50rem;
+    padding: 8px 22px;
+    transition: background-color .15s ease, transform .15s ease, box-shadow .15s ease;
 }
 
 .filterBtn:hover,
 .filterBtn:focus,
 .filterBtn.show{
-    background-color: var(--cc-qs-neutral);
+    background-color: var(--brown);
     color: var(--fcolor-secondary);
+    transform: translateY(-1px);
 }
 
 /* ----- Catalog table ----- */
@@ -408,11 +429,24 @@ footer{
 
 .catalogTable{
     --bs-table-bg: var(--fcolor-secondary);
+    --bs-table-hover-bg: rgba(158, 123, 88, .07);
+}
+
+.catalogTable thead th{
+    font-weight: 600;
+    font-size: .88rem;
+    letter-spacing: .02em;
+    border-bottom: 2px solid rgba(43, 36, 30, .25);
+}
+
+.catalogTable tbody tr{
+    transition: background-color .15s ease;
 }
 
 .catalogTable th,
 .catalogTable td{
-    border-right: 1px solid var(--cc-nb-ne);
+    border-right: 1px solid rgba(192, 177, 157, .35);
+    vertical-align: middle;
 }
 
 .catalogTable th:last-child,
@@ -421,9 +455,17 @@ footer{
 }
 
 .catalogThumb{
-    width: 40px;
-    height: 50px;
+    width: 48px;
+    height: 64px;
     object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .18);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.catalogThumb:hover{
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
 }
 
 @media (max-width: 768px){
@@ -1093,8 +1135,9 @@ footer{
    11. PANEL: CIRCULATION
    ============================================================================= */
 
-/* ----- Cell text ----- */
-.circName{
+/* ----- Cell text (Circulation: .circName / .circSub, Catalog: .rowName / .rowSub) ----- */
+.circName,
+.rowName{
     margin: 0;
     font-size: 1.05rem;
     font-weight: 700;
@@ -1102,7 +1145,8 @@ footer{
     color: var(--fcolor-main);
 }
 
-.circSub{
+.circSub,
+.rowSub{
     margin: .15rem 0 0;
     font-size: .8rem;
     font-weight: 500;
@@ -1134,28 +1178,155 @@ footer{
     filter: none;
 }
 
-.circTable .acctActions{
+/* ----- Roomier row buttons (.rowTable = Circulation + Catalog): equal width, space around the stack ----- */
+.rowTable .acctActions{
     gap: .6rem;
     padding: 1.1rem 0;
 }
 
-.circTable .actBtn{
+.rowTable .actBtn{
     min-width: 132px;
     padding: .5rem 1.1rem;
     font-size: .85rem;
 }
 
 @media (max-width: 767.98px){
-    .circTable .acctActions{
+    .rowTable .acctActions{
         gap: .45rem;
         padding: .8rem 0;
     }
 
-    .circTable .actBtn{
+    .rowTable .actBtn{
         min-width: 0;
         width: 100%;
         max-width: 95px;
         padding: .3rem .5rem;
         font-size: .72rem;
     }
+}
+
+
+/* =============================================================================
+   12. PANEL: DIGITAL CATALOG (Catalog List + Edit Book modal)
+   ============================================================================= */
+
+/* Letter-spacing for the small uppercase section headings ("Book Information") */
+.tracking-wide{ letter-spacing: .08em; }
+
+/* ----- Catalog List header: icon chip on the light page ----- */
+.catChip{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: .75rem;
+    background: var(--main-color);
+    color: var(--button-yellow);
+    font-size: 1.4rem;
+}
+
+/* ----- Search box (same warm field + dark outline as the Accounts search) ----- */
+.catSearch{
+    border: 2px solid var(--am-border);
+    border-radius: 50rem;
+    overflow: hidden;
+    background: #fdf6ee;
+}
+
+.catSearch .input-group-text,
+.catSearch .form-control{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.catSearch:focus-within{
+    box-shadow: 0 0 0 .2rem rgba(43, 36, 30, .15);
+}
+
+/* ----- Table rows ----- */
+.catTable tbody td{
+    height: 104px;
+}
+
+/* Long titles, ISBNs and publishers wrap instead of widening the column */
+.rowName,
+.rowSub{
+    overflow-wrap: anywhere;
+}
+
+.pill + .rowSub{
+    margin-top: .4rem;
+}
+
+/* Category pills use the same colors as the book cover color coding (root.css) */
+.pill.catEd{ background: var(--cc-book-ed); }
+.pill.catNe{ background: var(--cc-book-ne); }
+.pill.catRa{ background: var(--cc-book-ra); }
+
+/* Delete: maroon like Deny, but without the cross (it carries its own trash icon) */
+.actBtn.remove{ background: var(--am-pill-denied); }
+
+/* ----- Edit Book modal: larger cover preview ----- */
+.catThumbLg{
+    width: 64px;
+    height: 88px;
+}
+
+/* ----- Edit Book modal: keep the body scrollable -----
+   The <form> sits between .modal-content and .modal-body. Bootstrap's scrollable modal only
+   limits the body's height when the body is a direct flex child of .modal-content, so the form
+   has to pass that layout through. Without it the modal is clipped instead of scrolling. */
+#editBookForm{
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* ----- Edit Book modal: upload panels (cream tint instead of white boxes) ----- */
+.uploadPanel{
+    height: 100%;
+    padding: 1rem;
+    border: 1px dashed var(--cc-qs-neutral);
+    border-radius: 1rem;
+    background: rgba(158, 123, 88, .1);
+}
+
+/* ----- Catalog table: cell details ----- */
+/* Author cell: a little smaller than the book title in the first column */
+.catTable td:not(:first-child) .rowName{
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+/* Category + access pills carry an icon, so they shrink to fit instead of using the fixed pill width */
+.catTable .pill.auto{
+    padding: .4rem .95rem;
+    font-size: .8rem;
+}
+
+/* ----- Sort dropdown menu: same warm panel as the Report filter ----- */
+.catalog-container .dropdown-menu{
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--main-color);
+}
+
+.catalog-container .dropdown-item:hover,
+.catalog-container .dropdown-item:focus{
+    background-color: rgba(158, 123, 88, .16);
+    color: var(--text);
+}
+
+@media (max-width: 767.98px){
+    /* five columns: keep the Digital Access pill ( "Physical · 15/15" ) on one line */
+    .catTable{ min-width: 820px; }
+    .catTable thead th:nth-child(1){ width: 270px; }
+    .catTable thead th:nth-child(2){ width: 140px; }
+    .catTable thead th:nth-child(3){ width: 150px; }
+    .catTable thead th:nth-child(4){ width: 160px; }
+    .catTable thead th:nth-child(5){ width: 115px; }
+    .catTable tbody td{ height: 96px; }
 }
