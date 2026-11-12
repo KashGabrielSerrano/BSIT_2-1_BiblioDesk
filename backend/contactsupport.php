@@ -97,7 +97,7 @@ render_head('Contact Support', ['contact.css']);
                                 </div>
                                 <div id="accountHint" class="form-text text-white-50">
                                     <i class="bi bi-info-circle me-1" aria-hidden="true"></i>Name and Email that will be read by the staff are taken from your account details. 
-                                    If you want to change them, please update your <a href="./account.php" class="text-white text-decoration-underline">account details</a>.
+                                    If you want to change them, please update your <a href="./settings.php?tab=settings" class="text-white text-decoration-underline">account details</a>.
                                 </div>
                             </div>
 
