@@ -143,5 +143,11 @@
     // refresh whenever the bell is opened
     if (toggle) toggle.addEventListener('show.bs.dropdown', load);
 
+    setInterval(function () {
+        if (document.hidden) return;
+        if (menu.classList.contains('show')) return;
+        load();
+    }, 15000);
+
     load();
 })();

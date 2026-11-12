@@ -1,5 +1,6 @@
 /* Staff helpdesk inbox (helpdesk.php, Librarian + Admin) -> backend/helpdesk_controller.php
-   Filter by status, write the one reply per ticket, close / reopen, and "Reply by email" for guests.
+   Filter by status, view threaded conversations, reply to open/answered tickets, close / reopen,
+   and "Reply by email" for guests.
 */
 (function () {
     'use strict';
@@ -37,11 +38,39 @@
                '&body=' + encodeURIComponent(body);
     }
 
+    function renderThreadHtml(t) {
+        var msgs = Array.isArray(t.messages) ? t.messages : [];
+        if (msgs.length) {
+            return msgs.map(function (m) {
+                var isStaff = m.sender_role === 'Staff';
+                var borderClass = isStaff ? 'border-success' : 'border-secondary';
+                var who = isStaff
+                    ? ('Reply by ' + esc(m.sender_name || 'staff'))
+                    : ('Follow-up by ' + esc(t.from_name || 'user'));
+                return '<div class="border-start border-3 ' + borderClass + ' ps-3 mb-2">' +
+                    '<small class="text-muted d-block">' + who + ' &middot; ' + esc(m.created_at) + '</small>' +
+                    '<span style="white-space: pre-line;">' + esc(m.body) + '</span>' +
+                '</div>';
+            }).join('');
+        }
+        if (t.reply) {
+            return '<div class="border-start border-3 border-success ps-3 mb-2">' +
+                '<small class="text-muted d-block">Reply by ' + esc(t.replied_by || 'staff') + ' &middot; ' + esc(t.replied_at) + '</small>' +
+                '<span style="white-space: pre-line;">' + esc(t.reply) + '</span>' +
+            '</div>';
+        }
+        return '';
+    }
+
     function card(t) {
         var badge = { Open: 'bg-warning text-dark', Answered: 'bg-success', Closed: 'bg-secondary' }[t.status] || 'bg-secondary';
         var actions = [];
-        if (!t.reply) actions.push('<button type="button" class="btn btn-sm rounded-pill px-3 text-white" style="background-color: var(--btn);" data-act="reply">Reply</button>');
-        if (t.guest && t.reply) actions.push('<a class="btn btn-sm btn-outline-dark rounded-pill px-3" href="' + esc(mailto(t)) + '">Reply by email</a>');
+        if (t.status !== 'Closed') {
+            actions.push('<button type="button" class="btn btn-sm rounded-pill px-3 text-white" style="background-color: var(--btn);" data-act="reply">Reply</button>');
+        }
+        if (t.guest && t.reply) {
+            actions.push('<a class="btn btn-sm btn-outline-dark rounded-pill px-3" href="' + esc(mailto(t)) + '">Reply by email</a>');
+        }
         actions.push(t.status === 'Closed'
             ? '<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-act="reopen">Reopen</button>'
             : '<button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3" data-act="close">Close</button>');
@@ -54,9 +83,7 @@
                 '<span class="badge rounded-pill ' + badge + '">' + esc(t.status) + '</span>' +
             '</div>' +
             '<p class="mb-2" style="white-space: pre-line;">' + esc(t.message) + '</p>' +
-            (t.reply ? '<div class="border-start border-3 border-success ps-3 mb-2"><small class="text-muted d-block">Reply by ' +
-                esc(t.replied_by || 'staff') + ' &middot; ' + esc(t.replied_at) + '</small><span style="white-space: pre-line;">' +
-                esc(t.reply) + '</span></div>' : '') +
+            renderThreadHtml(t) +
             '<div class="d-flex flex-wrap gap-2 justify-content-end">' + actions.join('') + '</div>' +
         '</div></div>';
     }
@@ -94,7 +121,16 @@
         if (act === 'reply') {
             replyingTo = t;
             document.getElementById('ticketReplyFrom').textContent = t.from_name + ' (' + t.from_email + ') · ' + t.subject;
-            document.getElementById('ticketReplyMessage').textContent = t.message;
+
+            // Render original message + full conversation thread inside the modal
+            var msgBox = document.getElementById('ticketReplyThread') || document.getElementById('ticketReplyMessage');
+            if (msgBox) {
+                msgBox.innerHTML =
+                    '<div class="mb-2"><small class="text-muted d-block">' + esc(t.from_name) + ' &middot; ' + esc(t.created_at) + '</small>' +
+                    '<div style="white-space: pre-line;">' + esc(t.message) + '</div></div>' +
+                    renderThreadHtml(t);
+            }
+
             document.getElementById('ticketReplyText').value = '';
             document.getElementById('ticketReplyText').classList.remove('is-invalid');
             bootstrap.Modal.getOrCreateInstance(modalEl).show();
@@ -131,4 +167,11 @@
     });
 
     load();
+    setInterval(function () {
+        if (document.hidden) return;
+        if (modalEl && modalEl.classList.contains('show')) return;
+        load();
+    }, 8000);
+
+
 })();

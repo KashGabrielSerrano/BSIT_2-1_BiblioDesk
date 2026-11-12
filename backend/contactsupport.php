@@ -138,15 +138,20 @@ render_head('Contact Support', ['contact.css']);
                 </section>
             </div>
 
-            <!-- My messages tab: the user's tickets and the librarian/admin replies (frontend/js/contact.js) -->
+        <!-- My messages tab: the user's tickets and threaded replies (frontend/js/contact.js) -->
             <section id="my-messages" class="mt-5 pt-3 px-lg-5" aria-labelledby="myMessagesHeading">
-                <h2 id="myMessagesHeading" class="fw-bold mb-3">
-                    <i class="bi bi-chat-left-text-fill me-2" aria-hidden="true"></i>My messages
-                </h2>
-                <div id="myMessages"><p class="text-muted mb-0">Loading your messages…</p></div>
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-3">
+                    <div>
+                        <h2 id="myMessagesHeading" class="fw-bold mb-1">
+                            <i class="bi bi-chat-left-text-fill me-2" aria-hidden="true"></i>My messages
+                        </h2>
+                        <p class="text-muted small mb-0">View staff responses and send follow-up replies on open tickets.</p>
+                    </div>
+                </div>
+                <div id="myMessages" class="d-flex flex-column gap-4">
+                    <p class="text-muted mb-0">Loading your messages&hellip;</p>
+                </div>
             </section>
-        </div>
-    </main>
 
     <?php render_footer('student'); ?>
 

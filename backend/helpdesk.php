@@ -51,11 +51,10 @@ render_head($is_staff ? 'BiblioDesk - Admin Helpdesk' : 'BiblioDesk - Helpdesk',
                     <form id="ticketReplyForm" novalidate>
                         <div class="modal-body" style="background-color: var(--main-bg-color);">
                             <p class="small text-muted mb-1" id="ticketReplyFrom"></p>
-                            <p class="mb-3" id="ticketReplyMessage" style="white-space: pre-line;"></p>
+                            <div id="ticketReplyThread" class="d-flex flex-column gap-2 mb-3"></div>
                             <label for="ticketReplyText" class="form-label fw-semibold">Your reply</label>
-                            <textarea class="form-control" id="ticketReplyText" rows="5" maxlength="2000" required></textarea>
+                            <textarea class="form-control" id="ticketReplyText" rows="4" maxlength="2000" required></textarea>
                             <div class="invalid-feedback" id="ticketReplyError"></div>
-                            <p class="small text-muted mt-2 mb-0">Only one reply can be sent per ticket.</p>
                         </div>
                         <div class="modal-footer" style="background-color: var(--main-bg-color);">
                             <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
