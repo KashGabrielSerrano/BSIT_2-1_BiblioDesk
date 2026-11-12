@@ -78,7 +78,18 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalAuthor) modalAuthor.textContent = author;
         if (modalDesc) modalDesc.textContent = desc;
         if (modalIsbn) modalIsbn.textContent = 'ISBN: ' + isbn;
-        if (modalGenre) modalGenre.textContent = genre;
+        if (modalGenre) {
+            modalGenre.textContent = genre;
+            if (genre === 'Educational') {
+                modalGenre.style.backgroundColor = 'var(--cc-book-ed)';
+            } else if (genre === 'Non-Educational') {
+                modalGenre.style.backgroundColor = 'var(--cc-book-ne)';
+            } else if (genre === 'Research Articles') {
+                modalGenre.style.backgroundColor = 'var(--cc-book-ra)';
+            } else {
+                modalGenre.style.backgroundColor = 'var(--secondary-color)';
+            }
+        }
         if (modalPublisherName) modalPublisherName.textContent = publisher;
         if (modalImg) modalImg.src = cover;
 

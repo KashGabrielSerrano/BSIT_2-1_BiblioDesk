@@ -470,72 +470,127 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
     <!-- BOOK DETAILS MODAL -->
     <div class="modal fade bookModal" id="bookDetailsModal" tabindex="-1" aria-labelledby="modalBookTitle" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg">
-            <div class="modal-content">
-                <div class="modal-header">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header px-4 py-3 border-0 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="bi bi-book-half fs-5" style="color: var(--accent-soft);"></i>
+                        <h6 class="modal-title fw-bold mb-0 text-white tracking-wide text-uppercase" style="letter-spacing: 0.75px; font-size: 0.85rem;">Book Details</h6>
+                    </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <div class="row align-items-center">
-                        <div class="col-md-4 text-center mb-3 mb-md-0">
-                            <img id="modalBookImg" src="" alt="Cover" class="bookModal-cover img-fluid rounded">
-                            <p class="Bookisbn mt-3" id="modalBookIsbn">ISBN: N/A</p>
+                <div class="modal-body p-4 p-md-4">
+                    <div class="row g-4 align-items-start">
+                        <div class="col-md-4 text-center">
+                            <div class="bookModal-cover-wrap mx-auto">
+                                <img id="modalBookImg" src="" alt="Cover" class="bookModal-cover img-fluid rounded-3 shadow">
+                            </div>
+                            <div class="mt-3">
+                                <span class="badge bookModal-isbn-badge d-inline-flex align-items-center gap-1">
+                                    <i class="bi bi-upc-scan text-muted"></i>
+                                    <span id="modalBookIsbn">ISBN: N/A</span>
+                                </span>
+                            </div>
                         </div>
                         <div class="col-md-8">
-                            <h5 class="modal-title display-5" id="modalBookTitle">Book Title</h5>
-                            <p class="bookModal-author" id="modalBookAuthor">Author Name</p>
-                            <hr>
-                            <span class="bookGenre" id="modalBookGenre">Category</span>
-                            <p class="bookModal-desc" id="modalBookDesc">Book description will appear here.</p>
-                            <p class="bookModal-publisher" id="modalBookPublisher">
-                                Publisher: <span id="modalBookPublisherName">Publisher Name</span>
-                            </p>
+                            <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
+                                <span class="bookGenre badge rounded-pill px-3 py-1 fw-semibold" id="modalBookGenre">Category</span>
+                            </div>
+
+                            <h3 class="fw-bold mb-1 text-dark bookModal-title-text" id="modalBookTitle">Book Title</h3>
+                            <div class="d-flex align-items-center gap-1 text-muted mb-3">
+                                <i class="bi bi-person text-secondary"></i>
+                                <span class="bookModal-author fw-semibold" id="modalBookAuthor">Author Name</span>
+                            </div>
+
+                            <hr class="bookModal-divider my-2">
+
+                            <div class="bookModal-desc-box p-3 rounded-3 mb-3">
+                                <div class="d-flex align-items-center gap-1 small fw-bold text-uppercase text-muted mb-1">
+                                    <i class="bi bi-card-text text-secondary"></i>
+                                    <span>Description</span>
+                                </div>
+                                <p class="bookModal-desc mb-0" id="modalBookDesc">Book description will appear here.</p>
+                            </div>
+
+                            <div class="d-flex align-items-center gap-1 small text-muted mb-3" id="modalBookPublisher">
+                                <i class="bi bi-building text-secondary"></i>
+                                <span>Publisher:</span>
+                                <strong class="text-dark" id="modalBookPublisherName">Publisher Name</strong>
+                            </div>
+
                             <input type="hidden" id="modalBookId" value="">
-                            
-                            <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-4">
-                                <button type="button" id="modalBookShare" class="btn border-0 p-2 d-none order-last" aria-label="Share link to this book">
-                                    <i class="bi bi-share fs-4"></i>
+
+                            <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-3 pt-1">
+                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">
+                                    <i class="bi bi-book-half me-1"></i>Read Now
+                                </a>
+
+                                <button type="button" id="modalBookBorrow" class="bookModal-btn-read border-0 d-none">
+                                    <i class="bi bi-bookmark-check me-1"></i>Borrow
                                 </button>
-                                <div id="modalSharePanel" class="d-none order-last w-100 mt-2">
+
+                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none" role="button"
+                                   aria-expanded="false" aria-controls="modalCollectionPanel">
+                                    <i class="bi bi-folder-plus me-1"></i>Add To Collections
+                                </a>
+
+                                <div class="bookModal-utility-btns d-flex align-items-center gap-2 ms-auto">
+                                    <button type="button" id="modalBookBookmark" class="btn bookModal-icon-btn d-none" aria-label="Bookmark" title="Bookmark">
+                                        <i class="bi bi-bookmark"></i>
+                                    </button>
+                                    <button type="button" id="modalBookFavorite" class="btn bookModal-icon-btn d-none" aria-label="Favorite" title="Favorite">
+                                        <i class="bi bi-heart"></i>
+                                    </button>
+                                    <button type="button" id="modalBookShare" class="btn bookModal-icon-btn d-none" aria-label="Share link to this book" title="Share link">
+                                        <i class="bi bi-share"></i>
+                                    </button>
+                                    <button type="button" id="modalBookReport" class="btn bookModal-icon-btn" aria-label="Report an issue with this book"
+                                        title="Report an issue" data-report-toggle="modalReportPanel" aria-expanded="false" aria-controls="modalReportPanel">
+                                        <i class="bi bi-flag"></i>
+                                    </button>
+                                </div>
+
+                                <p id="modalCircInfo" class="small w-100 mb-0 order-last" hidden role="status"></p>
+
+                                <div id="modalSharePanel" class="bookModal-panel d-none order-last w-100 mt-2">
                                     <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
-                                        <div id="modalShareQr" class="bg-white p-2 rounded d-inline-block"></div>
+                                        <div id="modalShareQr" class="bg-white p-2 rounded border shadow-sm d-inline-block"></div>
                                         <div class="flex-grow-1 w-100">
-                                            <label class="small mb-1" for="modalShareLink">Link back to this book (readers need to be logged in)</label>
+                                            <label class="small fw-semibold mb-1" for="modalShareLink">
+                                                <i class="bi bi-link-45deg me-1"></i>Link to this book (readers need to be logged in)
+                                            </label>
                                             <div class="input-group input-group-sm">
                                                 <input type="text" id="modalShareLink" class="form-control" readonly>
-                                                <button type="button" id="modalShareCopy" class="btn btn-outline-dark">Copy</button>
+                                                <button type="button" id="modalShareCopy" class="btn btn-dark px-3">
+                                                    <i class="bi bi-clipboard me-1"></i>Copy
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">Read Now</a>
 
-                                <button type="button" id="modalBookBorrow" class="bookModal-btn-read border-0 d-none">Borrow</button>
-                                <p id="modalCircInfo" class="small w-100 mb-0 order-last" hidden role="status"></p>
-                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none" role="button"
-                                   aria-expanded="false" aria-controls="modalCollectionPanel">Add To Collections</a>
                                 <!-- My Collections: tick the collections this book belongs to (frontend/js/collections.js) -->
-                                <div id="modalCollectionPanel" class="collection-panel w-100 mt-2 order-last" hidden>
-                                    <p class="small fw-semibold mb-1">Add this book to:</p>
+                                <div id="modalCollectionPanel" class="bookModal-panel collection-panel w-100 mt-2 order-last" hidden>
+                                    <p class="small fw-bold mb-2 text-uppercase tracking-wide text-muted">
+                                        <i class="bi bi-collection me-1"></i>Add this book to:
+                                    </p>
                                     <div id="modalCollectionList" class="collection-panel-list mb-2"></div>
                                     <form id="modalCollectionNew" class="input-group input-group-sm" novalidate>
                                         <input type="text" name="name" class="form-control" maxlength="30" autocomplete="off"
                                                placeholder="New collection name" aria-label="New collection name" required>
-                                        <button type="submit" class="btn btn-dark">Create &amp; add</button>
+                                        <button type="submit" class="btn btn-dark px-3">
+                                            <i class="bi bi-plus-lg me-1"></i>Create &amp; add
+                                        </button>
                                     </form>
                                     <p id="modalCollectionMsg" class="small mt-1 mb-0" hidden role="status"></p>
                                 </div>
-                                <button type="button" id="modalBookBookmark" class="btn border-0 p-2 d-none" aria-label="Bookmark">
-                                    <i class="bi bi-bookmark fs-4"></i>
-                                </button>
-                                <button type="button" id="modalBookFavorite" class="btn border-0 p-2 d-none" aria-label="Favorite">
-                                    <i class="bi bi-heart fs-4"></i>
-                                </button>
-                                <button type="button" id="modalBookReport" class="btn border-0 p-2" aria-label="Report an issue with this book"
-                                    title="Report an issue" data-report-toggle="modalReportPanel" aria-expanded="false" aria-controls="modalReportPanel">
-                                    <i class="bi bi-flag fs-4"></i>
-                                </button>
-                                <form id="modalReportPanel" class="w-100 mt-2 order-last" hidden data-report-panel data-book-source="#modalBookId">
-                                    <label class="small mb-1" for="modalReportIssue">What is wrong with this book?</label>
+
+                                <form id="modalReportPanel" class="bookModal-panel w-100 mt-2 order-last" hidden data-report-panel data-book-source="#modalBookId">
+                                    <div class="d-flex align-items-center gap-1 small fw-bold text-uppercase text-muted mb-2">
+                                        <i class="bi bi-exclamation-triangle text-danger me-1"></i>
+                                        <span>Report an issue</span>
+                                    </div>
+                                    <label class="small mb-1 text-muted" for="modalReportIssue">What is wrong with this book?</label>
                                     <select id="modalReportIssue" name="issue_type" class="form-select form-select-sm mb-2" required>
                                         <option value="">Choose an issue…</option>
                                         <option value="Broken Link">Broken Link</option>
@@ -547,7 +602,9 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                     <textarea name="description" class="form-control form-control-sm mb-2" rows="2" maxlength="1000"
                                         placeholder="Details (optional), e.g. which page"></textarea>
                                     <div class="d-flex flex-wrap align-items-center gap-2">
-                                        <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3">Send report</button>
+                                        <button type="submit" class="btn btn-sm btn-dark rounded-pill px-3">
+                                            <i class="bi bi-send me-1"></i>Send report
+                                        </button>
                                         <span class="small" data-report-result hidden role="status"></span>
                                     </div>
                                 </form>
