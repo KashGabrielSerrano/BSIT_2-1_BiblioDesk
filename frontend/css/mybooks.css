@@ -263,7 +263,7 @@ main {
 
 .collectionModal .form-control:focus {
   border-color: var(--btn);
-  box-shadow: 0 0 0 3px rgba(46, 78, 13, 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--btn-rgb), 0.2);
 }
 
 .swatchGroup {
@@ -386,7 +386,7 @@ hr {
 
 .searchBox .form-control:focus {
   border-color: var(--btn);
-  box-shadow: 0 0 0 3px rgba(46, 78, 13, 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--btn-rgb), 0.2);
 }
 
 .filterBtn {
@@ -682,7 +682,7 @@ hr {
 
 .lib-empty {
   padding: 36px 20px;
-  border: 2px dashed rgba(43, 36, 32, 0.18);
+  border: 2px dashed rgba(var(--main-rgb), 0.25);
   border-radius: 15px;
   background: rgba(255, 255, 255, 0.55);
 }
@@ -696,8 +696,8 @@ hr {
   margin-bottom: 12px;
   border-radius: 50%;
   font-size: 1.6rem;
-  color: var(--main-color, #2b2420);
-  background: rgba(43, 36, 32, 0.08);
+  color: var(--main-color, #1F4735);
+  background: rgba(var(--main-rgb), 0.1);
 }
 
 .lib-panel .textArea:hover h3 {

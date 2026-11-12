@@ -82,7 +82,7 @@ footer {
 
 .FAQsearchBox .form-control:focus {
   border-color: var(--btn);
-  box-shadow: 0 0 0 3px rgba(46, 78, 13, 0.2);
+  box-shadow: 0 0 0 3px rgba(var(--btn-rgb), 0.2);
 }
 
 .faq-container {

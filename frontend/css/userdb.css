@@ -179,7 +179,7 @@ footer{
 
 .notifItem:hover,
 .notifItem:focus {
-    background-color: rgba(158, 123, 88, .16);
+    background-color: rgba(var(--main-rgb), .1);
     color: var(--text-main);
 }
 

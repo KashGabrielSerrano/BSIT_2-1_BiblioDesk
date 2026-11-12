@@ -7,7 +7,7 @@
 body {
     min-height: 100vh;
     background-color: var(--main-color);
-    background-image: radial-gradient(circle at 25% 45%, rgba(158, 123, 88, .18), transparent 55%);
+    background-image: radial-gradient(circle at 25% 45%, rgba(169, 220, 192, .09), transparent 55%);
     background-repeat: no-repeat;
 }
 
@@ -137,7 +137,7 @@ form {
 
 .form-check-input:focus {
     border-color: var(--btn);
-    box-shadow: 0 0 0 .25rem rgba(46, 78, 13, .2);
+    box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2);
 }
 
 .form-check-label {
@@ -193,7 +193,7 @@ form {
 
 .form-items input:focus {
     border-color: var(--btn);
-    box-shadow: 0 0 0 .25rem rgba(46, 78, 13, .2);
+    box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2);
 }
 
 
@@ -569,8 +569,8 @@ body.modal-open .logo-panel {
 }
 
 #forgotModal .fp-input:focus {
-  border-color: var(--brown);
-  box-shadow: 0 0 0 3px rgba(77, 70, 61, 0.25);
+  border-color: var(--btn);
+  box-shadow: 0 0 0 3px rgba(var(--btn-rgb), 0.2);
   outline: none;
 }
 
@@ -785,4 +785,15 @@ body.modal-open .logo-panel {
         flex: 0 1 auto;
         max-width: 100%;
     }
+}
+
+/* Green theme */
+body #otpModal .bibliodesk-modal-header .modal-title i,
+body #forgotModal .bibliodesk-modal-header .modal-title i {
+    color: var(--accent-soft) !important;
+}
+
+body #otpModal .bibliodesk-otp-input:focus,
+body #forgotModal .bibliodesk-otp-input:focus {
+    box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2) !important;
 }

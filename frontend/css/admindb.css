@@ -131,11 +131,11 @@
     align-items: flex-end;
     justify-content: center;
     gap: 2px;
-    border-bottom: 1px dashed rgba(44, 37, 29, .45);
+    border-bottom: 1px dashed rgba(var(--main-rgb), .45);
 }
 
 .catCell:hover {
-    background-color: rgba(44, 37, 29, .08);
+    background-color: rgba(var(--main-rgb), .08);
 }
 
 .catBar {
@@ -174,7 +174,7 @@
 }
 
 .actionItem + .actionItem {
-    border-top: 1px solid rgba(44, 37, 29, .2);
+    border-top: 1px solid rgba(var(--main-rgb), .2);
 }
 
 .actionLink {
@@ -280,7 +280,7 @@
 
 .notifItem:hover,
 .notifItem:focus {
-    background-color: rgba(158, 123, 88, .16);
+    background-color: rgba(var(--main-rgb), .1);
     color: var(--text-main);
 }
 

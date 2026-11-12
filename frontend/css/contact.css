@@ -13,7 +13,7 @@ body{
 :root{
     --bs-warning-rgb: 194, 138, 61;      /* --cc-qs-yellow  */
     --bs-success-rgb: 72, 140, 62;       /* --cc-qs-green   */
-    --bs-secondary-rgb: 138, 123, 104;   /* --cc-qs-neutral */
+    --bs-secondary-rgb: 111, 139, 123;   /* --cc-qs-neutral */
 }
 
 main{

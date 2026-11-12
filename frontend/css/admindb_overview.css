@@ -196,11 +196,11 @@ body > main {
 }
 
 .todoManageRow + .todoManageRow {
-    border-top: 1px solid rgba(44, 37, 29, .15);
+    border-top: 1px solid rgba(var(--main-rgb), .15);
 }
 
 .todoManageRow.isEditing {
-    background-color: rgba(44, 37, 29, .06);
+    background-color: rgba(var(--main-rgb), .06);
 }
 
 .popMonth {
@@ -238,10 +238,10 @@ body > main {
     height: 38px;
     display: flex;
     align-items: center;
-    border-bottom: 1px dashed rgba(44, 37, 29, .35);
-    border-right: 1px dashed rgba(44, 37, 29, .35);
+    border-bottom: 1px dashed rgba(var(--main-rgb), .35);
+    border-right: 1px dashed rgba(var(--main-rgb), .35);
 
-    background-image: linear-gradient(to right, rgba(44, 37, 29, .22) 1px, transparent 1px);
+    background-image: linear-gradient(to right, rgba(var(--main-rgb), .22) 1px, transparent 1px);
     background-size: calc(100% / var(--steps, 5)) 100%;
 }
 
@@ -266,7 +266,7 @@ body > main {
 }
 
 .popTrack:hover {
-    background-color: rgba(44, 37, 29, .06);
+    background-color: rgba(var(--main-rgb), .06);
 }
 
 .popAxis {
@@ -313,7 +313,7 @@ body > main {
 }
 
 .actionItem + .actionItem {
-    border-top: 1px solid rgba(44, 37, 29, .2);
+    border-top: 1px solid rgba(var(--main-rgb), .2);
 }
 
 .actionLink {
@@ -547,7 +547,7 @@ body > main {
 
 .notifItem:hover,
 .notifItem:focus {
-    background-color: rgba(158, 123, 88, .16);
+    background-color: rgba(var(--main-rgb), .1);
     color: var(--text-main);
 }
 
