@@ -223,3 +223,104 @@ footer {
     max-width: 900px; 
   }
 }
+
+
+/* SUPPORT TICKETS INBOX & THREAD MESSAGES */
+
+.hd-section-icon {
+    width: 48px;
+    height: 48px;
+    background-color: var(--main-color);
+    color: #fff;
+}
+
+.hd-filter-pills .hd-filter-btn {
+    border: 1.5px solid var(--main-color);
+    color: var(--main-color);
+    background-color: transparent;
+    transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.hd-filter-pills .hd-filter-btn:hover,
+.hd-filter-pills .hd-filter-btn.active {
+    background-color: var(--main-color);
+    color: #fff;
+}
+
+.hd-ticket-card {
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.07) !important;
+}
+
+.hd-ticket-head {
+    background-color: color-mix(in srgb, var(--main-color) 8%, #fff);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hd-ticket-id {
+    background-color: var(--main-color);
+    color: #fff;
+    font-weight: 600;
+}
+
+.hd-msg-row {
+    display: flex;
+    width: 100%;
+}
+
+.hd-msg-row.is-user {
+    justify-content: flex-start;
+}
+
+.hd-msg-row.is-staff {
+    justify-content: flex-end;
+}
+
+.hd-bubble {
+    max-width: 82%;
+    padding: 0.85rem 1.1rem;
+    border-radius: 1rem;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.hd-bubble-user {
+    background-color: var(--main-bg-color, #f4f1ea);
+    color: #1f241f;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-bottom-left-radius: 0.25rem;
+}
+
+.hd-bubble-staff {
+    background-color: var(--main-color);
+    color: #fff;
+    border-bottom-right-radius: 0.25rem;
+}
+
+.hd-thread-box {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 0.5rem 0.25rem;
+}
+
+.hd-empty-icon {
+    width: 56px;
+    height: 56px;
+    background-color: color-mix(in srgb, var(--main-color) 12%, #fff);
+    color: var(--main-color);
+}
+
+.hd-quick-reply-form {
+    background-color: color-mix(in srgb, var(--main-color) 6%, #fff);
+}
+
+.hd-reply-input {
+    border: 1.5px solid rgba(0, 0, 0, 0.14);
+    background-color: #fff;
+    resize: vertical;
+}
+
+.hd-reply-input:focus {
+    border-color: var(--main-color);
+    box-shadow: 0 0 0 0.2rem color-mix(in srgb, var(--main-color) 18%, transparent);
+}

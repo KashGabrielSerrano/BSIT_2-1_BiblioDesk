@@ -25,46 +25,79 @@ render_head($is_staff ? 'BiblioDesk - Admin Helpdesk' : 'BiblioDesk - Helpdesk',
             </div>
         </div>
 
-<?php if ($is_staff): ?>
-        <!-- Support tickets inbox (staff only) - frontend/js/helpdesk_tickets.js -->
-        <section id="tickets" class="mx-auto mb-5" style="max-width: 1000px;" aria-labelledby="ticketsHeading">
-            <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-3">
-                <h2 id="ticketsHeading" class="fw-semibold mb-0">Support Tickets</h2>
-                <div class="btn-group flex-wrap" role="group" aria-label="Filter tickets by status" id="ticketFilters">
-                    <button type="button" class="btn btn-outline-dark active" data-status="Open">Open <span class="badge bg-warning text-dark" data-count="Open">0</span></button>
-                    <button type="button" class="btn btn-outline-dark" data-status="Answered">Answered <span class="badge bg-success" data-count="Answered">0</span></button>
-                    <button type="button" class="btn btn-outline-dark" data-status="Closed">Closed <span class="badge bg-secondary" data-count="Closed">0</span></button>
-                    <button type="button" class="btn btn-outline-dark" data-status="">All</button>
-                </div>
-            </div>
-            <div id="ticketList"><p class="text-muted">Loading tickets…</p></div>
-        </section>
-
-        <!-- Reply modal (one reply per ticket) -->
-        <div class="modal fade" id="ticketReplyModal" tabindex="-1" aria-labelledby="ticketReplyLabel" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header text-white" style="background-color: var(--main-color);">
-                        <h5 class="modal-title fw-bold" id="ticketReplyLabel">Reply to ticket</h5>
-                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <?php if ($is_staff): ?>
+            <!-- Support tickets inbox (staff only) - frontend/js/helpdesk_tickets.js -->
+            <section id="tickets" class="mx-auto mb-5 px-3 px-md-0" style="max-width: 1000px;" aria-labelledby="ticketsHeading">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div class="d-flex align-items-center gap-3">
+                        <span class="hd-section-icon rounded-4 d-flex align-items-center justify-content-center flex-shrink-0" aria-hidden="true">
+                            <i class="bi bi-headset fs-4"></i>
+                        </span>
+                        <div>
+                            <h2 id="ticketsHeading" class="h3 fw-bold mb-0">Support Tickets</h2>
+                            <p class="text-muted small mb-0">Review user concerns, view conversation threads, and send replies.</p>
+                        </div>
                     </div>
-                    <form id="ticketReplyForm" novalidate>
-                        <div class="modal-body" style="background-color: var(--main-bg-color);">
-                            <p class="small text-muted mb-1" id="ticketReplyFrom"></p>
-                            <div id="ticketReplyThread" class="d-flex flex-column gap-2 mb-3"></div>
-                            <label for="ticketReplyText" class="form-label fw-semibold">Your reply</label>
-                            <textarea class="form-control" id="ticketReplyText" rows="4" maxlength="2000" required></textarea>
-                            <div class="invalid-feedback" id="ticketReplyError"></div>
+                    <div class="hd-filter-pills d-flex flex-wrap gap-2" role="group" aria-label="Filter tickets by status" id="ticketFilters">
+                        <button type="button" class="btn rounded-pill px-3 py-1 fw-semibold hd-filter-btn active" data-status="Open">
+                            Open <span class="badge rounded-pill bg-warning text-dark ms-1" data-count="Open">0</span>
+                        </button>
+                        <button type="button" class="btn rounded-pill px-3 py-1 fw-semibold hd-filter-btn" data-status="Answered">
+                            Answered <span class="badge rounded-pill bg-success ms-1" data-count="Answered">0</span>
+                        </button>
+                        <button type="button" class="btn rounded-pill px-3 py-1 fw-semibold hd-filter-btn" data-status="Closed">
+                            Closed <span class="badge rounded-pill bg-secondary ms-1" data-count="Closed">0</span>
+                        </button>
+                        <button type="button" class="btn rounded-pill px-3 py-1 fw-semibold hd-filter-btn" data-status="">
+                            All
+                        </button>
+                    </div>
+                </div>
+                <div id="ticketList" class="d-flex flex-column gap-4">
+                    <p class="text-muted mb-0">Loading tickets&hellip;</p>
+                </div>
+            </section>
+
+            <!-- Reply modal -->
+            <div class="modal fade" id="ticketReplyModal" tabindex="-1" aria-labelledby="ticketReplyLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+                    <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                        <div class="modal-header text-white px-4 py-3 border-0" style="background-color: var(--main-color);">
+                            <div class="d-flex align-items-center gap-2">
+                                <i class="bi bi-reply-fill fs-5 text-warning" aria-hidden="true"></i>
+                                <h5 class="modal-title fw-bold mb-0" id="ticketReplyLabel">Reply to ticket</h5>
+                            </div>
+                            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
-                        <div class="modal-footer" style="background-color: var(--main-bg-color);">
-                            <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
-                            <button type="submit" class="btn rounded-pill px-4 text-white" style="background-color: var(--btn);" id="ticketReplySend">Send reply</button>
-                        </div>
-                    </form>
+                        <form id="ticketReplyForm" novalidate>
+                            <div class="modal-body p-4" style="background-color: var(--main-bg-color);">
+                                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pb-3 mb-3 border-bottom">
+                                    <p class="small text-muted mb-0" id="ticketReplyFrom"></p>
+                                    <span id="ticketReplyBadge"></span>
+                                </div>
+                                <div id="ticketReplyThread" class="hd-thread-box d-flex flex-column gap-3 mb-4"></div>
+                                <div>
+                                    <label for="ticketReplyText" class="form-label fw-semibold small">
+                                        <i class="bi bi-pencil-fill me-1 text-secondary" aria-hidden="true"></i>Your reply
+                                    </label>
+                                    <textarea class="form-control rounded-3 p-3" id="ticketReplyText" rows="4" maxlength="2000"
+                                        placeholder="Write a helpful response to the user..." required></textarea>
+                                    <div class="invalid-feedback" id="ticketReplyError"></div>
+                                    <div class="form-text small">Up to 2,000 characters.</div>
+                                </div>
+                            </div>
+                            <div class="modal-footer border-top px-4 py-3" style="background-color: var(--main-bg-color);">
+                                <button type="button" class="btn btn-outline-secondary rounded-pill px-4 fw-semibold" data-bs-dismiss="modal">Cancel</button>
+                                <button type="submit" class="btn rounded-pill px-4 text-white fw-semibold shadow-sm d-inline-flex align-items-center gap-2"
+                                    style="background-color: var(--btn);" id="ticketReplySend">
+                                    <i class="bi bi-send-fill" aria-hidden="true"></i> Send reply
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             </div>
-        </div>
-<?php endif; ?>
+    <?php endif; ?>
 
         <!-- Tutorial -->
         <section class="tutorial-section">
