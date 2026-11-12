@@ -50,8 +50,14 @@ switch ($action) {
         if (!in_array($subject, TICKET_SUBJECTS, true)) $errors['subject'] = 'Please choose a subject.';
         if (mb_strlen($message) < 10 || mb_strlen($message) > 2000) $errors['message'] = 'Please write your message (10 to 2,000 characters).';
 
-        $name = $email = null;
-        if (!$user) {
+        if ($user) {
+            $profile = current_profile() ?? [];
+            $name    = trim((string)($profile['full_name'] ?? ''));
+            $email   = strtolower(trim((string)($profile['email'] ?? '')));
+            if ($name === '' || $email === '') {
+                $errors['account'] = 'Your account is missing a name or email. Please update your account details first.';
+            }
+        } else {
             $name  = gv($_POST, 'name');
             $email = strtolower(gv($_POST, 'email'));
             if ($name === '' || mb_strlen($name) > 100) $errors['name'] = 'Please enter your name.';
@@ -65,8 +71,11 @@ switch ($action) {
         if (time() - $last < TICKET_COOLDOWN) {
             sendResponse(false, 'Please wait a minute before sending another message.', [], 429);
         }
-        $enc_name  = $name !== null ? enc(so(), $name) : null;
-        $enc_email = $email !== null ? enc(so(), $email) : null;
+        $enc_name  = enc(so(), $name);
+        $enc_email = enc(so(), $email);
+        if ($enc_name === '' || $enc_email === '') {
+            sendResponse(false, 'Your message could not be saved. Please try again later.', [], 500);
+        }
         if (!$user) {
             $recent = (int)(db_one("SELECT COUNT(*) AS c FROM helpdesk_ticket_table
                                      WHERE Contact_Email = ? AND Created_At > UTC_TIMESTAMP() - INTERVAL 1 HOUR",
@@ -81,7 +90,7 @@ switch ($action) {
         $id = (int)db()->insert_id;
         $_SESSION['last_ticket_at'] = time();
 
-        $from = $user ? (current_profile()['full_name'] ?? 'A user') : $name;
+        $from = $name;
         notify_roles(['Librarian', 'Admin'], 'ticket', "New helpdesk message: {$subject}",
                      "From {$from}: " . mb_substr(preg_replace('/\s+/', ' ', $message), 0, 180), 'helpdesk.php#tickets');
         sendResponse(true, $user ? 'Thank you! Your message has been sent. You will see our reply under "My messages".'
