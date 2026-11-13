@@ -237,7 +237,7 @@ function require_role_api(array $roles, string $message = 'Access denied.'): arr
 
 /** Where each role lands after logging in. */
 function dashboard_for_role(?string $role): string {
-    return in_array($role, ['Librarian', 'Admin'], true) ? 'librarymanagement.php' : 'userdb_overview.php';
+    return in_array($role, ['Librarian', 'Admin'], true) ? 'staff_overview.php' : 'userdb_overview.php';
 }
 
 /* ========================================================================== */
