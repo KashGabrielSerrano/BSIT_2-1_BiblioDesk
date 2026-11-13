@@ -152,7 +152,9 @@ render_head('Contact Support', ['contact.css']);
                     <p class="text-muted mb-0">Loading your messages&hellip;</p>
                 </div>
             </section>
+        </div>
+    
+    </main>
 
-    <?php render_footer('student'); ?>
-
+<?php render_footer('student'); ?>
 <?php render_scripts(['contact.js']); ?>
