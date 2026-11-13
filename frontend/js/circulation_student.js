@@ -31,15 +31,42 @@
     var circInfo = document.getElementById('modalCircInfo');
     var current = null;   // { bookId, action, id }
 
-    function setInfo(html, tone) {
+    function setInfo(html, tone, icon) {
         circInfo.hidden = !html;
-        circInfo.innerHTML = html || '';
-        circInfo.className = 'small w-100 mb-0 order-last ' + (tone === 'bad' ? 'text-danger' : tone === 'good' ? 'text-success' : 'text-muted');
+        if (!html) {
+            circInfo.innerHTML = '';
+            return;
+        }
+        var iconHtml = icon
+            ? '<i class="bi ' + esc(icon) + ' flex-shrink-0 fs-5 lh-1" aria-hidden="true"></i>'
+            : '';
+        circInfo.innerHTML = iconHtml + '<div class="flex-grow-1 lh-sm">' + html + '</div>';
+        circInfo.className = 'small w-100 mb-3 d-flex align-items-center gap-2 ' +
+            (tone === 'bad' ? 'text-danger' : tone === 'good' ? 'text-success' : 'text-muted');
     }
-    function setButton(label, action, id) {
-        circBtn.classList.toggle('d-none', !label);
+
+    function setButton(label, action, id, icon, isCancel) {
+        var show = Boolean(label);
+        circBtn.classList.toggle('d-none', !show);
+        circBtn.classList.toggle('d-inline-flex', show);
+        circBtn.classList.toggle('align-items-center', show);
+        circBtn.classList.toggle('justify-content-center', show);
+        circBtn.classList.toggle('flex-fill', show);
+
+        // Primary theme button for Borrow/Reserve; matching-height outline-danger pill for Cancel states
+        circBtn.classList.toggle('bookModal-btn-read', !isCancel);
+        circBtn.classList.toggle('border-0', !isCancel);
+        circBtn.classList.toggle('btn', Boolean(isCancel));
+        circBtn.classList.toggle('btn-outline-danger', Boolean(isCancel));
+        circBtn.classList.toggle('rounded-pill', Boolean(isCancel));
+        circBtn.classList.toggle('py-2', Boolean(isCancel));
+        circBtn.classList.toggle('px-4', Boolean(isCancel));
+        circBtn.classList.toggle('fw-semibold', Boolean(isCancel));
+
         circBtn.disabled = false;
-        circBtn.textContent = label || '';
+        circBtn.innerHTML = show
+            ? (icon ? '<i class="bi ' + esc(icon) + ' me-2 lh-1" aria-hidden="true"></i>' : '') + '<span>' + esc(label) + '</span>'
+            : '';
         current.action = action || null;
         current.id = id || null;
     }
@@ -47,30 +74,31 @@
     function renderStatus(st) {
         if (!st.physical) { setButton(null); setInfo(''); return; }
         if (st.loan && st.loan.status === 'Requested') {
-            setButton('Cancel request', 'cancel_request', st.loan.id);
-            return setInfo('<i class="bi bi-hourglass-split me-1"></i>Requested. Waiting for the library to approve it at the counter.');
+            setButton('Cancel request', 'cancel_request', st.loan.id, 'bi-x-circle', true);
+            return setInfo('Requested. Waiting for the library to approve it at the counter.', '', 'bi-hourglass-split');
         }
         if (st.loan && st.loan.status === 'Borrowed') {
             setButton(null);
-            return setInfo('<i class="bi bi-book me-1"></i>You borrowed this book. Due <strong>' + esc(st.loan.due) + '</strong>' +
-                           (st.loan.overdue ? ' (overdue: please return it)' : '') + '.', st.loan.overdue ? 'bad' : 'good');
+            return setInfo('You borrowed this book. Due <strong>' + esc(st.loan.due) + '</strong>' +
+                           (st.loan.overdue ? ' (overdue: please return it)' : '') + '.',
+                           st.loan.overdue ? 'bad' : 'good', 'bi-book');
         }
         if (st.reservation) {
-            setButton('Cancel reservation', 'cancel_reservation', st.reservation.id);
+            setButton('Cancel reservation', 'cancel_reservation', st.reservation.id, 'bi-calendar-x', true);
             return st.reservation.status === 'Ready'
-                ? setInfo('<i class="bi bi-check-circle me-1"></i>Ready for pickup at the counter until <strong>' + esc(st.reservation.hold_until) + '</strong>.', 'good')
-                : setInfo('<i class="bi bi-people me-1"></i>Reserved. You are <strong>#' + st.reservation.position + '</strong> in line.');
+                ? setInfo('Ready for pickup at the counter until <strong>' + esc(st.reservation.hold_until) + '</strong>.', 'good', 'bi-check-circle')
+                : setInfo('Reserved. You are <strong>#' + st.reservation.position + '</strong> in line. We will notify you when it is ready.', '', 'bi-people');
         }
         if (st.can_borrow) {
-            setButton('Borrow', 'request');
-            return setInfo('<i class="bi bi-check2 me-1"></i>' + st.available + ' of ' + st.total + ' copies available. Pick it up at the counter after approval.', 'good');
+            setButton('Borrow', 'request', null, 'bi-bookmark-check', false);
+            return setInfo(st.available + ' of ' + st.total + ' copies available. Pick it up at the counter after approval.', 'good', 'bi-check2-circle');
         }
         if (st.can_reserve) {
-            setButton('Reserve', 'reserve');
-            return setInfo('<i class="bi bi-clock me-1"></i>All ' + st.total + ' copies are borrowed. Reserve it to join the waiting list.');
+            setButton('Reserve', 'reserve', null, 'bi-calendar-plus', false);
+            return setInfo('All ' + st.total + ' copies are borrowed. Reserve it to join the waiting list.', '', 'bi-clock');
         }
         setButton(null);
-        setInfo(st.reason ? '<i class="bi bi-info-circle me-1"></i>' + esc(st.reason) : '', st.reason && /unpaid|limit/.test(st.reason) ? 'bad' : '');
+        setInfo(st.reason ? esc(st.reason) : '', st.reason && /unpaid|limit/.test(st.reason) ? 'bad' : '', st.reason ? 'bi-info-circle' : '');
     }
 
     function loadStatus(bookId) {
@@ -97,17 +125,26 @@
             else fields.id = current.id;
             circBtn.disabled = true;
             post(fields).then(function (d) {
-                setInfo(esc(d.message || ''), d.success ? 'good' : 'bad');
                 if (d.success) {
-                    var keep = d.message;
+                    var fallbackMsg = d.message || '';
                     get('action=book_status&book_id=' + encodeURIComponent(current.bookId)).then(function (s) {
-                        if (s && s.success) { renderStatus(s.status); if (circInfo.textContent && keep) circInfo.innerHTML += '<br>' + esc(keep); }
+                        if (s && s.success) {
+                            renderStatus(s.status);
+                            // Only show the toast/confirmation message if renderStatus didn't already show a status box
+                            if (circInfo.hidden && fallbackMsg) {
+                                setInfo(esc(fallbackMsg), 'good', 'bi-check-circle');
+                            }
+                        }
                     });
                     loadMine();
                 } else {
+                    setInfo(esc(d.message || 'Action failed.'), 'bad', 'bi-exclamation-circle');
                     circBtn.disabled = false;
                 }
-            }).catch(function () { setInfo('Server connection error. Please try again.', 'bad'); circBtn.disabled = false; });
+            }).catch(function () {
+                setInfo('Server connection error. Please try again.', 'bad', 'bi-exclamation-circle');
+                circBtn.disabled = false;
+            });
         });
     }
 

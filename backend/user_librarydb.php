@@ -226,7 +226,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
     $cover = htmlspecialchars(getCoverImageUrl($row['Cover_Image'] ?? null));   // library icon when there is no cover
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
-    $token   = htmlspecialchars(book_token((int)($row['Book_ID'] ?? 0)));   // opaque id for the reader / share link
+    $token   = htmlspecialchars(book_token((int)($row['Book_ID'] ?? 0)));
     $title   = htmlspecialchars($row['Title'] ?? 'Untitled');
     $author  = htmlspecialchars($row['Author'] ?? 'Unknown Author');
     
@@ -495,65 +495,66 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                         </div>
                         <div class="col-md-8">
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                                <span class="bookGenre badge rounded-pill px-3 py-1 fw-semibold" id="modalBookGenre">Category</span>
+                                <span class="bookGenre badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" id="modalBookGenre">Category</span>
+
+                                <div class="bookModal-utility-btns d-flex align-items-center gap-2">
+                                    <button type="button" id="modalBookBookmark" class="btn bookModal-icon-btn d-none" aria-label="Bookmark" title="Bookmark">
+                                        <i class="bi bi-bookmark lh-1" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" id="modalBookFavorite" class="btn bookModal-icon-btn d-none" aria-label="Favorite" title="Favorite">
+                                        <i class="bi bi-heart lh-1" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" id="modalBookShare" class="btn bookModal-icon-btn d-none" aria-label="Share link to this book" title="Share link"
+                                        aria-expanded="false" aria-controls="modalSharePanel">
+                                        <i class="bi bi-share lh-1" aria-hidden="true"></i>
+                                    </button>
+                                    <button type="button" id="modalBookReport" class="btn bookModal-icon-btn" aria-label="Report an issue with this book"
+                                        title="Report an issue" data-report-toggle="modalReportPanel" aria-expanded="false" aria-controls="modalReportPanel">
+                                        <i class="bi bi-flag lh-1" aria-hidden="true"></i>
+                                    </button>
+                                </div>
                             </div>
 
                             <h3 class="fw-bold mb-1 text-dark bookModal-title-text" id="modalBookTitle">Book Title</h3>
-                            <div class="d-flex align-items-center gap-1 text-muted mb-3">
-                                <i class="bi bi-person text-secondary"></i>
+                            <div class="d-flex align-items-center gap-2 text-muted mb-3">
+                                <i class="bi bi-person text-secondary lh-1" aria-hidden="true"></i>
                                 <span class="bookModal-author fw-semibold" id="modalBookAuthor">Author Name</span>
                             </div>
 
                             <hr class="bookModal-divider my-2">
 
                             <div class="bookModal-desc-box p-3 rounded-3 mb-3">
-                                <div class="d-flex align-items-center gap-1 small fw-bold text-uppercase text-muted mb-1">
-                                    <i class="bi bi-card-text text-secondary"></i>
+                                <div class="d-flex align-items-center gap-2 small fw-bold text-uppercase text-muted mb-1">
+                                    <i class="bi bi-card-text text-secondary lh-1" aria-hidden="true"></i>
                                     <span>Description</span>
                                 </div>
                                 <p class="bookModal-desc mb-0" id="modalBookDesc">Book description will appear here.</p>
                             </div>
 
-                            <div class="d-flex align-items-center gap-1 small text-muted mb-3" id="modalBookPublisher">
-                                <i class="bi bi-building text-secondary"></i>
-                                <span>Publisher:</span>
-                                <strong class="text-dark" id="modalBookPublisherName">Publisher Name</strong>
+                        <div class="d-flex align-items-center gap-2 small text-muted mb-3" id="modalBookPublisher">
+                                <i class="bi bi-building text-secondary lh-1" aria-hidden="true"></i>
+                                <span>Publisher: <strong class="text-dark" id="modalBookPublisherName">Publisher Name</strong></span>
                             </div>
+
+                            <!-- Availability / Loan / Reservation status banner (populated by circulation_student.js) -->
+                            <p id="modalCircInfo" class="small w-100 mb-3" hidden role="status"></p>
 
                             <!-- Holds the opaque book token (never the numeric Book_ID); filled by mybooks.js -->
                             <input type="hidden" id="modalBookId" value="">
 
-                            <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-3 pt-1">
-                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none">
-                                    <i class="bi bi-book-half me-1"></i>Read Now
+                            <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap pt-1">
+                                <a id="modalBookRead" href="#" target="_blank" class="bookModal-btn-read d-none d-inline-flex align-items-center justify-content-center flex-fill">
+                                    <i class="bi bi-book-half me-2 lh-1" aria-hidden="true"></i><span>Read Now</span>
                                 </a>
 
                                 <button type="button" id="modalBookBorrow" class="bookModal-btn-read border-0 d-none">
-                                    <i class="bi bi-bookmark-check me-1"></i>Borrow
+                                    <i class="bi bi-bookmark-check me-2 lh-1" aria-hidden="true"></i><span>Borrow</span>
                                 </button>
 
-                                <a id="modalBookAddToCollections" href="#" class="bookModal-btn-addto d-none" role="button"
-                                   aria-expanded="false" aria-controls="modalCollectionPanel">
-                                    <i class="bi bi-folder-plus me-1"></i>Add To Collections
-                                </a>
-
-                                <div class="bookModal-utility-btns d-flex align-items-center gap-2 ms-auto">
-                                    <button type="button" id="modalBookBookmark" class="btn bookModal-icon-btn d-none" aria-label="Bookmark" title="Bookmark">
-                                        <i class="bi bi-bookmark"></i>
-                                    </button>
-                                    <button type="button" id="modalBookFavorite" class="btn bookModal-icon-btn d-none" aria-label="Favorite" title="Favorite">
-                                        <i class="bi bi-heart"></i>
-                                    </button>
-                                    <button type="button" id="modalBookShare" class="btn bookModal-icon-btn d-none" aria-label="Share link to this book" title="Share link">
-                                        <i class="bi bi-share"></i>
-                                    </button>
-                                    <button type="button" id="modalBookReport" class="btn bookModal-icon-btn" aria-label="Report an issue with this book"
-                                        title="Report an issue" data-report-toggle="modalReportPanel" aria-expanded="false" aria-controls="modalReportPanel">
-                                        <i class="bi bi-flag"></i>
-                                    </button>
-                                </div>
-
-                                <p id="modalCircInfo" class="small w-100 mb-0 order-last" hidden role="status"></p>
+                                <button type="button" id="modalBookAddToCollections" class="bookModal-btn-addto border-0 d-none d-inline-flex align-items-center justify-content-center flex-fill"
+                                        aria-expanded="false" aria-controls="modalCollectionPanel">
+                                    <i class="bi bi-folder-plus me-2 lh-1" aria-hidden="true"></i><span>Add To Collections</span>
+                                </button>
 
                                 <div id="modalSharePanel" class="bookModal-panel d-none order-last w-100 mt-2">
                                     <div class="d-flex flex-column flex-sm-row align-items-center gap-3">
@@ -689,37 +690,80 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
 <?php render_scripts(['mybooks.js', 'collections.js', 'report_issue.js', 'circulation_student.js', 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'], false); ?>
     <script>
         (() => {
-            const modal    = document.getElementById('bookDetailsModal');
+            const modal      = document.getElementById('bookDetailsModal');
             if (!modal) return;
-            const shareBtn = document.getElementById('modalBookShare');
-            const panel    = document.getElementById('modalSharePanel');
-            const qrBox    = document.getElementById('modalShareQr');
-            const linkBox  = document.getElementById('modalShareLink');
-            const copyBtn  = document.getElementById('modalShareCopy');
-            const readBtn  = document.getElementById('modalBookRead');
-            const idInput  = document.getElementById('modalBookId');   // holds the book token
+            const shareBtn   = document.getElementById('modalBookShare');
+            const reportBtn  = document.getElementById('modalBookReport');
+            const addColBtn  = document.getElementById('modalBookAddToCollections');
+            const panel      = document.getElementById('modalSharePanel');
+            const reportPane = document.getElementById('modalReportPanel');
+            const colPane    = document.getElementById('modalCollectionPanel');
+            const qrBox      = document.getElementById('modalShareQr');
+            const linkBox    = document.getElementById('modalShareLink');
+            const copyBtn    = document.getElementById('modalShareCopy');
+            const readBtn    = document.getElementById('modalBookRead');
+            const idInput    = document.getElementById('modalBookId');   
 
-            // Only books with a readable file get a link-back; also start closed on every open.
-            modal.addEventListener('show.bs.modal', () => {
+            function closeSharePanel() {
                 panel.classList.add('d-none');
+                shareBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            function closeReportPanel() {
+                if (reportPane) reportPane.hidden = true;
+                if (reportBtn) reportBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            function closeCollectionPanel() {
+                if (colPane) colPane.hidden = true;
+                if (addColBtn) addColBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            modal.addEventListener('show.bs.modal', () => {
+                closeSharePanel();
+                closeReportPanel();
+                closeCollectionPanel();
                 shareBtn.classList.toggle('d-none', readBtn.classList.contains('d-none'));
             });
 
             shareBtn.addEventListener('click', () => {
                 const token = idInput.value;
                 if (!token) return;
-                // Public domain from config (APP_BASE_URL) so phones can open it; falls back to this page's URL.
-                const url = new URL('read_book.php?b=' + encodeURIComponent(token), window.appBaseUrl || window.location.href).href;
-                linkBox.value = url;
-                qrBox.replaceChildren();
-                if (typeof QRCode !== 'undefined') {
-                    new QRCode(qrBox, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
-                    qrBox.classList.remove('d-none');
+                const willOpen = panel.classList.contains('d-none');
+
+                closeReportPanel();
+                closeCollectionPanel();
+
+                if (willOpen) {
+                    const url = new URL('read_book.php?b=' + encodeURIComponent(token), window.appBaseUrl || window.location.href).href;
+                    linkBox.value = url;
+                    qrBox.replaceChildren();
+                    if (typeof QRCode !== 'undefined') {
+                        new QRCode(qrBox, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
+                        qrBox.classList.remove('d-none');
+                    } else {
+                        qrBox.classList.add('d-none'); 
+                    }
+                    panel.classList.remove('d-none');
+                    shareBtn.setAttribute('aria-expanded', 'true');
                 } else {
-                    qrBox.classList.add('d-none'); // QR library did not load: the link still works
+                    closeSharePanel();
                 }
-                panel.classList.toggle('d-none');
             });
+
+            if (reportBtn) {
+                reportBtn.addEventListener('click', () => {
+                    closeSharePanel();
+                    closeCollectionPanel();
+                });
+            }
+
+            if (addColBtn) {
+                addColBtn.addEventListener('click', () => {
+                    closeSharePanel();
+                    closeReportPanel();
+                });
+            }
 
             copyBtn.addEventListener('click', async () => {
                 try {
@@ -728,8 +772,10 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                     linkBox.select();
                     document.execCommand('copy');
                 }
-                copyBtn.textContent = 'Copied';
-                setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+                copyBtn.innerHTML = '<i class="bi bi-check2 me-1" aria-hidden="true"></i>Copied';
+                setTimeout(() => {
+                    copyBtn.innerHTML = '<i class="bi bi-clipboard me-1" aria-hidden="true"></i>Copy';
+                }, 1500);
             });
         })();
     </script>
