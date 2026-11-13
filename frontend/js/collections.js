@@ -123,15 +123,15 @@
             };
 
             function bookCard(b) {
-                const data = `data-id="${b.id}" data-title="${esc(b.title)}" data-author="${esc(b.author)}" data-desc="${esc(b.desc)}"
+                const data = `data-title="${esc(b.title)}" data-author="${esc(b.author)}" data-desc="${esc(b.desc)}"
                     data-isbn="${esc(b.isbn)}" data-genre="${esc(b.genre)}" data-publisher="${esc(b.publisher)}" data-allowed="1"
-                    data-hasfile="${b.has_file ? '1' : '0'}" data-cover="${esc(coverUrl(b.cover))}"`;
+                    data-hasfile="${b.has_file ? '1' : '0'}" data-token="${esc(b.token)}" data-cover="${esc(coverUrl(b.cover))}"`;
                 return `
                 <div class="col position-relative">
                     <a href="#" class="book-trigger d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none" ${data}>
                         <img src="${esc(coverUrl(b.cover))}" class="w-100 h-100 object-fit-cover" alt="${esc(b.title)}">
                     </a>
-                    <button type="button" class="btn btn-sm btn-light rounded-circle shadow collection-remove" data-remove-book="${b.id}"
+                    <button type="button" class="btn btn-sm btn-light rounded-circle shadow collection-remove" data-remove-book="${esc(b.token)}"
                             aria-label="Remove ${esc(b.title)} from this collection" title="Remove from this collection">
                         <i class="bi bi-x-lg"></i>
                     </button>

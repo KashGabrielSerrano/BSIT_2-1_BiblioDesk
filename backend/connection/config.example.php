@@ -13,6 +13,12 @@ if (!defined('SUPABASE_SERVICE_KEY'))    define('SUPABASE_SERVICE_KEY', 'YOUR_SE
 if (!defined('SUPABASE_BUCKET_COVERS')) define('SUPABASE_BUCKET_COVERS', 'book-covers');
 if (!defined('SUPABASE_BUCKET_PDFS'))    define('SUPABASE_BUCKET_PDFS', 'YOUR_PDF_BUCKET');
 
+// --- Book links (server-side secret) ---
+// Makes the reader URL opaque: read_book.php?b=<token> instead of read_book.php?id=<Book_ID>.
+// Must be exactly 64 hex characters. Generate one with:  php -r "echo bin2hex(random_bytes(32));"
+// Keep it private. Changing it later invalidates every link/QR code that was shared before.
+if (!defined('BOOK_LINK_KEY'))           define('BOOK_LINK_KEY', 'GENERATE_A_64_CHARACTER_HEX_KEY');
+
 // --- Optional ---
 // Public URL of the backend folder; used for share links / QR codes. Leave unset locally.
 // if (!defined('APP_BASE_URL')) define('APP_BASE_URL', 'https://your-domain.example/backend/');

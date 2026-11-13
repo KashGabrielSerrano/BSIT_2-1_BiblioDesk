@@ -1,6 +1,7 @@
 <?php
 // Session, config, DB, guards and sendResponse() come from the shared core.
 require_once __DIR__ . '/core/bootstrap.php';
+require_once __DIR__ . '/core/booklink.php';
 header('Content-Type: application/json; charset=utf-8');
 
 $con = db();
@@ -28,7 +29,7 @@ function verifyBookExists(mysqli $con, int $book_id, bool $readable_only = false
 }
 
 if ($action === 'save_progress') {
-    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id = book_id_param($_POST);
     $current_page = max(1, intval($_POST['current_page'] ?? 1));
     $total_pages = max(1, intval($_POST['total_pages'] ?? 1));
 
@@ -49,7 +50,7 @@ if ($action === 'save_progress') {
     sendResponse(true, 'Progress saved successfully.', ['is_finished' => (bool)$is_finished]);
 
 } elseif ($action === 'toggle_bookmark') {
-    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id = book_id_param($_POST);
 
     if (!verifyBookExists($con, $book_id)) {
         http_response_code(404);
@@ -79,7 +80,7 @@ if ($action === 'save_progress') {
     sendResponse(true, 'Bookmark status updated.', ['bookmarked' => $bookmarked]);
 
 } elseif ($action === 'toggle_favorite') {
-    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id = book_id_param($_POST);
 
     if (!verifyBookExists($con, $book_id)) {
         http_response_code(404);
@@ -109,7 +110,7 @@ if ($action === 'save_progress') {
     sendResponse(true, 'Favorite status updated.', ['favorited' => $favorited]);
 
 } elseif ($action === 'get_book_status') {
-    $book_id = max(0, intval($_GET['book_id'] ?? 0));
+    $book_id = book_id_param($_GET);
 
     if ($book_id <= 0) {
         http_response_code(400);
@@ -143,7 +144,7 @@ if ($action === 'save_progress') {
 
 } elseif ($action === 'report_issue') {
     $issue_types = ['Broken Link', 'Missing Page/s', 'Wrong File', 'License Concern', 'Other'];
-    $book_id     = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id     = book_id_param($_POST);
     $issue       = gv($_POST, 'issue_type');
     $details     = gv($_POST, 'description');
 
@@ -181,7 +182,7 @@ if ($action === 'save_progress') {
 
 /* ---------------------------- My Collections ----------------------------
  * VERY IMPORTANT!
- * A user's own named shelves of books (user_collections / user_collection_books, migration 002 file).
+ * A user's own named shelves of books (user_collections / user_collection_books).
  * Any book can go in a collection, physical or digital. Every query is scoped to the logged-in user.
  */
 const COLLECTION_NAME_MAX = 30;
@@ -225,8 +226,7 @@ function collection_add_book(int $collection_id, int $book_id): void {
 }
 
 if ($action === 'list_collections') {
-    // With book_id: also says which collections already hold that book (for the "Add To Collections" panel)
-    $book_id = max(0, intval($_GET['book_id'] ?? 0));
+    $book_id = book_id_param($_GET);
     $rows = db_all($con,
         "SELECT c.Collection_ID, c.Name, COUNT(cb.Book_ID) AS Books, COALESCE(MAX(cb.Book_ID = ?), 0) AS Has_Book
            FROM user_collections c
@@ -244,8 +244,7 @@ if ($action === 'list_collections') {
         sendResponse(false, 'You can have at most ' . COLLECTIONS_PER_USER . ' collections.', [], 422);
     }
     $name = collection_name($user_id);
-    // Optional: put a book in it straight away (creating from the book's "Add To Collections" panel)
-    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id = book_id_param($_POST);
     if ($book_id > 0 && !verifyBookExists($con, $book_id)) {
         sendResponse(false, 'Book not found.', [], 404);
     }
@@ -272,7 +271,7 @@ if ($action === 'list_collections') {
 } elseif ($action === 'set_collection_book') {
     // in=1 adds the book, in=0 removes it
     $c = own_collection($user_id, max(0, intval($_POST['collection_id'] ?? 0)));
-    $book_id = max(0, intval($_POST['book_id'] ?? 0));
+    $book_id = book_id_param($_POST);
     if (!verifyBookExists($con, $book_id)) {
         sendResponse(false, 'Book not found.', [], 404);
     }
@@ -293,7 +292,7 @@ if ($action === 'list_collections') {
           WHERE cb.Collection_ID = ?
           ORDER BY cb.Added_At DESC, b.Book_ID DESC", 'i', [$c['Collection_ID']]);
     sendResponse(true, 'Books loaded.', ['name' => $c['Name'], 'books' => array_map(fn($b) => [
-        'id' => (int)$b['Book_ID'], 'title' => $b['Title'], 'author' => $b['Author'] ?? '', 'desc' => $b['Description'] ?? '',
+        'token' => book_token((int)$b['Book_ID']), 'title' => $b['Title'], 'author' => $b['Author'] ?? '', 'desc' => $b['Description'] ?? '',
         'isbn' => $b['ISBN'] ?? '', 'genre' => $b['Category'] ?? '', 'publisher' => $b['Publisher'] ?? '',
         'cover' => trim((string)($b['Cover_Image'] ?? '')), 'has_file' => (bool)$b['Has_File'],
     ], $rows)]);

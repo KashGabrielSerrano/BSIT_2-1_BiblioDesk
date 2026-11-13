@@ -48,7 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalGenre = document.getElementById('modalBookGenre');
     const modalDesc = document.getElementById('modalBookDesc');
     const modalPublisherName = document.getElementById('modalBookPublisherName');
-    const modalBookId = document.getElementById('modalBookId');
+    const modalBookId = document.getElementById('modalBookId');   // holds the opaque book token
     const modalReadBtn = document.getElementById('modalBookRead');
     const modalAddToColl = document.getElementById('modalBookAddToCollections');
     const modalBookmarkBtn = document.getElementById('modalBookBookmark');
@@ -62,7 +62,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!trigger) return;
         e.preventDefault();
 
-        const id = trigger.dataset.id || '';
+        // The browser only ever knows a book by its opaque token (the numeric Book_ID is never sent to it)
+        const id = trigger.dataset.token || '';
         const title = trigger.dataset.title || 'Untitled';
         const author = trigger.dataset.author || 'Unknown Author';
         const desc = trigger.dataset.desc || 'No description available.';
@@ -70,6 +71,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const genre = trigger.dataset.genre || 'General';
         const publisher = trigger.dataset.publisher || 'N/A';
         const hasFile = trigger.dataset.hasfile === '1';
+        const token = id;
         const cover = trigger.dataset.cover || '../frontend/assets/icons/library-default.png';
 
         // 1. Populate Modal Fields (Instant UI update from data attributes)
@@ -93,10 +95,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (modalPublisherName) modalPublisherName.textContent = publisher;
         if (modalImg) modalImg.src = cover;
 
-        // Reset default button visibility
-        if (hasFile && modalReadBtn) {
+        // Reset default button visibility (no token = no safe link, so the Read button stays hidden)
+        if (hasFile && token && modalReadBtn) {
             modalReadBtn.classList.remove('d-none');
-            modalReadBtn.href = `read_book.php?id=${id}`;
+            modalReadBtn.href = `read_book.php?b=${encodeURIComponent(token)}`;
             modalReadBtn.textContent = 'Read Now';
         } else if (modalReadBtn) {
             modalReadBtn.classList.add('d-none');
@@ -120,7 +122,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     updateBookmarkIcon(data.bookmarked);
                     updateFavoriteIcon(data.favorited);
                     
-                    if (hasFile && data.has_progress && modalReadBtn) {
+                    if (hasFile && token && data.has_progress && modalReadBtn) {
                         modalReadBtn.textContent = 'Continue Reading';
                     }
                 }

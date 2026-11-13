@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/core/bootstrap.php";
+require_once __DIR__ . "/core/booklink.php";
 header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
 header("Pragma: no-cache");
 
@@ -9,7 +10,19 @@ $auth = require_login_page();
 $con = db();
 $so  = so();
 
-$book_id    = isset($_GET['id']) ? intval($_GET['id']) : 0;
+try {
+    $raw_token  = $_GET[BOOK_LINK_PARAM] ?? '';
+    $book_id    = is_string($raw_token) ? (book_id_from_token($raw_token) ?? 0) : 0;
+    $book_token = $book_id > 0 ? book_token($book_id) : '';
+} catch (Throwable $e) {
+    error_log('read_book.php book link error: ' . $e->getMessage());
+    http_response_code(500);
+    exit("Book links are not set up on this server. Please contact the library.");
+}
+if ($book_id <= 0) {
+    http_response_code(404);
+    exit("This book link is invalid or outdated. Please open the book from the library.");
+}
 $user_id    = $auth['user_id'];   // 
 $user_role  = $auth['role'];
 $user_email = $_SESSION['email'] ?? '';
@@ -214,7 +227,7 @@ session_write_close();
 <?php if (in_array($user_role, ['Librarian', 'Admin'], true)): ?>
     <a class="preview-badge" href="librarymanagement.php" title="Back to Library Management">Preview mode (<?php echo htmlspecialchars($user_role); ?>)</a>
 <?php endif; ?>
-    <form id="report-panel" hidden data-report-panel data-book-id="<?php echo (int)$book_id; ?>" aria-label="Report an issue with this book">
+    <form id="report-panel" hidden data-report-panel data-book-id="<?php echo htmlspecialchars($book_token); ?>" aria-label="Report an issue with this book">
         <label for="report-issue">What is wrong with this book?</label>
         <select id="report-issue" name="issue_type" required>
             <option value="">Choose an issue…</option>
@@ -251,7 +264,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs
 
 const authToken = <?php echo json_encode($token); ?>;
 const userEmail = <?php echo json_encode($user_email); ?>;
-const bookId = <?php echo json_encode($book_id); ?>;
+const bookToken = <?php echo json_encode($book_token); ?>;      // the only book identifier the browser gets (share link, progress saving)
 const initialSavedPage = <?php echo json_encode($initial_page); ?>;
 const csrfToken = <?php echo json_encode($csrf_token); ?>;
 const appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
@@ -265,7 +278,7 @@ const appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
     btn.addEventListener('click', () => {
         const open = !panel.classList.contains('open');
         if (open) {
-            const url = new URL('read_book.php?id=' + encodeURIComponent(bookId), appBaseUrl || window.location.href).href;
+            const url = new URL('read_book.php?b=' + encodeURIComponent(bookToken), appBaseUrl || window.location.href).href;
             linkBox.value = url;
             qrBox.replaceChildren();
             if (typeof QRCode !== 'undefined') {
@@ -320,7 +333,7 @@ function saveReadingProgress(page, total) {
     progressSaveTimeout = setTimeout(() => {
         const formData = new FormData();
         formData.append('action', 'save_progress');
-        formData.append('book_id', bookId);
+        formData.append('book_id', bookToken);   // field name is historical; it carries the token
         formData.append('current_page', page);
         formData.append('total_pages', total);
         formData.append('csrf_token', csrfToken);

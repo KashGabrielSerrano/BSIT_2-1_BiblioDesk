@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/core/circulation.php';
+require_once __DIR__ . '/core/booklink.php';
 header('Cache-Control: no-store');
 
 $user = require_login_api();
@@ -61,12 +62,12 @@ switch ($action) {
     /* ================================ STUDENT ================================ */
 
     case 'book_status':
-        $status = book_circulation_status((int)gv($_GET, 'book_id'), $uid, $user['role']);
+        $status = book_circulation_status(book_id_param($_GET), $uid, $user['role']);
         if (!$status['found']) sendResponse(false, 'Book not found.', [], 404);
         sendResponse(true, 'Status loaded.', ['status' => $status]);
 
     case 'request':
-        $book_id = (int)gv($_POST, 'book_id');
+        $book_id = book_id_param($_POST);
         db()->begin_transaction();
         $book = lock_book($book_id);
         $st = book_circulation_status($book_id, $uid, $user['role']);
@@ -94,7 +95,7 @@ switch ($action) {
         sendResponse(true, 'Request cancelled.');
 
     case 'reserve':
-        $book_id = (int)gv($_POST, 'book_id');
+        $book_id = book_id_param($_POST);
         db()->begin_transaction();
         $book = lock_book($book_id);
         $st = book_circulation_status($book_id, $uid, $user['role']);
@@ -129,7 +130,7 @@ switch ($action) {
                                 WHERE f.User_ID = ? ORDER BY f.Status = 'Unpaid' DESC, f.Created_At DESC LIMIT 50", 'i', [$uid]);
         sendResponse(true, 'Loaded.', [
             'loans'        => array_map('loan_item', $loans),
-            'reservations' => array_map(fn($r) => ['id' => (int)$r['Reservation_ID'], 'book_id' => (int)$r['Book_ID'], 'title' => $r['Title'],
+            'reservations' => array_map(fn($r) => ['id' => (int)$r['Reservation_ID'], 'title' => $r['Title'],
                                                    'status' => $r['Status'], 'position' => queue_position($r),
                                                    'hold_until' => local_date($r['Hold_Until'], 'M d, Y'), 'created' => local_date($r['Created_At'], 'M d, Y')], $res),
             'fines'        => array_map(fn($f) => ['id' => (int)$f['Fine_ID'], 'title' => $f['Title'], 'reason' => $f['Reason'],

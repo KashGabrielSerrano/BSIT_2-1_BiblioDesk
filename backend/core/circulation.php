@@ -226,7 +226,6 @@ function loan_item(array $r): array {
     $overdue = $r['Status'] === 'Borrowed' && $r['Due_At'] && $r['Due_At'] < utc_now();
     return [
         'id'          => (int)$r['Loan_ID'],
-        'book_id'     => (int)$r['Book_ID'],
         'title'       => $r['Title'],
         'author'      => $r['Author'] ?? '',
         'status'      => $r['Status'],

@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . "/core/bootstrap.php";
+require_once __DIR__ . "/core/booklink.php";
 
 // Logged in and still Active (re-checked against the DB), otherwise -> login.php
 require_login_page();
@@ -145,10 +146,10 @@ function renderBookGrid(array $books): string {
         $genre = htmlspecialchars($b['Category'] ?? 'General');
         $pub = htmlspecialchars($b['Publisher'] ?? 'N/A');
         $book_id = (int)($b['Book_ID'] ?? 0);
+        $token = htmlspecialchars(book_token($book_id));   // opaque id for the reader / share link
         $html .= '
         <div class="col">
             <a href="#" class="book-trigger d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none"
-                data-id="' . $book_id . '"
                 data-title="' . $title . '"
                 data-author="' . $author . '"
                 data-desc="' . $desc . '"
@@ -157,11 +158,11 @@ function renderBookGrid(array $books): string {
                 data-publisher="' . $pub . '"
                 data-allowed="1"
                 data-hasfile="' . $hasFile . '"
+                data-token="' . $token . '"
                 data-cover="' . $cover . '">
                 <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . $title . '">
             </a>
             <a href="#" class="textArea text-decoration-none book-trigger"
-                data-id="' . $book_id . '"
                 data-title="' . $title . '"
                 data-author="' . $author . '"
                 data-desc="' . $desc . '"
@@ -170,6 +171,7 @@ function renderBookGrid(array $books): string {
                 data-publisher="' . $pub . '"
                 data-allowed="1"
                 data-hasfile="' . $hasFile . '"
+                data-token="' . $token . '"
                 data-cover="' . $cover . '">
                 <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . $title . '</h3>
                 <p class="small mb-3 text-muted text-truncate">' . $author . '</p>
@@ -224,7 +226,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
     $cover = htmlspecialchars(getCoverImageUrl($row['Cover_Image'] ?? null));   // library icon when there is no cover
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
-    $bookId  = htmlspecialchars((string)($row['Book_ID'] ?? ''));
+    $token   = htmlspecialchars(book_token((int)($row['Book_ID'] ?? 0)));   // opaque id for the reader / share link
     $title   = htmlspecialchars($row['Title'] ?? 'Untitled');
     $author  = htmlspecialchars($row['Author'] ?? 'Unknown Author');
     
@@ -232,7 +234,6 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
     <div class="col">
         <a href="#"
            class="book-trigger d-block ratio ' . $ratioClass . ' rounded-2 overflow-hidden shadow position-relative text-decoration-none"
-           data-id="' . $bookId . '"
            data-title="' . $title . '"
            data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
@@ -241,11 +242,11 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
            data-publisher="' . htmlspecialchars($row['Publisher'] ?? '') . '"
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
+           data-token="' . $token . '"
            data-cover="' . $cover . '">
             <img src="' . $cover . '" class="w-100 h-100 object-fit-cover" alt="' . $title . '">
         </a>
         <a href="#" class="textArea text-decoration-none book-trigger"
-           data-id="' . $bookId . '"
            data-title="' . $title . '"
            data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
@@ -254,6 +255,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
            data-publisher="' . htmlspecialchars($row['Publisher'] ?? '') . '"
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
+           data-token="' . $token . '"
            data-cover="' . $cover . '">
             <h3 class="h6 fw-bold mt-3 mb-0 text-truncate">' . $title . '</h3>
             <p class="small mb-3 text-muted text-truncate">' . $author . '</p>
@@ -409,7 +411,6 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
                                 ?>
                                 <div class="newarrivals-item book-trigger"
-                                     data-id="<?php echo htmlspecialchars((string)($row['Book_ID'] ?? '')); ?>"
                                      data-title="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>"
                                      data-author="<?php echo htmlspecialchars($row['Author'] ?? ''); ?>"
                                      data-desc="<?php echo htmlspecialchars($row['Description'] ?? ''); ?>"
@@ -418,6 +419,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                      data-publisher="<?php echo htmlspecialchars($row['Publisher'] ?? ''); ?>"
                                      data-allowed="1"
                                      data-hasfile="<?php echo !empty($drive) ? '1' : '0'; ?>"
+                                     data-token="<?php echo htmlspecialchars(book_token((int)($row['Book_ID'] ?? 0))); ?>"
                                      data-cover="<?php echo $cover; ?>">
                                     <img src="<?php echo $cover; ?>" alt="<?php echo htmlspecialchars($row['Title'] ?? ''); ?>">
                                 </div>
@@ -518,6 +520,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                 <strong class="text-dark" id="modalBookPublisherName">Publisher Name</strong>
                             </div>
 
+                            <!-- Holds the opaque book token (never the numeric Book_ID); filled by mybooks.js -->
                             <input type="hidden" id="modalBookId" value="">
 
                             <div class="bookModal-btn-container d-flex align-items-center gap-2 flex-wrap mt-3 pt-1">
@@ -694,7 +697,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             const linkBox  = document.getElementById('modalShareLink');
             const copyBtn  = document.getElementById('modalShareCopy');
             const readBtn  = document.getElementById('modalBookRead');
-            const idInput  = document.getElementById('modalBookId');
+            const idInput  = document.getElementById('modalBookId');   // holds the book token
 
             // Only books with a readable file get a link-back; also start closed on every open.
             modal.addEventListener('show.bs.modal', () => {
@@ -703,10 +706,10 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             });
 
             shareBtn.addEventListener('click', () => {
-                const id = idInput.value;
-                if (!id) return;
+                const token = idInput.value;
+                if (!token) return;
                 // Public domain from config (APP_BASE_URL) so phones can open it; falls back to this page's URL.
-                const url = new URL('read_book.php?id=' + encodeURIComponent(id), window.appBaseUrl || window.location.href).href;
+                const url = new URL('read_book.php?b=' + encodeURIComponent(token), window.appBaseUrl || window.location.href).href;
                 linkBox.value = url;
                 qrBox.replaceChildren();
                 if (typeof QRCode !== 'undefined') {
