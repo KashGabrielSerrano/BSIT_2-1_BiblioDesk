@@ -297,3 +297,84 @@ footer{
         overflow-y: auto !important;
     }
 }
+/* -- Bookmarks panel: same look as the shelves on My Books (copied from user_librarydb.css / mybooks.css) -- */
+.eduCover {
+    --bs-aspect-ratio: 133.33%;
+    position: relative;
+    transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.eduCover::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: 7%;
+    z-index: 2;
+    pointer-events: none;
+    background: var(--cc-book-ed);
+}
+
+.eduCover:hover {
+    transform: translateY(-8px) scale(1.05);
+    position: relative;
+    background-color: #ffffff;
+}
+
+.lib-panel {
+    scroll-margin-top: 16px;
+    margin-bottom: 28px;
+    padding: 28px 28px 24px;
+    border-radius: 15px;
+    background: var(--main-bg-color, #f5f1ea);
+    border: 1px solid var(--line, rgba(43, 36, 32, 0.18));
+    box-shadow: 0 1px 2px var(--fcolor-main, #2b2420);
+}
+
+.lib-section-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: none;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    color: var(--fcolor-secondary, #f6f1e7);
+    background: var(--main-color, #2b2420);
+}
+
+.lib-section-head h2 {
+    color: var(--fcolor-main, #2b2420);
+}
+
+.lib-empty {
+    padding: 36px 20px;
+    border: 2px dashed rgba(var(--main-rgb), 0.25);
+    border-radius: 15px;
+    background: rgba(255, 255, 255, 0.55);
+}
+
+.lib-empty-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    margin-bottom: 12px;
+    border-radius: 50%;
+    font-size: 1.6rem;
+    color: var(--main-color, #1F4735);
+    background: rgba(var(--main-rgb), 0.1);
+}
+
+.lib-panel .textArea:hover h3 {
+    text-decoration: underline;
+}
+
+@media (max-width: 767.98px) {
+    .lib-panel {
+        padding: 20px 16px 16px;
+    }
+}

@@ -16,7 +16,7 @@ function student_dashboard(int $user_id): array {
     $activity = array_map(fn($r) => ['title' => $r['Title'], 'when' => local_date($r['Created_At'], 'M d')],
         db_all(db(), "SELECT Title, Created_At FROM notification_table WHERE User_ID = ? ORDER BY Created_At DESC, Notification_ID DESC LIMIT 4",
                'i', [$user_id]));
-    $bookmarks = db_all(db(), "SELECT b.Book_ID, b.Title, b.Cover_Image FROM user_bookmarks ub JOIN book_table b ON b.Book_ID = ub.Book_ID
+    $bookmarks = db_all(db(), "SELECT b.Book_ID, b.Title, b.Author, b.Cover_Image FROM user_bookmarks ub JOIN book_table b ON b.Book_ID = ub.Book_ID
                                 WHERE ub.User_ID = ? ORDER BY ub.Created_At DESC LIMIT 6", 'i', [$user_id]);
     return compact('stats', 'activity', 'bookmarks');
 }

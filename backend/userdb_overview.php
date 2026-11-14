@@ -159,33 +159,44 @@ render_head('User Dashboard', ['userdb.css']);
             </section>
 
             <!--Bookmarks section-->
-            <section>
-                <div class="d-flex justify-content-between align-items-baseline mt-5 mb-3">
-                    <h2 class="h1 fw-semibold mb-0">Bookmarks</h2>
-                    <a href="user_librarydb.php?view=library" class="fs-5"><u>Browse Library ></u></a>
+            <section class="lib-panel mt-5" id="overview-bookmarks" aria-labelledby="bookmarksHeading">
+                <div class="d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div class="lib-section-head d-flex align-items-center gap-3 text-start">
+                        <span class="lib-section-icon" aria-hidden="true"><i class="bi bi-bookmark"></i></span>
+                        <div>
+                            <h2 id="bookmarksHeading" class="h4 fw-bold mb-0">Bookmarks</h2>
+                            <p class="small text-muted mb-0">Books you saved for later</p>
+                        </div>
+                    </div>
+                    <a href="user_librarydb.php?view=library" class="btn btn-outline-dark rounded-pill px-3">
+                        <i class="bi bi-compass me-1" aria-hidden="true"></i>Find your next read
+                    </a>
                 </div>
 
+<?php if (!$dash['bookmarks']): ?>
+                <div class="lib-empty text-center">
+                    <span class="lib-empty-icon" aria-hidden="true"><i class="bi bi-bookmark"></i></span>
+                    <h3 class="h6 fw-bold mb-1">No bookmarks yet</h3>
+                    <p class="small text-muted mb-0">Bookmark a book from its details window to find it here.</p>
+                </div>
+<?php else: ?>
                 <!--Books area-->
                 <div class="row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">
 <?php foreach ($dash['bookmarks'] as $b):
         $cover = trim((string)$b['Cover_Image']) !== '' ? (filter_var($b['Cover_Image'], FILTER_VALIDATE_URL) ? $b['Cover_Image'] : '../' . ltrim($b['Cover_Image'], '/'))
                                                         : '../frontend/assets/icons/library-default.png'; ?>
                     <div class="col">
-                        <a href="user_librarydb.php?view=mybooks" class="d-block ratio bookCover rounded-2 overflow-hidden shadow" aria-label="<?= e($b['Title']) ?>">
+                        <a href="user_librarydb.php?view=mybooks#lib-bookmarks" class="d-block ratio eduCover rounded-2 overflow-hidden shadow position-relative text-decoration-none" aria-label="<?= e($b['Title']) ?>">
                             <img src="<?= e($cover) ?>" alt="" class="w-100 h-100 object-fit-cover" loading="lazy">
                         </a>
-                        <a href="user_librarydb.php?view=mybooks" class="textArea">
+                        <a href="user_librarydb.php?view=mybooks#lib-bookmarks" class="textArea text-decoration-none">
                             <h3 class="h6 fw-bold mt-3 mb-0 text-truncate"><?= e($b['Title']) ?></h3>
+                            <p class="small mb-3 text-muted text-truncate"><?= e($b['Author'] ?? '') ?></p>
                         </a>
                     </div>
 <?php endforeach; ?>
-                    <div class="col">
-                        <a href="user_librarydb.php?view=library" class="d-block ratio bookCover rounded-2 overflow-hidden shadow" aria-label="Add a bookmark"></a>
-                        <a href="user_librarydb.php?view=library" class="textArea">
-                            <h3 class="h6 fw-bold mt-3 mb-0">+ Add Book</h3>
-                        </a>
-                    </div>
                 </div>
+<?php endif; ?>
             </section>
 
             <!-- LOGOUT CONFIRMATION MODAL -->

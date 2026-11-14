@@ -244,7 +244,7 @@ function render_topbar(string $menu): void {
                     <img src="../frontend/assets/icons/settings.png" alt="settings icon" width="34">
                 </a>
 
-                <a href="account.php" class="btn p-0 border-0" aria-label="Open Account Information">
+                <a href="./settings.php?tab=profile" class="btn p-0 border-0" aria-label="Open Account Information">
                     <img src="<?= e(profile_avatar_url() ?: '../frontend/assets/icons/pfp-icon.png') ?>" alt="Profile" class="rounded-circle object-fit-cover" width="44" height="44" data-bd-avatar>
                 </a>
             </div>
