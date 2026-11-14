@@ -21,13 +21,13 @@ $modal_redirect = '';
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
-    <link rel="stylesheet" href="../frontend/css/Root.css">
+    <link rel="stylesheet" href="../frontend/css/root.css">
     <link rel="stylesheet" href="../frontend/css/Registration.css?v=12">
 </head>
 <body>
 <div class="registration-container">
     <div class="logo-panel">
-        <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
+        <img src="../frontend/assets/BiblioDesk_White.png" alt="BiblioDesk Logo" class="logo">
         <p class="tagline">Read, Archive, Advance,<br>Knowledge.</p>
     </div>
 

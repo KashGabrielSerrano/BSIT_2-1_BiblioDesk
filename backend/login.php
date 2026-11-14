@@ -38,7 +38,7 @@ if ($user = current_user()) {
 <body>
 <div class="login-container">
     <div class="logo-panel">
-        <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
+        <img src="../frontend/assets/BiblioDesk_White.png" alt="BiblioDesk Logo" class="logo">
         <p class="tagline">Read, Archive, Advance,<br>Knowledge.</p>
     </div>
     <div class="form-wrapper">

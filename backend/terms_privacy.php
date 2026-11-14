@@ -26,7 +26,7 @@ $alt_link_url = $is_terms ? 'terms_privacy.php?view=privacy' : 'terms_privacy.ph
 <body>
 <div class="terms_privacy-container">
     <div class="logo-panel">
-        <img src="../frontend/assets/Bibliodesk_White.png" alt="BiblioDesk Logo" class="logo">
+        <img src="../frontend/assets/BiblioDesk_White.png" alt="BiblioDesk Logo" class="logo">
         <p class="tagline">Read, Archive, Advance,<br>Knowledge.</p>
     </div>
     <div class="form-wrapper">
