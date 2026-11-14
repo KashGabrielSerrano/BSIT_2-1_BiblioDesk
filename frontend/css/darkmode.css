@@ -768,3 +768,19 @@ html[data-theme="dark"] .card.contactCard:not(.topbar):not(.sidebar) {
 [data-theme="dark"] .reqList li.ok {
     color: #6FCF97;
 }
+
+
+/* =============================================================================
+   L. GENRES
+   ============================================================================= */
+[data-theme="dark"] .bookGenreTag {
+    background-color: rgba(169, 220, 192, .14);
+    border-color: rgba(169, 220, 192, .5);
+    color: var(--bd-accent);
+}
+
+[data-theme="dark"] .lib-filter-note {
+    background-color: rgba(169, 220, 192, .1);
+    border: 1px solid rgba(169, 220, 192, .3) !important;
+    color: var(--bd-accent);
+}

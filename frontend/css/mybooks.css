@@ -906,3 +906,26 @@ hr {
     padding: 20px 16px 16px;
   }
 }
+
+/* -- Genres -- */
+.bookGenreTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  border-radius: 50rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--main-color);
+  background-color: rgba(var(--main-rgb), 0.08);
+  border: 1px solid rgba(var(--main-rgb), 0.3);
+}
+
+.bookGenreTag.d-none {
+  display: none !important;
+}
+
+.bookGenreTag i {
+  font-size: 0.75rem;
+}

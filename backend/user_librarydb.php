@@ -15,6 +15,24 @@ if (!in_array($view, ['library', 'mybooks'], true)) {
     $view = 'library';
 }
 
+const BOOK_GENRE_ICONS = [
+    'Fiction'     => 'bi-magic',
+    'Non-Fiction' => 'bi-journal-text',
+    'Horror'      => 'bi-moon-stars',
+    'Romance'     => 'bi-heart',
+    'Science'     => 'bi-lightbulb',
+    'Technology'  => 'bi-cpu',
+    'History'     => 'bi-hourglass-split',
+    'Self-help'   => 'bi-emoji-smile',
+    'Education'   => 'bi-mortarboard',
+];
+
+// Active genre filter for the library view (?genre=Horror). Anything not in the whitelist means "all genres".
+$genre_filter = (string)($_GET['genre'] ?? '');
+if (!array_key_exists($genre_filter, BOOK_GENRE_ICONS)) {
+    $genre_filter = '';
+}
+
 $continue_reading_books = [];
 $bookmark_books         = [];
 $favorite_books         = [];
@@ -49,20 +67,23 @@ function getCoverImageUrl(?string $url): string {
 
 /**
  * Latest books of ONE category (exact match).
- * Each shelf has its own query, so a shelf never borrows books from another category, and an older
- * book is never crowded out of its shelf by newer books of a different category.
  *
  * @return array<int, array<string, mixed>>
  */
-function fetchShelf(mysqli $con, string $category, int $limit = 6): array {
+function fetchShelf(mysqli $con, string $category, int $limit = 6, string $genre = ''): array {
+    $genreSql = $genre !== '' ? 'AND Genre = ?' : '';
     $stmt = $con->prepare(
-        "SELECT Book_ID, Title, Author, Description, ISBN, Category, Publisher, Cover_Image, Drive_Link
+        "SELECT Book_ID, Title, Author, Description, ISBN, Category, Genre, Publisher, Cover_Image, Drive_Link
            FROM book_table
-          WHERE Category = ?
+          WHERE Category = ? {$genreSql}
           ORDER BY Book_ID DESC
           LIMIT ?"
     );
-    $stmt->bind_param("si", $category, $limit);
+    if ($genre !== '') {
+        $stmt->bind_param("ssi", $category, $genre, $limit);
+    } else {
+        $stmt->bind_param("si", $category, $limit);
+    }
     $stmt->execute();
     $rows = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
     $stmt->close();
@@ -144,6 +165,7 @@ function renderBookGrid(array $books): string {
         $desc = htmlspecialchars($b['Description'] ?? '');
         $isbn = htmlspecialchars($b['ISBN'] ?? 'N/A');
         $genre = htmlspecialchars($b['Category'] ?? 'General');
+        $bookGenre = htmlspecialchars($b['Genre'] ?? '');   // real genre (Fiction, Horror, ...); $genre above is the category
         $pub = htmlspecialchars($b['Publisher'] ?? 'N/A');
         $book_id = (int)($b['Book_ID'] ?? 0);
         $token = htmlspecialchars(book_token($book_id));   // opaque id for the reader / share link
@@ -154,7 +176,7 @@ function renderBookGrid(array $books): string {
                 data-author="' . $author . '"
                 data-desc="' . $desc . '"
                 data-isbn="' . $isbn . '"
-                data-genre="' . $genre . '"
+                data-genre="' . $genre . '" data-book-genre="' . $bookGenre . '"
                 data-publisher="' . $pub . '"
                 data-allowed="1"
                 data-hasfile="' . $hasFile . '"
@@ -167,7 +189,7 @@ function renderBookGrid(array $books): string {
                 data-author="' . $author . '"
                 data-desc="' . $desc . '"
                 data-isbn="' . $isbn . '"
-                data-genre="' . $genre . '"
+                data-genre="' . $genre . '" data-book-genre="' . $bookGenre . '"
                 data-publisher="' . $pub . '"
                 data-allowed="1"
                 data-hasfile="' . $hasFile . '"
@@ -186,18 +208,21 @@ function renderBookGrid(array $books): string {
 // ============================================================================
 if ($view === 'library') {
     // 1. Fetch recent books into memory in a single query
-    $query = "SELECT Book_ID, Title, Author, Description, ISBN, Category, Publisher, Cover_Image, Drive_Link 
-              FROM book_table 
-              ORDER BY Book_ID DESC 
-              LIMIT 50";
-    $result = $con->query($query);
-
-    $all_books = [];
-    if ($result && $result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $all_books[] = $row;
-        }
+    // (filtered by genre when ?genre= is set; the genre value was whitelisted above)
+    $genreSql = $genre_filter !== '' ? 'WHERE Genre = ?' : '';
+    $stmt = $con->prepare(
+        "SELECT Book_ID, Title, Author, Description, ISBN, Category, Genre, Publisher, Cover_Image, Drive_Link
+           FROM book_table
+           {$genreSql}
+          ORDER BY Book_ID DESC
+          LIMIT 50"
+    );
+    if ($genre_filter !== '') {
+        $stmt->bind_param("s", $genre_filter);
     }
+    $stmt->execute();
+    $all_books = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    $stmt->close();
 
     $new_arrivals = array_slice($all_books, 0, 7);
 
@@ -208,7 +233,7 @@ if ($view === 'library') {
     $recommendations_arr = [];
     if (!empty($userFavoriteGenres)) {
         foreach ($all_books as $book) {
-            $cat = strtolower((string)($book['Category'] ?? ''));
+            $cat = strtolower(($book['Category'] ?? '') . ' ' . ($book['Genre'] ?? ''));   // favorites can match a category or a genre
             foreach ($userFavoriteGenres as $fav) {
                 if (stripos($cat, strtolower($fav)) !== false) {
                     $recommendations_arr[] = $book;
@@ -227,9 +252,9 @@ if ($view === 'library') {
     $recommendations = !empty($recommendations_arr) ? array_slice($recommendations_arr, 0, 12) : array_slice($all_books, 0, 6);
 
     // Category shelves: exact match only. An empty shelf stays empty (no fallback to other categories).
-    $educational     = fetchShelf($con, 'Educational');
-    $non_educational = fetchShelf($con, 'Non-Educational');
-    $research        = fetchShelf($con, 'Research Articles');
+    $educational     = fetchShelf($con, 'Educational', 6, $genre_filter);
+    $non_educational = fetchShelf($con, 'Non-Educational', 6, $genre_filter);
+    $research        = fetchShelf($con, 'Research Articles', 6, $genre_filter);
 }
 
 /**
@@ -254,7 +279,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
            data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
            data-isbn="' . htmlspecialchars($row['ISBN'] ?? '') . '"
-           data-genre="' . htmlspecialchars($row['Category'] ?? '') . '"
+           data-genre="' . htmlspecialchars($row['Category'] ?? '') . '" data-book-genre="' . htmlspecialchars($row['Genre'] ?? '') . '"
            data-publisher="' . htmlspecialchars($row['Publisher'] ?? '') . '"
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
@@ -267,7 +292,7 @@ function renderBookCard(array $row, string $ratioClass = ''): string {
            data-author="' . $author . '"
            data-desc="' . htmlspecialchars($row['Description'] ?? '') . '"
            data-isbn="' . htmlspecialchars($row['ISBN'] ?? '') . '"
-           data-genre="' . htmlspecialchars($row['Category'] ?? '') . '"
+           data-genre="' . htmlspecialchars($row['Category'] ?? '') . '" data-book-genre="' . htmlspecialchars($row['Genre'] ?? '') . '"
            data-publisher="' . htmlspecialchars($row['Publisher'] ?? '') . '"
            data-allowed="1"
            data-hasfile="' . $hasFile . '"
@@ -301,7 +326,11 @@ function renderSectionHeader(string $icon, string $title, string $subtitle, stri
  * @param array<int, array<string, mixed>> $books
  */
 function renderShelf(array $books, string $ratioClass, string $emptyText = 'No books in this section yet.'): string {
+    global $genre_filter;
     if (empty($books)) {
+        if ($genre_filter !== '') {
+            $emptyText = 'No ' . $genre_filter . ' books on this shelf yet.';
+        }
         return renderEmptyState('bi-journal-bookmark', 'Nothing on this shelf yet', $emptyText);
     }
     $html = '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">';
@@ -419,7 +448,33 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                         <button type="button" class="btn btn-outline-success" id="viewModeList" title="List View"><i class="bi bi-view-list me-1"></i>List</button>
                     </div>
                 </nav>
+
+                <!-- GENRE FILTER: plain links (?genre=...), so the page is filtered on the server and can be bookmarked -->
+                <nav class="lib-genre-bar mt-3 pt-3" aria-label="Filter books by genre">
+                    <p class="lib-genre-label mb-2"><i class="bi bi-funnel-fill me-2" aria-hidden="true"></i>Filter by genre</p>
+                    <div class="lib-jump-row">
+                        <a class="lib-jump<?= $genre_filter === '' ? ' is-active' : '' ?>" href="user_librarydb.php?view=library"<?= $genre_filter === '' ? ' aria-current="true"' : '' ?>>
+                            <i class="bi bi-grid-3x3-gap me-1" aria-hidden="true"></i>All Genres
+                        </a>
+                        <?php foreach (BOOK_GENRE_ICONS as $genre_name => $genre_icon): ?>
+                            <a class="lib-jump<?= $genre_filter === $genre_name ? ' is-active' : '' ?>"
+                               href="user_librarydb.php?view=library&amp;genre=<?= urlencode($genre_name) ?>"<?= $genre_filter === $genre_name ? ' aria-current="true"' : '' ?>>
+                                <i class="bi <?= htmlspecialchars($genre_icon) ?> me-1" aria-hidden="true"></i><?= htmlspecialchars($genre_name) ?>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </nav>
             </header>
+
+            <?php if ($genre_filter !== ''): ?>
+                <div class="alert alert-success d-flex flex-wrap align-items-center gap-2 rounded-4 border-0 shadow-sm lib-filter-note" role="status">
+                    <i class="bi <?= htmlspecialchars(BOOK_GENRE_ICONS[$genre_filter]) ?>" aria-hidden="true"></i>
+                    <span>Showing <strong><?= htmlspecialchars($genre_filter) ?></strong> books across every shelf.</span>
+                    <a class="btn btn-sm btn-outline-success rounded-pill ms-auto px-3" href="user_librarydb.php?view=library">
+                        <i class="bi bi-x-lg me-1" aria-hidden="true"></i>Clear filter
+                    </a>
+                </div>
+            <?php endif; ?>
 
             <!-- NEW ARRIVALS -->
             <section class="new-arrivals-section lib-panel text-center" id="lib-new">
@@ -438,6 +493,7 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                                      data-desc="<?php echo htmlspecialchars($row['Description'] ?? ''); ?>"
                                      data-isbn="<?php echo htmlspecialchars($row['ISBN'] ?? ''); ?>"
                                      data-genre="<?php echo htmlspecialchars($row['Category'] ?? ''); ?>"
+                                     data-book-genre="<?php echo htmlspecialchars($row['Genre'] ?? ''); ?>"
                                      data-publisher="<?php echo htmlspecialchars($row['Publisher'] ?? ''); ?>"
                                      data-allowed="1"
                                      data-hasfile="<?php echo !empty($drive) ? '1' : '0'; ?>"
@@ -517,7 +573,10 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                         </div>
                         <div class="col-md-8">
                             <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-2">
-                                <span class="bookGenre badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" id="modalBookGenre">Category</span>
+                                <div class="d-flex flex-wrap align-items-center gap-2">
+                                    <span class="bookGenre badge rounded-pill px-3 py-1 fw-semibold d-inline-flex align-items-center gap-1" id="modalBookGenre">Category</span>
+                                    <span class="bookGenreTag badge rounded-pill px-3 py-1 fw-semibold d-none align-items-center gap-1" id="modalBookGenreTag"><i class="bi bi-bookmarks" aria-hidden="true"></i><span></span></span>
+                                </div>
 
                                 <div class="bookModal-utility-btns d-flex align-items-center gap-2">
                                     <button type="button" id="modalBookBookmark" class="btn bookModal-icon-btn d-none" aria-label="Bookmark" title="Bookmark">

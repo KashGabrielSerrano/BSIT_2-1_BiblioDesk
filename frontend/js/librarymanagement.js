@@ -283,6 +283,25 @@
         return `<span class="pill auto ${hit.cls}"><i class="bi ${hit.icon} me-1" aria-hidden="true"></i>${hit.label}</span>`;
     }
 
+    const GENRE_ICONS = {
+        'Fiction': 'bi-magic',
+        'Non-Fiction': 'bi-journal-text',
+        'Horror': 'bi-moon-stars',
+        'Romance': 'bi-heart',
+        'Science': 'bi-lightbulb',
+        'Technology': 'bi-cpu',
+        'History': 'bi-hourglass-split',
+        'Self-help': 'bi-emoji-smile',
+        'Education': 'bi-mortarboard'
+    };
+
+    function genreBadge(genre) {
+        const g = (genre || '').trim();
+        if (!g) return '<p class="rowSub mt-1"><i class="bi bi-bookmarks me-1" aria-hidden="true"></i>No genre</p>';
+        const icon = GENRE_ICONS[g] || 'bi-bookmarks';
+        return `<p class="rowSub mt-1"><i class="bi ${icon} me-1" aria-hidden="true"></i>${escapeHtml(g)}</p>`;
+    }
+
     function digitalBadge(book) {
         const pill = (kind, icon, label) =>
             `<span class="pill auto ${kind}"><i class="bi ${icon} me-1" aria-hidden="true"></i>${label}</span>`;
@@ -316,7 +335,7 @@
                 <p class="rowName">${escapeHtml(b.author)}</p>
                 ${publisher}
             </td>
-            <td class="cB">${categoryBadge(b.category)}</td>
+            <td class="cB">${categoryBadge(b.category)}${genreBadge(b.genre)}</td>
             <td class="cA">${digitalBadge(b)}</td>
             <td class="cB">
                 <div class="acctActions">
@@ -431,8 +450,8 @@
         try {
             const { book } = await api('get_book', { params: { book_id: bookId } });
             const form = $('editBookForm');
-            form.reset(); // also clears any file chosen on a previous edit
-            ['book_id', 'title', 'author', 'isbn', 'publisher', 'category', 'description', 'cover_image', 'drive_link', 'is_digital', 'total_copies']
+            form.reset();
+            ['book_id', 'title', 'author', 'isbn', 'publisher', 'category', 'genre', 'description', 'cover_image', 'drive_link', 'is_digital', 'total_copies']
                 .forEach((name) => {
                     form.elements[name].value = book[name] ?? '';
                 });

@@ -121,6 +121,23 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     </select>
                                 </div>
                                 <div class="form-group col-md-6">
+                                    <label class="form-label text-white small fw-semibold" for="addGenre">
+                                        <i class="bi bi-bookmarks-fill me-1 text-warning"></i> Genre <span class="text-danger">*</span>
+                                    </label>
+                                    <select id="addGenre" name="genre" class="form-select rounded-3 py-2 px-3 bg-light border-0 shadow-sm" required>
+                                        <option value="" selected disabled>Select a genre</option>
+                                        <option value="Fiction">Fiction</option>
+                                        <option value="Non-Fiction">Non-Fiction</option>
+                                        <option value="Horror">Horror</option>
+                                        <option value="Romance">Romance</option>
+                                        <option value="Science">Science</option>
+                                        <option value="Technology">Technology</option>
+                                        <option value="History">History</option>
+                                        <option value="Self-help">Self-help</option>
+                                        <option value="Education">Education</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-md-6">
                                     <label class="form-label text-white small fw-semibold" for="addIsDigital">
                                         <i class="bi bi-hdd-network-fill me-1 text-warning"></i> Digital Access
                                     </label>
@@ -263,7 +280,7 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                         <i class="bi bi-search"></i>
                                     </span>
                                     <input type="search" id="catalogSearch" class="form-control py-2 ps-2 pe-3"
-                                        placeholder="Search title, author, ISBN, category..." aria-label="Search library"
+                                        placeholder="Search title, author, ISBN, category, genre..." aria-label="Search library"
                                         autocomplete="off">
                                 </div>
                             </form>
@@ -544,6 +561,21 @@ render_head('BiblioDesk - Library Management', ['librarian.css']);
                                     <option value="Educational">Educational</option>
                                     <option value="Non-Educational">Non-Educational</option>
                                     <option value="Research Articles">Research Articles</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-semibold small" for="editGenre"><i class="bi bi-bookmarks-fill me-1 text-secondary"></i> Genre <span class="text-danger">*</span></label>
+                                <select id="editGenre" name="genre" class="form-select rounded-3" required>
+                                    <option value="" disabled>Select a genre</option>
+                                    <option value="Fiction">Fiction</option>
+                                    <option value="Non-Fiction">Non-Fiction</option>
+                                    <option value="Horror">Horror</option>
+                                    <option value="Romance">Romance</option>
+                                    <option value="Science">Science</option>
+                                    <option value="Technology">Technology</option>
+                                    <option value="History">History</option>
+                                    <option value="Self-help">Self-help</option>
+                                    <option value="Education">Education</option>
                                 </select>
                             </div>
                             <div class="col-md-6">

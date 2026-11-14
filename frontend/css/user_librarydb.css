@@ -932,3 +932,51 @@ hr {
   margin-bottom: 0 !important;
   font-size: 0.9rem !important;
 }
+
+/* -- Genres -- */
+.bookGenreTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 14px;
+  border-radius: 50rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  color: var(--main-color);
+  background-color: rgba(var(--main-rgb), 0.08);
+  border: 1px solid rgba(var(--main-rgb), 0.3);
+}
+
+.bookGenreTag.d-none {
+  display: none !important;
+}
+
+.bookGenreTag i {
+  font-size: 0.75rem;
+}
+
+/* -- Genres: filter in the Digital Library (reuses .lib-jump) -- */
+.lib-genre-bar {
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+
+.lib-genre-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--cc-rec, #ffe0bd);
+}
+
+.lib-jump.is-active,
+.lib-jump.is-active:hover {
+  background: var(--cc-rec, #ffe0bd);
+  border-color: var(--cc-rec, #ffe0bd);
+  color: var(--main-color, #1f4735);
+}
+
+.lib-filter-note {
+  background-color: rgba(var(--main-rgb), 0.1);
+  color: var(--main-color);
+}

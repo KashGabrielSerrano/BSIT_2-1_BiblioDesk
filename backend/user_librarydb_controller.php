@@ -285,7 +285,7 @@ if ($action === 'list_collections') {
 } elseif ($action === 'collection_books') {
     $c = own_collection($user_id, max(0, intval($_GET['collection_id'] ?? 0)));
     $rows = db_all($con,
-        "SELECT b.Book_ID, b.Title, b.Author, b.Description, b.ISBN, b.Category, b.Publisher, b.Cover_Image,
+        "SELECT b.Book_ID, b.Title, b.Author, b.Description, b.ISBN, b.Category, b.Genre, b.Publisher, b.Cover_Image,
                 (b.Drive_Link IS NOT NULL AND b.Drive_Link <> '') AS Has_File
            FROM user_collection_books cb
            JOIN book_table b ON b.Book_ID = cb.Book_ID
@@ -293,7 +293,7 @@ if ($action === 'list_collections') {
           ORDER BY cb.Added_At DESC, b.Book_ID DESC", 'i', [$c['Collection_ID']]);
     sendResponse(true, 'Books loaded.', ['name' => $c['Name'], 'books' => array_map(fn($b) => [
         'token' => book_token((int)$b['Book_ID']), 'title' => $b['Title'], 'author' => $b['Author'] ?? '', 'desc' => $b['Description'] ?? '',
-        'isbn' => $b['ISBN'] ?? '', 'genre' => $b['Category'] ?? '', 'publisher' => $b['Publisher'] ?? '',
+        'isbn' => $b['ISBN'] ?? '', 'genre' => $b['Category'] ?? '', 'book_genre' => $b['Genre'] ?? '', 'publisher' => $b['Publisher'] ?? '',
         'cover' => trim((string)($b['Cover_Image'] ?? '')), 'has_file' => (bool)$b['Has_File'],
     ], $rows)]);
 }

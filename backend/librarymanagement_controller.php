@@ -20,6 +20,9 @@ const ACCOUNT_STATUSES = ['Active', 'Suspended', 'Pending'];
 // Must match the book_table.Category ENUM and the dropdowns in librarymanagement.php.
 const BOOK_CATEGORIES  = ['Educational', 'Non-Educational', 'Research Articles'];
 
+// Must match the book_table.Genre ENUM, the genre dropdowns in librarymanagement.php and BOOK_GENRES in user_librarydb.php.
+const BOOK_GENRES      = ['Fiction', 'Non-Fiction', 'Horror', 'Romance', 'Science', 'Technology', 'History', 'Self-help', 'Education'];
+
 set_exception_handler(function (Throwable $e): void {
     error_log('librarymanagement_controller bootstrap error: ' . $e->getMessage() . ' @ ' . $e->getFile() . ':' . $e->getLine());
     sendResponse(false, 'A server error occurred. Please try again.', local_debug($e), 500);
@@ -245,6 +248,7 @@ function read_book_input(bool $has_pdf_upload = false): array {
         'isbn'        => gv($_POST, 'isbn'),
         'publisher'   => gv($_POST, 'publisher'),
         'category'    => gv($_POST, 'category'),
+        'genre'       => gv($_POST, 'genre'),
         'description' => gv($_POST, 'description'),
         'cover_image' => gv($_POST, 'cover_image'),
         'drive_link'  => gv($_POST, 'drive_link'),
@@ -268,6 +272,9 @@ function read_book_input(bool $has_pdf_upload = false): array {
     if ($d['description'] === '') return [$d, 'Description is required.'];
     if (!in_array($d['category'], BOOK_CATEGORIES, true)) {
         return [$d, 'Please choose a category: ' . implode(', ', BOOK_CATEGORIES) . '.'];
+    }
+    if (!in_array($d['genre'], BOOK_GENRES, true)) {
+        return [$d, 'Please choose a genre: ' . implode(', ', BOOK_GENRES) . '.'];
     }
 
     $limits = ['title' => 255, 'author' => 255, 'isbn' => 20, 'publisher' => 150, 'category' => 100, 'cover_image' => 255, 'drive_link' => 255];
@@ -354,6 +361,7 @@ function book_row(array $r): array {
         'isbn'        => $r['ISBN'] ?? '',
         'publisher'   => $r['Publisher'] ?? '',
         'category'    => $r['Category'] ?? '',
+        'genre'       => $r['Genre'] ?? '',
         'description' => $r['Description'] ?? '',
         'cover_image' => $r['Cover_Image'] ?? '',
         'drive_link'  => $r['Drive_Link'] ?? '',
@@ -439,14 +447,14 @@ function handle_get_catalog(mysqli $con): void {
     $params = [];
     if ($search !== '') {
         $like   = like_term($search);
-        $where  = 'WHERE (Title LIKE ? OR Author LIKE ? OR ISBN LIKE ? OR Category LIKE ?)';
-        $types  = 'ssss';
-        $params = [$like, $like, $like, $like];
+        $where  = 'WHERE (Title LIKE ? OR Author LIKE ? OR ISBN LIKE ? OR Category LIKE ? OR Genre LIKE ?)';
+        $types  = 'sssss';
+        $params = [$like, $like, $like, $like, $like];
     }
 
     $rows = db_all(
         $con,
-        "SELECT Book_ID, Title, Author, ISBN, Publisher, Category, Cover_Image, Drive_Link, Is_digital, Total_Copies
+        "SELECT Book_ID, Title, Author, ISBN, Publisher, Category, Genre, Cover_Image, Drive_Link, Is_digital, Total_Copies
            FROM book_table {$where}
           ORDER BY Book_ID {$order}
           LIMIT 500",
@@ -487,13 +495,13 @@ function handle_add_book(mysqli $con): void {
 
     try {
         $stmt = $con->prepare(
-            'INSERT INTO book_table (Title, Description, Cover_Image, Drive_Link, Author, ISBN, Publisher, Category, Is_digital, Total_Copies)
-             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
+            'INSERT INTO book_table (Title, Description, Cover_Image, Drive_Link, Author, ISBN, Publisher, Category, Genre, Is_digital, Total_Copies)
+             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)'
         );
         $stmt->bind_param(
-            'sssssssssi',
+            'ssssssssssi',
             $d['title'], $d['description'], $d['cover_image'], $d['drive_link'],
-            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital'], $d['total_copies']
+            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['genre'], $d['is_digital'], $d['total_copies']
         );
         $stmt->execute();
         $new_id = $con->insert_id;
@@ -539,13 +547,13 @@ function handle_update_book(mysqli $con): void {
         $stmt = $con->prepare(
             'UPDATE book_table
                 SET Title = ?, Description = ?, Cover_Image = ?, Drive_Link = ?, Author = ?,
-                    ISBN = ?, Publisher = ?, Category = ?, Is_digital = ?, Total_Copies = ?
+                    ISBN = ?, Publisher = ?, Category = ?, Genre = ?, Is_digital = ?, Total_Copies = ?
               WHERE Book_ID = ?'
         );
         $stmt->bind_param(
-            'sssssssssii',
+            'ssssssssssii',
             $d['title'], $d['description'], $d['cover_image'], $d['drive_link'],
-            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['is_digital'], $d['total_copies'], $book_id
+            $d['author'], $d['isbn'], $d['publisher'], $d['category'], $d['genre'], $d['is_digital'], $d['total_copies'], $book_id
         );
         $stmt->execute();
         $stmt->close();

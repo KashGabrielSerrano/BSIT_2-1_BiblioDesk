@@ -72,6 +72,7 @@ CREATE TABLE `book_table` (
   `ISBN` varchar(20) DEFAULT NULL,
   `Publisher` varchar(150) DEFAULT NULL,
   `Category` enum('Educational','Non-Educational','Research Articles') NOT NULL DEFAULT 'Educational',
+  `Genre` enum('Fiction','Non-Fiction','Horror','Romance','Science','Technology','History','Self-help','Education') DEFAULT NULL,
   `Is_digital` enum('Yes','No') NOT NULL,
   `Total_Copies` int(11) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -409,6 +410,7 @@ ALTER TABLE `book_table`
   ADD PRIMARY KEY (`Book_ID`),
   ADD UNIQUE KEY `ISBN` (`ISBN`),
   ADD KEY `idx_category` (`Category`),
+  ADD KEY `idx_genre` (`Genre`),
   ADD KEY `idx_is_digital` (`Is_digital`),
   ADD KEY `idx_title` (`Title`);
 

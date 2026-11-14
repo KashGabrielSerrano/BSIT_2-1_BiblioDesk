@@ -124,7 +124,7 @@
 
             function bookCard(b) {
                 const data = `data-title="${esc(b.title)}" data-author="${esc(b.author)}" data-desc="${esc(b.desc)}"
-                    data-isbn="${esc(b.isbn)}" data-genre="${esc(b.genre)}" data-publisher="${esc(b.publisher)}" data-allowed="1"
+                    data-isbn="${esc(b.isbn)}" data-genre="${esc(b.genre)}" data-book-genre="${esc(b.book_genre)}" data-publisher="${esc(b.publisher)}" data-allowed="1"
                     data-hasfile="${b.has_file ? '1' : '0'}" data-token="${esc(b.token)}" data-cover="${esc(coverUrl(b.cover))}"`;
                 return `
                 <div class="col position-relative">

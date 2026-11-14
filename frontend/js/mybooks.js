@@ -45,7 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalTitle = document.getElementById('modalBookTitle');
     const modalAuthor = document.getElementById('modalBookAuthor');
     const modalIsbn = document.getElementById('modalBookIsbn');
-    const modalGenre = document.getElementById('modalBookGenre');
+    const modalGenre = document.getElementById('modalBookGenre');             // category pill (Educational, ...)
+    const modalGenreTag = document.getElementById('modalBookGenreTag');       // genre pill (Fiction, Horror, ...) next to it
     const modalDesc = document.getElementById('modalBookDesc');
     const modalPublisherName = document.getElementById('modalBookPublisherName');
     const modalBookId = document.getElementById('modalBookId');   // holds the opaque book token
@@ -91,6 +92,12 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 modalGenre.style.backgroundColor = 'var(--secondary-color)';
             }
+        }
+        if (modalGenreTag) {
+            const bookGenre = (trigger.dataset.bookGenre || '').trim();
+            const tagLabel = modalGenreTag.querySelector('span');
+            if (tagLabel) tagLabel.textContent = bookGenre;
+            modalGenreTag.classList.toggle('d-none', !bookGenre);   // books without a genre show only the category
         }
         if (modalPublisherName) modalPublisherName.textContent = publisher;
         if (modalImg) modalImg.src = cover;
