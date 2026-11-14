@@ -109,49 +109,102 @@ render_head('Announcements | BiblioDesk', ['root.css', 'admin_announcement.css']
         </section>
     </main>
 
-    <dialog class="annDialog" id="annDialog">
-        <form id="annForm" method="dialog" novalidate>
-            <h2 class="h4 fw-semibold mb-4" id="dialogTitle">Create Announcement</h2>
+    <!-- ========================================================================== -->
+    <!-- MODALS: create/edit announcement + delete confirmation                      -->
+    <!-- ========================================================================== -->
+    <div class="modal fade annModal" id="annModal" tabindex="-1" aria-labelledby="dialogTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form id="annForm" novalidate>
+                    <div class="modal-header">
+                        <div class="d-flex align-items-center gap-3">
+                            <span class="annModalIcon" aria-hidden="true">
+                                <i class="bi bi-megaphone-fill text-warning" id="dialogIcon"></i>
+                            </span>
+                            <h2 class="modal-title h5 mb-0" id="dialogTitle">Create Announcement</h2>
+                        </div>
+                        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
 
-            <div class="mb-3">
-                <label class="form-label" for="fTitle">Title</label>
-                <input class="form-control" type="text" id="fTitle" maxlength="80" required>
-                <small class="err" id="errTitle"></small>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <label class="form-label" for="fTitle">Title</label>
+                                <small class="charCount" id="countTitle">0/80</small>
+                            </div>
+                            <input class="form-control" type="text" id="fTitle" maxlength="80" placeholder="e.g. Extended library hours this week" required>
+                            <small class="err" id="errTitle"></small>
+                        </div>
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-sm-6">
+                                <label class="form-label" for="fCategory">Category</label>
+                                <select class="form-select" id="fCategory"></select>
+                            </div>
+                            <div class="col-sm-6">
+                                <label class="form-label" for="fStatus">Status</label>
+                                <select class="form-select" id="fStatus">
+                                    <option value="published">Published</option>
+                                    <option value="scheduled">Scheduled</option>
+                                    <option value="draft">Draft</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3" id="dateField" hidden>
+                            <label class="form-label" for="fDate">Publish date</label>
+                            <input class="form-control" type="date" id="fDate">
+                            <small class="err" id="errDate"></small>
+                        </div>
+
+                        <div class="mb-0">
+                            <div class="d-flex justify-content-between align-items-baseline">
+                                <label class="form-label" for="fBody">Message</label>
+                                <small class="charCount" id="countBody">0/240</small>
+                            </div>
+                            <textarea class="form-control" id="fBody" rows="4" maxlength="240" placeholder="What should students and staff know?" required></textarea>
+                            <small class="err" id="errBody"></small>
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button class="btn btn-outline-dark" type="button" data-bs-dismiss="modal" id="btnCancel">Cancel</button>
+                        <button class="btn btnMain d-inline-flex align-items-center gap-2" type="submit" id="btnSave">
+                            <i class="bi bi-check2-circle" aria-hidden="true"></i> Save
+                        </button>
+                    </div>
+                </form>
             </div>
+        </div>
+    </div>
 
-            <div class="row g-3 mb-3">
-                <div class="col-sm-6">
-                    <label class="form-label" for="fCategory">Category</label>
-                    <select class="form-select" id="fCategory"></select>
+    <div class="modal fade annModal" id="annDeleteModal" tabindex="-1" aria-labelledby="annDeleteLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title h5 mb-0" id="annDeleteLabel">Delete Announcement</h2>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="col-sm-6">
-                    <label class="form-label" for="fStatus">Status</label>
-                    <select class="form-select" id="fStatus">
-                        <option value="published">Published</option>
-                        <option value="scheduled">Scheduled</option>
-                        <option value="draft">Draft</option>
-                    </select>
+                <div class="modal-body text-center py-4">
+                    <span class="annDeleteIcon mx-auto mb-3" aria-hidden="true">
+                        <i class="bi bi-trash3-fill"></i>
+                    </span>
+                    <p class="fs-5 fw-semibold mb-1">Delete this announcement?</p>
+                    <p class="mb-3 text-break">&ldquo;<span id="deleteName"></span>&rdquo;</p>
+                    <p class="small text-secondary mb-0">
+                        <i class="bi bi-exclamation-triangle-fill me-1" aria-hidden="true"></i>This cannot be undone.
+                    </p>
+                    <div class="err text-center mt-2" id="errDelete" role="alert"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-dark" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btnDelete d-inline-flex align-items-center gap-2" id="btnConfirmDelete">
+                        <i class="bi bi-trash3" aria-hidden="true"></i> Delete
+                    </button>
                 </div>
             </div>
-
-            <div class="mb-3" id="dateField" hidden>
-                <label class="form-label" for="fDate">Publish date</label>
-                <input class="form-control" type="date" id="fDate">
-                <small class="err" id="errDate"></small>
-            </div>
-
-            <div class="mb-3">
-                <label class="form-label" for="fBody">Message</label>
-                <textarea class="form-control" id="fBody" rows="4" maxlength="240" required></textarea>
-                <small class="err" id="errBody"></small>
-            </div>
-
-            <div class="d-flex justify-content-end gap-2 mt-4">
-                <button class="btn btn-outline-dark" type="button" id="btnCancel">Cancel</button>
-                <button class="btn btnMain" type="submit" id="btnSave">Save</button>
-            </div>
-        </form>
-    </dialog>
+        </div>
+    </div>
 
     <!-- FOOTER -->
     <?php render_footer('staff'); ?>

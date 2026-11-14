@@ -330,18 +330,100 @@ main {
   cursor: not-allowed;
 }
 
-.annDialog {
-  width: min(520px, calc(100% - 2rem));
-  margin: auto;
-  padding: 1.75rem;
+/* Announcement modals (create/edit + delete confirmation) */
+.modal-backdrop {
+  --bs-backdrop-bg: #0a1610;
+  --bs-backdrop-opacity: 0.65;
+}
+
+.annModal .modal-content {
   background-color: var(--main-bg-color);
   color: var(--main-color);
   border: 0;
   border-radius: 1rem;
+  overflow: hidden;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
 }
 
-.annDialog::backdrop {
-  background-color: rgba(10, 22, 16, 0.65);
+.annModal .modal-header {
+  padding: 1rem 1.5rem;
+  background-color: var(--main-color);
+  color: var(--fcolor-secondary);
+  border-bottom: 0;
+}
+
+.annModal .modal-title {
+  font-weight: 600;
+}
+
+.annModal .modal-body {
+  padding: 1.5rem;
+}
+
+.annModal .modal-footer {
+  padding: 0.85rem 1.5rem;
+  border-top: 1px solid rgba(var(--main-rgb), 0.15);
+}
+
+.annModal .form-label {
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.annModal .form-control:focus,
+.annModal .form-select:focus {
+  border-color: var(--main-color);
+  box-shadow: 0 0 0 0.2rem rgba(var(--main-rgb), 0.2);
+}
+
+.annModalIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 0.6rem;
+  background-color: rgba(255, 255, 255, 0.12);
+  font-size: 1.1rem;
+}
+
+.charCount {
+  color: #6c757d;
+  font-size: 0.75rem;
+}
+
+.annDeleteIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background-color: color-mix(in srgb, var(--btn-remove, #dc3545) 15%, transparent);
+  color: var(--btn-remove, #dc3545);
+  font-size: 1.9rem;
+}
+
+.btnDelete {
+  --bs-btn-color: #fff;
+  --bs-btn-bg: var(--btn-remove, #dc3545);
+  --bs-btn-border-color: var(--btn-remove, #dc3545);
+  --bs-btn-hover-color: #fff;
+  --bs-btn-hover-bg: var(--btn-remove, #dc3545);
+  --bs-btn-hover-border-color: var(--btn-remove, #dc3545);
+  --bs-btn-active-color: #fff;
+  --bs-btn-active-bg: var(--btn-remove, #dc3545);
+  --bs-btn-active-border-color: var(--btn-remove, #dc3545);
+  --bs-btn-disabled-bg: var(--btn-remove, #dc3545);
+  --bs-btn-disabled-border-color: var(--btn-remove, #dc3545);
+  transition: filter 0.15s ease;
+}
+
+.btnDelete:hover,
+.btnDelete:focus-visible {
+  filter: brightness(0.88);
 }
 
 .err {

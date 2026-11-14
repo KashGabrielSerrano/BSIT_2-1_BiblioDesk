@@ -271,16 +271,16 @@ document.addEventListener('DOMContentLoaded', function () {
                 .then(load)
                 .catch(function (err) { window.alert(err.message); });
         } else if (act === 'delete') {
-            if (window.confirm('Delete "' + item.title + '"? This cannot be undone.')) {
-                api('delete', { id: item.id })
-                    .then(load)
-                    .catch(function (err) { window.alert(err.message); });
-            }
+            openDeleteModal(item);
         }
     });
 
    
-    var dialog = $('annDialog');
+    var modalEl    = $('annModal');
+    var annModal   = bootstrap.Modal.getOrCreateInstance(modalEl);
+    var delModalEl = $('annDeleteModal');
+    var delModal   = bootstrap.Modal.getOrCreateInstance(delModalEl);
+    var pendingDelete = null;
     var form = $('annForm');
 
     function clearErrors() {
@@ -305,13 +305,44 @@ document.addEventListener('DOMContentLoaded', function () {
         $('fDate').value = item && item.status === 'scheduled' ? item.date : '';
         syncDateField();
 
-        dialog.showModal();
-        $('fTitle').focus();
+        $('dialogIcon').className = 'bi ' + (item ? 'bi-pencil-square' : 'bi-megaphone-fill') + ' text-warning';
+        updateCounts();
+        annModal.show();
     }
 
     $('btnCreate').addEventListener('click', function () { openDialog(null); });
-    $('btnCancel').addEventListener('click', function () { dialog.close(); });
     $('fStatus').addEventListener('change', syncDateField);
+
+    // character counters (title 80, message 240)
+    function updateCounts() {
+        $('countTitle').textContent = $('fTitle').value.length + '/80';
+        $('countBody').textContent  = $('fBody').value.length + '/240';
+    }
+    $('fTitle').addEventListener('input', updateCounts);
+    $('fBody').addEventListener('input', updateCounts);
+    modalEl.addEventListener('shown.bs.modal', function () { $('fTitle').focus(); });
+
+    // delete confirmation modal
+    function openDeleteModal(item) {
+        pendingDelete = item;
+        $('deleteName').textContent = item.title;
+        $('errDelete').textContent = '';
+        delModal.show();
+    }
+
+    $('btnConfirmDelete').addEventListener('click', function () {
+        if (!pendingDelete) return;
+        var btn = this;
+        btn.disabled = true;
+        api('delete', { id: pendingDelete.id })
+            .then(function () {
+                delModal.hide();
+                pendingDelete = null;
+                return load();
+            })
+            .catch(function (err) { $('errDelete').textContent = err.message; })
+            .then(function () { btn.disabled = false; });
+    });
 
     form.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -339,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function () {
         api('save', fields)
             .then(function () {
                 if (!editingId) page = 1;
-                dialog.close();
+                annModal.hide();
                 return load();
             })
             .catch(function (err) {
