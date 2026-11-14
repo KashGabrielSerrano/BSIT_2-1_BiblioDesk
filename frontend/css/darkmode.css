@@ -175,3 +175,596 @@ html[data-bs-theme="dark"] body {
     background: #111A15 !important;
     border-color: #2E4C3B !important;
 }
+
+/* =============================================================================
+   A. CSS VARIABLES (tokens) for dark mode
+   ============================================================================= */
+html[data-theme="dark"],
+html[data-bs-theme="dark"] {
+    --bd-surface: #18231C;
+    --bd-surface-2: #1D2D24;
+    --bd-surface-3: #22352A;
+    --bd-field: #121A15;
+    --bd-border: #2E4C3B;
+    --bd-border-strong: #3B6B52;
+    --bd-text: #E5EDE8;
+    --bd-text-soft: #B5C6BD;
+    --bd-accent: #A9DCC0;
+    --bd-on-yellow: #1B1B1B;
+    --bd-warm-a: #2E261A;
+    --bd-warm-b: #231D14;
+    --bd-warm-border: #4B3B22;
+
+    /* root.css / librarian.css tokens */
+    --am-border: #2E4C3B;
+    --am-row-a: #1B2B21;
+    --am-row-b: #16231B;
+    --am-tab-line: #3FA06F;
+    --cc-beige: #1B2A21;
+    --brown: #A9C4B5;
+    --gray: #9DB0A6;
+    --link: #7FD1A5;
+    --link-hover: #A9DCC0;
+    --disabled-bg: #2A3A31;
+    --disabled-text: #6D7F75;
+    --main-rgb: 110, 185, 145;   
+    --btn-rgb: 67, 138, 100;
+    --alert-danger-bg: #3A1D1F;
+    --alert-danger-text: #F4B4B4;
+    --alert-danger-border: #6B2B30;
+    --alert-success-bg: #15301F;
+    --alert-success-text: #8FD9AE;
+    --alert-success-border: #25593A;
+
+    /* Bootstrap 5.3 variables (cards, tables, modals, inputs and borders) */
+    --bs-body-bg: #121815;
+    --bs-body-bg-rgb: 18, 24, 21;
+    --bs-body-color: #E5EDE8;
+    --bs-body-color-rgb: 229, 237, 232;
+    --bs-emphasis-color: #FFFFFF;
+    --bs-secondary-color: rgba(229, 237, 232, .68);
+    --bs-secondary-bg: #1D2D24;
+    --bs-tertiary-bg: #18231C;
+    --bs-border-color: #2E4C3B;
+    --bs-border-color-translucent: rgba(110, 185, 145, .22);
+}
+
+
+/* =============================================================================
+   B. FORM CONTROLS
+   ============================================================================= */
+[data-theme="dark"] .form-control,
+[data-theme="dark"] .form-select {
+    background-color: var(--bd-field);
+    border-color: var(--bd-border);
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .form-control:focus,
+[data-theme="dark"] .form-select:focus {
+    background-color: #15221B;
+    border-color: #438A64;
+    color: #FFFFFF;
+    box-shadow: 0 0 0 .2rem rgba(67, 138, 100, .28);
+}
+
+[data-theme="dark"] .form-control::placeholder,
+[data-theme="dark"] textarea::placeholder {
+    color: #84968C;
+    opacity: 1;
+}
+
+[data-theme="dark"] select option {
+    background-color: #18231C;
+    color: #E5EDE8;
+}
+
+/* Add Book form*/
+[data-theme="dark"] .form-control.bg-light,
+[data-theme="dark"] .form-select.bg-light,
+[data-theme="dark"] textarea.bg-light {
+    background-color: var(--bd-field) !important;
+    color: var(--bd-text);
+    box-shadow: 0 0 0 1px var(--bd-border) !important;
+}
+
+/* "Browse..." button of file inputs */
+[data-theme="dark"] .form-control::file-selector-button {
+    background-color: var(--bd-surface-2);
+    color: var(--bd-text);
+    border-color: var(--bd-border);
+}
+
+[data-theme="dark"] .form-control:hover:not(:disabled):not([readonly])::file-selector-button {
+    background-color: var(--bd-surface-3);
+}
+
+[data-theme="dark"] .input-group-text {
+    background-color: var(--bd-surface-2);
+    border-color: var(--bd-border);
+    color: var(--bd-text-soft);
+}
+
+/* the Catalog search pill draws its own background; keep its inside transparent */
+[data-theme="dark"] .catSearch .input-group-text,
+[data-theme="dark"] .catSearch .form-control {
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+[data-theme="dark"] .form-check:not(.form-switch) .form-check-input:checked {
+    background-color: #236845;
+    border-color: #2F7F57;
+}
+
+[data-theme="dark"] input:-webkit-autofill,
+[data-theme="dark"] textarea:-webkit-autofill,
+[data-theme="dark"] select:-webkit-autofill {
+    -webkit-box-shadow: 0 0 0 1000px #121A15 inset !important;
+    -webkit-text-fill-color: #E5EDE8 !important;
+    caret-color: #E5EDE8;
+}
+
+[data-theme="dark"] .catSearch,
+[data-theme="dark"] .accountSearchBox {
+    background: var(--bd-field);
+    border-color: var(--bd-border);
+}
+
+[data-theme="dark"] .accountSearchBox:focus {
+    background: #15221B;
+    border-color: #438A64;
+}
+
+[data-theme="dark"] .catSearch:focus-within {
+    border-color: #438A64;
+    box-shadow: 0 0 0 .2rem rgba(67, 138, 100, .25);
+}
+
+
+/* =============================================================================
+   C. BOOTSTRAP UTILITY CLASSES
+   ============================================================================= */
+[data-theme="dark"] .text-dark:not(.badge):not(.bg-warning) {
+    color: var(--bd-text) !important;
+}
+
+[data-theme="dark"] .text-success { color: #7FD39A !important; }
+[data-theme="dark"] .text-danger  { color: #F08A8A !important; }
+
+[data-theme="dark"] .bg-white:not([class*="bg-opacity"]):not(#libraryIdQr):not(#modalShareQr):not(#share-qr) {
+    background-color: var(--bd-surface) !important;
+}
+
+[data-theme="dark"] .modal-footer.bg-light {
+    background-color: rgba(0, 0, 0, .2) !important;
+}
+
+[data-theme="dark"] .badge.text-bg-light {
+    background-color: var(--bd-surface-3) !important;
+    color: var(--bd-text) !important;
+}
+
+[data-theme="dark"] .badge.bg-dark {
+    background-color: #2B4A3A !important;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .btn-outline-dark {
+    --bs-btn-color: #D9E6DE;
+    --bs-btn-border-color: #4A6B58;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #2B4A3A;
+    --bs-btn-hover-border-color: #5C8570;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #2B4A3A;
+    --bs-btn-active-border-color: #5C8570;
+}
+
+[data-theme="dark"] .btn-outline-secondary {
+    --bs-btn-color: #A9B8AF;
+    --bs-btn-border-color: #4A6B58;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #2B4A3A;
+    --bs-btn-hover-border-color: #5C8570;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #2B4A3A;
+    --bs-btn-active-border-color: #5C8570;
+}
+
+[data-theme="dark"] .btn-outline-success {
+    --bs-btn-color: #7FD39A;
+    --bs-btn-border-color: #3F8C62;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-hover-bg: #236845;
+    --bs-btn-hover-border-color: #2F7F57;
+    --bs-btn-active-color: #FFFFFF;
+    --bs-btn-active-bg: #236845;
+    --bs-btn-active-border-color: #2F7F57;
+}
+
+[data-theme="dark"] .btn-dark {
+    --bs-btn-bg: #236845;
+    --bs-btn-border-color: #2F7F57;
+    --bs-btn-color: #FFFFFF;
+    --bs-btn-hover-bg: #2C7C54;
+    --bs-btn-hover-border-color: #3A9468;
+    --bs-btn-hover-color: #FFFFFF;
+    --bs-btn-active-bg: #2C7C54;
+    --bs-btn-active-border-color: #3A9468;
+    --bs-btn-active-color: #FFFFFF;
+}
+
+[data-theme="dark"] .table-dark {
+    --bs-table-bg: #1F4735;
+    --bs-table-color: #FFFFFF;
+    --bs-table-border-color: #2E4C3B;
+}
+
+[data-theme="dark"] .table:not(.table-dark):not(.qaTable) {
+    --bs-table-bg: var(--bd-surface);
+}
+
+
+/* =============================================================================
+   D. LIBRARY MANAGEMENT: tabs, catalog / account / circulation tables
+   ============================================================================= */
+[data-theme="dark"] .amTabs {
+    border-bottom-color: var(--bd-border);
+}
+
+[data-theme="dark"] .subTabs .nav-link:hover:not(.active) {
+    background-color: rgba(110, 185, 145, .12);
+}
+
+[data-theme="dark"] .amTable tbody td:not(:first-child) {
+    border-left-color: #2A4637;
+}
+
+[data-theme="dark"] .filterBtn:hover,
+[data-theme="dark"] .filterBtn:focus,
+[data-theme="dark"] .filterBtn.show {
+    background-color: var(--hover);
+}
+
+[data-theme="dark"] .btnFilter:hover {
+    background-color: var(--hover);
+    border-color: var(--hover);
+}
+
+[data-theme="dark"] .btnExport,
+[data-theme="dark"] .btnReset {
+    border-color: var(--bd-border-strong);
+}
+
+[data-theme="dark"] .btnExport:hover,
+[data-theme="dark"] .btnReset:hover {
+    border-color: var(--main-color);
+}
+
+[data-theme="dark"] .filterPanel {
+    border-color: var(--bd-border);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .5);
+}
+
+[data-theme="dark"] .filterPanel .form-select,
+[data-theme="dark"] .perPage .form-select {
+    border-color: var(--bd-border);
+}
+
+
+/* =============================================================================
+   E. REPORT LOGS and ACTIVITY LOG rows
+   ============================================================================= */
+[data-theme="dark"] .reportRow {
+    background-color: #16231B;
+    border-color: var(--bd-border);
+}
+
+[data-theme="dark"] .reportRow:hover {
+    background-color: var(--bd-surface-2);
+}
+
+[data-theme="dark"] .cellName,
+[data-theme="dark"] .popLabel,
+[data-theme="dark"] .catLabel,
+[data-theme="dark"] .catHeader .catLabel {
+    border-right-color: var(--bd-border);
+}
+
+
+/* =============================================================================
+   F. STAFF OVERVIEW (charts, quick actions, to-do)
+   ============================================================================= */
+[data-theme="dark"] .lightCard {
+    border-color: var(--bd-border);
+}
+
+[data-theme="dark"] .actionsHead {
+    border-bottom-color: var(--bd-border);
+}
+
+[data-theme="dark"] .btnMain,
+[data-theme="dark"] .qaPrimary {
+    background-color: #236845;
+    border-color: #2F7F57;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .btn.btnMain:hover,
+[data-theme="dark"] .btn.btnMain:focus-visible,
+[data-theme="dark"] .btn.btnMain:active,
+[data-theme="dark"] .btn.qaPrimary:hover,
+[data-theme="dark"] .btn.qaPrimary:focus-visible,
+[data-theme="dark"] .btn.qaPrimary:active {
+    background-color: #2C7C54;
+    border-color: #3A9468;
+    color: #FFFFFF;
+    filter: none;
+}
+
+[data-theme="dark"] #addBookForm button[type="submit"],
+[data-theme="dark"] #todoSave,
+[data-theme="dark"] .sendBtn {
+    color: var(--bd-on-yellow) !important;
+}
+
+
+/* =============================================================================
+   G. ANNOUNCEMENTS
+   ============================================================================= */
+[data-theme="dark"] .btnEdit:hover,
+[data-theme="dark"] .btnEdit[aria-expanded="true"] {
+    background-color: rgba(255, 255, 255, .14);
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .rowMenu {
+    background-color: var(--bd-surface-2);
+    border: 1px solid var(--bd-border);
+}
+
+[data-theme="dark"] .rowMenu button {
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .rowMenu button:hover {
+    background-color: rgba(110, 185, 145, .16);
+}
+
+[data-theme="dark"] .rowMenu .danger {
+    color: #F08A8A;
+}
+
+[data-theme="dark"] .pageBtn.active {
+    background-color: #236845;
+    border-color: #2F7F57;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .charCount {
+    color: #93A69C;
+}
+
+
+/* =============================================================================
+   H. HELPDESK (student FAQ + staff ticket inbox) and CONTACT SUPPORT
+   ============================================================================= */
+[data-theme="dark"] #faq-pills-tab .nav-link {
+    border-color: var(--bd-border-strong);
+}
+
+[data-theme="dark"] #faq-pills-tab .nav-link:hover:not(.active) {
+    background-color: var(--bd-surface-3);
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .hd-filter-pills .hd-filter-btn {
+    border-color: var(--bd-border-strong);
+    color: var(--bd-accent);
+}
+
+[data-theme="dark"] .hd-filter-pills .hd-filter-btn:hover,
+[data-theme="dark"] .hd-filter-pills .hd-filter-btn.active {
+    background-color: #236845;
+    border-color: #2F7F57;
+    color: #FFFFFF;
+}
+
+[data-theme="dark"] .hd-ticket-head {
+    background-color: var(--bd-surface-2);
+    border-bottom-color: var(--bd-border);
+}
+
+[data-theme="dark"] .hd-bubble-user {
+    background-color: var(--bd-surface-2);
+    color: var(--bd-text);
+    border-color: var(--bd-border);
+}
+
+[data-theme="dark"] .hd-empty-icon {
+    background-color: rgba(110, 185, 145, .15);
+    color: var(--bd-accent);
+}
+
+[data-theme="dark"] .hd-quick-reply-form {
+    background-color: #16231B;
+}
+
+[data-theme="dark"] .hd-reply-input {
+    background-color: var(--bd-field);
+    border-color: var(--bd-border);
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .hd-reply-input:focus {
+    border-color: #438A64;
+    box-shadow: 0 0 0 .2rem rgba(67, 138, 100, .28);
+}
+
+html[data-theme="dark"] .card.contactCard:not(.topbar):not(.sidebar) {
+    background-color: #1A3B2C !important;
+    border-color: #2A5640 !important;
+}
+
+[data-theme="dark"] .contactInput {
+    background-color: #0F1914;
+    border-color: var(--bd-border-strong);
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .contactInput:focus {
+    background-color: #0F1914;
+    border-color: var(--button-yellow);
+    box-shadow: 0 0 0 .25rem rgba(255, 216, 77, .3);
+}
+
+
+/* =============================================================================
+   I. ACCOUNT PAGE
+   ============================================================================= */
+[data-theme="dark"] .accountInput {
+    background-color: var(--bd-field);
+    border-color: var(--bd-border-strong);
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .accountInput:focus {
+    background-color: #15221B;
+    border-color: #6EB991;
+    box-shadow: 0 0 0 .25rem rgba(255, 217, 78, .3);
+}
+
+[data-theme="dark"] .accountInput:disabled,
+[data-theme="dark"] .accountInput[readonly] {
+    background-color: var(--bd-field);
+    color: var(--bd-text);
+    opacity: 1;
+}
+
+[data-theme="dark"] .accountCancel {
+    background-color: var(--bd-surface-2);
+    border-color: var(--bd-border-strong);
+    color: var(--bd-text);
+}
+
+[data-theme="dark"] .accountCancel:hover,
+[data-theme="dark"] .accountCancel:focus {
+    background-color: var(--bd-surface-3);
+    border-color: #6EB991;
+    color: #FFFFFF;
+}
+
+/* the pencil icon is a dark PNG made for the light page */
+[data-theme="dark"] #editBtn img {
+    filter: invert(.92);
+}
+
+
+/* =============================================================================
+   J. STUDENT PAGES: Overview, Library, My Books, book modal
+   ============================================================================= */
+
+[data-theme="dark"] .bookCover {
+    background-color: var(--bd-surface-2);
+}
+
+[data-theme="dark"] .bookCover:hover,
+[data-theme="dark"] .recCover:hover,
+[data-theme="dark"] .eduCover:hover,
+[data-theme="dark"] .noneduCover:hover,
+[data-theme="dark"] .rsCover:hover {
+    background-color: var(--bd-surface-3);
+}
+
+/* ----- shelves ----- */
+[data-theme="dark"] .lib-hero {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .4);
+}
+
+[data-theme="dark"] .lib-panel {
+    background-color: #151F19;
+    border-color: var(--bd-border);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+
+[data-theme="dark"] .lib-panel-rec,
+[data-theme="dark"] .recommendations-section.lib-panel-rec {
+    background: linear-gradient(180deg, var(--bd-warm-a), var(--bd-warm-b));
+    border-color: var(--bd-warm-border);
+}
+
+[data-theme="dark"] .lib-panel-rec .text-muted {
+    color: #C9B79B !important;
+}
+
+[data-theme="dark"] .lib-panel-rec .lib-section-icon {
+    background: #7B522E;
+    color: var(--cc-rec);
+}
+
+[data-theme="dark"] .recommendations-wrapper {
+    background-color: var(--bd-warm-a);
+    box-shadow: none;
+}
+
+[data-theme="dark"] .newarrivals-card {
+    background: linear-gradient(180deg, #3A2E1D 0%, var(--bd-warm-a) 50%);
+}
+
+[data-theme="dark"] .lib-empty {
+    background: rgba(255, 255, 255, .03);
+}
+
+[data-theme="dark"] .lib-empty-icon {
+    color: var(--bd-accent);
+}
+
+[data-theme="dark"] .collection-panel {
+    background: rgba(255, 255, 255, .04);
+}
+
+/* ----- book details modal ----- */
+[data-theme="dark"] .bookModal-icon-btn {
+    background-color: var(--bd-surface-2) !important;
+    border-color: var(--bd-border-strong) !important;
+    color: #CFE6D9 !important;
+}
+
+[data-theme="dark"] .bookModal-icon-btn:hover {
+    background-color: #236845 !important;
+    border-color: #2F7F57 !important;
+    color: #FFFFFF !important;
+}
+
+[data-theme="dark"] .bookModal-panel {
+    background-color: var(--bd-surface-2);
+    border-color: var(--bd-border);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, .35);
+}
+
+[data-theme="dark"] #modalCircInfo.text-success {
+    background-color: rgba(72, 140, 62, .18) !important;
+    border-color: #3E7A4A !important;
+    color: #8FD9AE !important;
+}
+
+[data-theme="dark"] #modalCircInfo.text-danger {
+    background-color: rgba(194, 61, 61, .18) !important;
+    border-color: #8A3A3F !important;
+    color: #F4A6A6 !important;
+}
+
+
+/* =============================================================================
+   K. SETTINGS PAGE
+   ============================================================================= */
+[data-theme="dark"] .fieldError,
+[data-theme="dark"] .dangerZone h3 {
+    color: #F08A92;
+}
+
+[data-theme="dark"] .reqList li.ok {
+    color: #6FCF97;
+}
