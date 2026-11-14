@@ -70,7 +70,7 @@ function getCoverImageUrl(?string $url): string {
  *
  * @return array<int, array<string, mixed>>
  */
-function fetchShelf(mysqli $con, string $category, int $limit = 6, string $genre = ''): array {
+function fetchShelf(mysqli $con, string $category, int $limit = 60, string $genre = ''): array {
     $genreSql = $genre !== '' ? 'AND Genre = ?' : '';
     $stmt = $con->prepare(
         "SELECT Book_ID, Title, Author, Description, ISBN, Category, Genre, Publisher, Cover_Image, Drive_Link
@@ -251,28 +251,30 @@ if ($view === 'library') {
     }
     $recommendations = !empty($recommendations_arr) ? array_slice($recommendations_arr, 0, 12) : array_slice($all_books, 0, 6);
 
-    // Category shelves: exact match only. An empty shelf stays empty (no fallback to other categories).
-    $educational     = fetchShelf($con, 'Educational', 6, $genre_filter);
-    $non_educational = fetchShelf($con, 'Non-Educational', 6, $genre_filter);
-    $research        = fetchShelf($con, 'Research Articles', 6, $genre_filter);
+    // Category shelves: exact match only. Fetch up to 60 so users can paginate or expand the shelf.
+    $educational     = fetchShelf($con, 'Educational', 60, $genre_filter);
+    $non_educational = fetchShelf($con, 'Non-Educational', 60, $genre_filter);
+    $research        = fetchShelf($con, 'Research Articles', 60, $genre_filter);
 }
 
 /**
  * Render a single book card
  * @param array<string, mixed> $row
  * @param string $ratioClass
+ * @param bool $initiallyHidden
  * @return string
  */
-function renderBookCard(array $row, string $ratioClass = ''): string {
+function renderBookCard(array $row, string $ratioClass = '', bool $initiallyHidden = false): string {
     $cover = htmlspecialchars(getCoverImageUrl($row['Cover_Image'] ?? null));   // library icon when there is no cover
     $drive = !empty($row['Drive_Link']) ? htmlspecialchars($row['Drive_Link']) : '';
     $hasFile = !empty($drive) ? '1' : '0';
     $token   = htmlspecialchars(book_token((int)($row['Book_ID'] ?? 0)));
     $title   = htmlspecialchars($row['Title'] ?? 'Untitled');
     $author  = htmlspecialchars($row['Author'] ?? 'Unknown Author');
+    $colClass = $initiallyHidden ? 'col d-none' : 'col';
     
     return '
-    <div class="col">
+    <div class="' . $colClass . '">
         <a href="#"
            class="book-trigger d-block ratio ' . $ratioClass . ' rounded-2 overflow-hidden shadow position-relative text-decoration-none"
            data-title="' . $title . '"
@@ -322,10 +324,9 @@ function renderSectionHeader(string $icon, string $title, string $subtitle, stri
 }
 
 /**
- * Render a whole shelf of book cards, or an empty-state message when the category has no books.
  * @param array<int, array<string, mixed>> $books
  */
-function renderShelf(array $books, string $ratioClass, string $emptyText = 'No books in this section yet.'): string {
+function renderShelf(array $books, string $ratioClass, string $emptyText = 'No books in this section yet.', string $shelfKey = ''): string {
     global $genre_filter;
     if (empty($books)) {
         if ($genre_filter !== '') {
@@ -333,11 +334,45 @@ function renderShelf(array $books, string $ratioClass, string $emptyText = 'No b
         }
         return renderEmptyState('bi-journal-bookmark', 'Nothing on this shelf yet', $emptyText);
     }
-    $html = '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">';
-    foreach ($books as $row) {
-        $html .= renderBookCard($row, $ratioClass);
+
+    $perPage = 6;
+    $total = count($books);
+    $totalPages = (int)ceil($total / $perPage);
+    $shelfId = $shelfKey !== '' ? htmlspecialchars($shelfKey) : 'shelf-' . uniqid();
+
+    $html = '<div class="lib-shelf-wrap" data-paginated-shelf data-shelf-id="' . $shelfId . '" data-per-page="' . $perPage . '">';
+    $html .= '<div class="bookRow row row-cols-2 row-cols-sm-3 row-cols-md-4 row-cols-xl-6 g-4 text-center">';
+    foreach ($books as $idx => $row) {
+        $html .= renderBookCard($row, $ratioClass, $idx >= $perPage);
     }
-    return $html . '</div>';
+    $html .= '</div>';
+
+    if ($total > $perPage) {
+        $initialEnd = min($perPage, $total);
+        $html .= '
+        <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 pt-3 mt-2 border-top">
+            <span class="small text-muted" data-shelf-status>
+                Showing <strong>1&ndash;' . $initialEnd . '</strong> of <strong>' . $total . '</strong> books
+            </span>
+            <div class="d-flex flex-wrap align-items-center gap-2">
+                <div class="btn-group btn-group-sm" role="group" aria-label="Shelf page navigation">
+                    <button type="button" class="btn btn-outline-secondary rounded-start-pill px-3" data-shelf-prev disabled title="Previous books">
+                        <i class="bi bi-chevron-left me-1" aria-hidden="true"></i>Prev
+                    </button>
+                    <span class="btn btn-outline-secondary disabled fw-semibold px-3" data-shelf-page>1 / ' . $totalPages . '</span>
+                    <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3" data-shelf-next title="Next books">
+                        Next<i class="bi bi-chevron-right ms-1" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-success rounded-pill px-3" data-shelf-expand aria-expanded="false">
+                    <i class="bi bi-arrows-angle-expand me-1" aria-hidden="true"></i><span>Show All (' . $total . ')</span>
+                </button>
+            </div>
+        </div>';
+    }
+
+    $html .= '</div>';
+    return $html;
 }
 
 function renderBookShelf(array $books, string $icon, string $emptyTitle, string $emptyText): string {
@@ -529,19 +564,19 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
             <!-- EDUCATIONAL BOOKS -->
             <section class="lib-panel" id="lib-edu">
                 <?= renderSectionHeader('bi-mortarboard', 'Educational Books', 'Textbooks and study material') ?>
-                <?php echo renderShelf($educational, 'eduCover', 'No educational books have been added yet.'); ?>
+                <?php echo renderShelf($educational, 'eduCover', 'No educational books have been added yet.', 'shelf-edu'); ?>
             </section>
 
             <!-- NON-EDUCATIONAL BOOKS -->
             <section class="lib-panel" id="lib-nonedu">
                 <?= renderSectionHeader('bi-cup-hot', 'Non-Educational Books', 'Fiction, hobbies and leisure reading') ?>
-                <?php echo renderShelf($non_educational, 'noneduCover', 'No non-educational books have been added yet.'); ?>
+                <?php echo renderShelf($non_educational, 'noneduCover', 'No non-educational books have been added yet.', 'shelf-nonedu'); ?>
             </section>
 
             <!-- RESEARCH ARTICLES -->
             <section class="lib-panel" id="lib-research">
                 <?= renderSectionHeader('bi-journal-text', 'Research Articles', 'Papers, studies and journals') ?>
-                <?php echo renderShelf($research, 'rsCover', 'No research articles have been added yet.'); ?>
+                <?php echo renderShelf($research, 'rsCover', 'No research articles have been added yet.', 'shelf-research'); ?>
             </section>
         <?php endif; ?>
 
@@ -947,6 +982,95 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                     }
                 }
             } catch (e) { /* preference application fallback */ }
+        })();
+    </script>
+
+    <script>
+        (() => {
+            document.querySelectorAll('[data-paginated-shelf]').forEach((shelf) => {
+                const row       = shelf.querySelector('.bookRow');
+                if (!row) return;
+                const cards     = Array.from(row.children);
+                const perPage   = parseInt(shelf.dataset.perPage || '6', 10);
+                const total     = cards.length;
+                if (total <= perPage) return;
+
+                const totalPages = Math.ceil(total / perPage);
+                let page         = 1;
+                let expanded     = false;
+
+                const prevBtn   = shelf.querySelector('[data-shelf-prev]');
+                const nextBtn   = shelf.querySelector('[data-shelf-next]');
+                const pageBadge = shelf.querySelector('[data-shelf-page]');
+                const statusEl  = shelf.querySelector('[data-shelf-status]');
+                const expandBtn = shelf.querySelector('[data-shelf-expand]');
+
+                function render() {
+                    if (expanded) {
+                        cards.forEach((card) => card.classList.remove('d-none'));
+                        if (statusEl) {
+                            statusEl.innerHTML = `Showing all <strong>${total}</strong> books`;
+                        }
+                        if (prevBtn) prevBtn.disabled = true;
+                        if (nextBtn) nextBtn.disabled = true;
+                        if (pageBadge) pageBadge.textContent = 'All';
+                        if (expandBtn) {
+                            expandBtn.setAttribute('aria-expanded', 'true');
+                            expandBtn.innerHTML = '<i class="bi bi-arrows-angle-contract me-1" aria-hidden="true"></i><span>Show Less</span>';
+                        }
+                        return;
+                    }
+
+                    const start = (page - 1) * perPage;
+                    const end   = Math.min(start + perPage, total);
+
+                    cards.forEach((card, idx) => {
+                        card.classList.toggle('d-none', idx < start || idx >= end);
+                    });
+
+                    if (statusEl) {
+                        statusEl.innerHTML = `Showing <strong>${start + 1}&ndash;${end}</strong> of <strong>${total}</strong> books`;
+                    }
+                    if (prevBtn) prevBtn.disabled = page <= 1;
+                    if (nextBtn) nextBtn.disabled = page >= totalPages;
+                    if (pageBadge) pageBadge.textContent = `${page} / ${totalPages}`;
+                    if (expandBtn) {
+                        expandBtn.setAttribute('aria-expanded', 'false');
+                        expandBtn.innerHTML = `<i class="bi bi-arrows-angle-expand me-1" aria-hidden="true"></i><span>Show All (${total})</span>`;
+                    }
+                }
+
+                if (prevBtn) {
+                    prevBtn.addEventListener('click', () => {
+                        if (page > 1 && !expanded) {
+                            page--;
+                            render();
+                        }
+                    });
+                }
+
+                if (nextBtn) {
+                    nextBtn.addEventListener('click', () => {
+                        if (page < totalPages && !expanded) {
+                            page++;
+                            render();
+                        }
+                    });
+                }
+
+                if (expandBtn) {
+                    expandBtn.addEventListener('click', () => {
+                        expanded = !expanded;
+                        render();
+                        if (!expanded) {
+                            const section = shelf.closest('.lib-panel');
+                            if (section) section.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                        }
+                    });
+                }
+
+                render();
+            });
         })();
     </script>
 </body>
