@@ -150,7 +150,7 @@
                 '<div class="card-footer bg-white border-top px-4 py-3 d-flex flex-wrap align-items-center justify-content-between gap-2">' +
                     '<span class="small text-muted">' +
                         (t.guest
-                            ? '<i class="bi bi-info-circle me-1" aria-hidden="true"></i>Guest ticket &mdash; replies also open your email client.'
+                            ? '<i class="bi bi-info-circle me-1" aria-hidden="true"></i>Guest ticket &mdash; your reply is emailed to the visitor. Their email replies go to the support inbox, not this thread.'
                             : '<i class="bi bi-chat-dots me-1" aria-hidden="true"></i>' + ((t.messages ? t.messages.length : 0) + 1) + ' message(s) in thread') +
                     '</span>' +
                     '<div class="d-flex flex-wrap gap-2 ms-auto">' +
@@ -261,7 +261,7 @@
                     err.textContent = data.message || 'Could not send reply.';
                     return;
                 }
-                if (t.guest) {
+                if (t.guest && data.emailed === false) {
                     t.reply = replyVal;
                     window.location.href = mailto(t);
                 }

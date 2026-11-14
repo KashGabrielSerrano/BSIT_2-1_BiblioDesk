@@ -9,6 +9,10 @@ const TICKET_STATUSES  = ['Open', 'Answered', 'Closed'];
 const TICKET_COOLDOWN  = 60;   // seconds between two new tickets from the same browser session
 const GUEST_HOURLY_MAX = 3;    // tickets per guest email address per hour
 
+const SUPPORT_INBOX_EMAIL    = 'bibliodesk.portal@gmail.com'; 
+const GUEST_RECEIPT_EMAIL    = false;  // true = also email the visitor a "we got your message" receipt
+const GUEST_EMAIL_HOURLY_MAX = 20;     
+
 require_csrf();
 
 $action  = gv($_POST, 'action') ?: gv($_GET, 'action');
@@ -16,6 +20,107 @@ $is_post = ($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST';
 
 if (in_array($action, ['submit', 'reply', 'set_status'], true) && !$is_post) {
     sendResponse(false, 'This action requires POST.', [], 405);
+}
+
+function mail_safe(string $s): string {
+    return trim((string)preg_replace('/[\x00-\x1F\x7F]+/', ' ', $s));
+}
+
+function mail_h(string $s): string {
+    return htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
+}
+
+function send_guest_ticket_emails(int $id, string $name, string $email, string $subject, string $message): void {
+    try {
+        $recent = (int)(db_one(
+            "SELECT COUNT(*) AS c FROM helpdesk_ticket_table
+              WHERE User_ID IS NULL AND Created_At > UTC_TIMESTAMP() - INTERVAL 1 HOUR"
+        )['c'] ?? 0);
+        if ($recent > GUEST_EMAIL_HOURLY_MAX) {
+            error_log("Helpdesk: guest email cap reached, ticket #{$id} saved without an email.");
+            return;
+        }
+
+        $so       = so();
+        $safeName = mail_safe($name);
+        $when     = local_date(gmdate('Y-m-d H:i:s'), 'M d, Y g:i A');
+        $cell     = 'padding:8px 12px;border-bottom:1px solid #e5e7eb;font-size:14px;';
+
+        $body =
+            '<p style="margin:0 0 16px;">A visitor sent a message from the BiblioDesk landing page. '
+          . '<strong>Reply to this email</strong> to answer them directly.</p>'
+          . '<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;margin-bottom:16px;">'
+          . '<tr><td style="' . $cell . 'color:#6b7280;width:110px;">Name</td><td style="' . $cell . '">' . mail_h($safeName) . '</td></tr>'
+          . '<tr><td style="' . $cell . 'color:#6b7280;">Email</td><td style="' . $cell . '">' . mail_h($email) . '</td></tr>'
+          . '<tr><td style="' . $cell . 'color:#6b7280;">Concern</td><td style="' . $cell . '">' . mail_h($subject) . '</td></tr>'
+          . '<tr><td style="' . $cell . 'color:#6b7280;">Received</td><td style="' . $cell . '">' . mail_h($when) . ' (PH time)</td></tr>'
+          . '<tr><td style="padding:8px 12px;font-size:14px;color:#6b7280;">Ticket</td><td style="padding:8px 12px;font-size:14px;">#' . $id . ' (Open, Guest)</td></tr>'
+          . '</table>'
+          . '<p style="margin:0 0 6px;font-weight:bold;">Message</p>'
+          . '<div style="white-space:pre-wrap;background:#f9fafb;border:1px solid #e5e7eb;border-radius:6px;padding:14px 16px;">' . mail_h($message) . '</div>'
+          . '<p style="margin:16px 0 0;font-size:13px;color:#6b7280;">This ticket is also in the Helpdesk inbox on the staff dashboard, where its status can be tracked.</p>';
+
+        $alt = "New guest inquiry (ticket #{$id})\nFrom: {$safeName} <{$email}>\nConcern: {$subject}\n\n{$message}";
+
+        $so->sendNotice(
+            SUPPORT_INBOX_EMAIL,
+            "[BiblioDesk Inquiry] {$subject} — {$safeName}",
+            'New guest inquiry',
+            $body,
+            $alt,
+            [$email, $safeName]
+        );
+
+        if (GUEST_RECEIPT_EMAIL) {
+            $receipt =
+                '<p style="margin:0 0 14px;">Hi ' . mail_h($safeName) . ',</p>'
+              . '<p style="margin:0 0 14px;">Thanks for contacting BiblioDesk. We received your message about <strong>' . mail_h($subject) . '</strong> '
+              . '(ticket #' . $id . ') and our library staff will reply to this email address.</p>'
+              . '<p style="margin:0;font-size:13px;color:#6b7280;">If you did not send this message, you can ignore this email.</p>';
+            $so->sendNotice(
+                $email,
+                "We received your message — BiblioDesk (Ticket #{$id})",
+                'We got your message',
+                $receipt,
+                "Hi {$safeName}, we received your message about {$subject} (ticket #{$id}). Our library staff will reply to this email address.",
+                [SUPPORT_INBOX_EMAIL, 'BiblioDesk Support']
+            );
+        }
+    } catch (Throwable $e) {
+        error_log('Helpdesk guest email failed: ' . $e->getMessage());
+    }
+}
+
+function email_guest_reply(array $ticket, string $reply): bool {
+    try {
+        $so = so();
+        $to = dec($so, $ticket['Contact_Email'] ?? '');
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            return false;
+        }
+        $name = mail_safe(dec($so, $ticket['Contact_Name'] ?? ''));
+        $name = $name !== '' ? $name : 'there';
+        $id   = (int)$ticket['Ticket_ID'];
+
+        $body =
+            '<p style="margin:0 0 14px;">Hi ' . mail_h($name) . ',</p>'
+          . '<div style="white-space:pre-wrap;margin:0 0 20px;">' . mail_h($reply) . '</div>'
+          . '<p style="margin:0 0 6px;font-size:13px;color:#6b7280;">Your message (' . mail_h((string)$ticket['Subject']) . '):</p>'
+          . '<div style="white-space:pre-wrap;background:#f9fafb;border-left:4px solid #d1d5db;padding:12px 16px;font-size:14px;color:#6b7280;">' . mail_h((string)$ticket['Message']) . '</div>'
+          . '<p style="margin:20px 0 0;font-size:13px;color:#6b7280;">You can reply to this email and it will reach our support inbox. Please note that replies sent by email do not appear on the BiblioDesk website.</p>';
+
+        return (bool)$so->sendNotice(
+            $to,
+            "Re: {$ticket['Subject']} [BiblioDesk Ticket #{$id}]",
+            'A reply from the BiblioDesk library team',
+            $body,
+            "Hi {$name},\n\n{$reply}\n\n---\nYour message ({$ticket['Subject']}):\n{$ticket['Message']}\n\n---\nYou can reply to this email and it will reach our support inbox. Please note that replies sent by email do not appear on the BiblioDesk website.",
+            [SUPPORT_INBOX_EMAIL, 'BiblioDesk Support']
+        );
+    } catch (Throwable $e) {
+        error_log('Helpdesk guest reply email failed: ' . $e->getMessage());
+        return false;
+    }
 }
 
 function load_ticket_threads(array $ticket_ids): array {
@@ -164,10 +269,14 @@ switch ($action) {
             'helpdesk.php#tickets'
         );
 
+        if (!$user) {
+            send_guest_ticket_emails($id, $name, $email, $subject, $message);
+        }
+
         sendResponse(
             true,
             $user ? 'Thank you! Your message has been sent. You will see our reply under "My messages".'
-                  : 'Thank you! Your message has been sent. We will reply to your email.',
+                  : 'Thank you! Your message has been sent. We will reply to your email, so please check your inbox and spam folder.',
             ['id' => $id]
         );
 
@@ -262,11 +371,19 @@ switch ($action) {
                 );
             }
             log_activity('ticket_replied', 'ticket', $id, $t['Subject']);
-            sendResponse(true, !empty($t['User_ID'])
-                ? 'Reply sent. The user was notified.'
-                : 'Reply saved. This is a guest: use "Reply by email" to send it.');
+
+            if (!empty($t['User_ID'])) {
+                sendResponse(true, 'Reply sent. The user was notified.');
+            }
+            $emailed = email_guest_reply($t, $reply);
+            sendResponse(
+                true,
+                $emailed
+                    ? 'Reply saved and emailed to the guest.'
+                    : 'Reply saved, but the email could not be sent. Use "Reply by email" to send it from your own mail app.',
+                ['emailed' => $emailed]
+            );
         } else {
-            // User follow-up re-marks an 'Answered' ticket as 'Open' so staff sees it needs attention
             db_exec(
                 "UPDATE helpdesk_ticket_table SET Status = 'Open', Replied_At = UTC_TIMESTAMP() WHERE Ticket_ID = ?",
                 'i',
