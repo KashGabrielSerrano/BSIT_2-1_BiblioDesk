@@ -446,6 +446,53 @@ pageInput.addEventListener('keydown', (e) => {
 pageInput.addEventListener('change', handlePageInputChange);
 
 loadDocument();
+
+// Active Reading Time tracking (event-driven: flushes on tab hide/close + 5-min safety net)
+(() => {
+    const prefs = (window.bdUserPreferences && window.bdUserPreferences.prefs) || {};
+    if (prefs.trackReading === false || typeof csrfToken === 'undefined') return;
+
+    let unsentSeconds = 0;
+
+    function flushReadingTime() {
+        if (unsentSeconds <= 0) return;
+        const secondsToSend = unsentSeconds;
+        unsentSeconds = 0;
+
+        const fd = new FormData();
+        fd.append('action', 'track_reading_time');
+        fd.append('csrf_token', csrfToken);
+        fd.append('seconds', String(secondsToSend));
+
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('settings_controller.php', fd);
+            return;
+        }
+
+        fetch('settings_controller.php', {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            keepalive: true
+        }).catch(() => {});
+    }
+
+    setInterval(() => {
+        if (!document.hidden) {
+            unsentSeconds++;
+            // 5-minute safety guard (Remove lines for 100% exit-only sync to reading time tracking)
+            if (unsentSeconds >= 300) {
+                flushReadingTime();
+            }
+        }
+    }, 1000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) flushReadingTime();
+    });
+    window.addEventListener('pagehide', flushReadingTime);
+})();
+
 </script>
 <script src="../frontend/js/report_issue.js"></script>
 </body>

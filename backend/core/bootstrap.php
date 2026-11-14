@@ -66,13 +66,6 @@ function so(): SystemOperators {
     return $so ??= new SystemOperators();
 }
 
-/**
- * The visitor's IP address (login lockout, OTP limits, logs). Only REMOTE_ADDR is trusted: headers
- * like X-Forwarded-For can be faked by any client, which would let them dodge the lockout (bug #5).
- * If the host sits behind a proxy/CDN that sets a trusted header, name it in config.php, e.g.
- *   define('TRUSTED_PROXY_IP_HEADER', 'HTTP_CF_CONNECTING_IP');
- * (dev/ip_check.php shows what the live host actually sends.)
- */
 function client_ip(): string {
     if (defined('TRUSTED_PROXY_IP_HEADER') && TRUSTED_PROXY_IP_HEADER !== '' && !empty($_SERVER[TRUSTED_PROXY_IP_HEADER])) {
         $first = trim(explode(',', (string)$_SERVER[TRUSTED_PROXY_IP_HEADER])[0]);
@@ -188,11 +181,6 @@ function require_role_page(array $roles): array {
     return $user;
 }
 
-/**
- * Remember the page a logged-out visitor asked for (e.g. a scanned book QR code), so login can
- * send them back to it instead of the dashboard. Only plain GET requests for a page in this
- * folder are remembered (no full URLs, so it can never redirect to another site).
- */
 function remember_return_to(): void {
     if (($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'GET') {
         return;
@@ -432,6 +420,174 @@ function current_profile(): ?array {
     ];
 }
 
+function profile_picture_bucket(): string {
+    return defined('SUPABASE_BUCKET_PROFILEPICS') ? SUPABASE_BUCKET_PROFILEPICS : 'profile-pictures';
+}
+
+function is_profile_picture_url(string $url): bool {
+    if ($url === '' || !defined('SUPABASE_URL') || SUPABASE_URL === '') {
+        return false;
+    }
+    $prefix = rtrim(SUPABASE_URL, '/') . '/storage/v1/object/public/' . profile_picture_bucket() . '/';
+    return strncmp($url, $prefix, strlen($prefix)) === 0
+        && (bool)preg_match('/^[A-Za-z0-9_\-]+\.(jpg|png)$/', substr($url, strlen($prefix)));
+}
+
+function profile_avatar_url(): string {
+    static $url = null;
+    if ($url !== null) {
+        return $url;
+    }
+    $url  = '';
+    $user = current_user();
+    if (!$user) {
+        return $url;
+    }
+    try {
+        $row = db_one("SELECT Profile_Picture FROM user_table WHERE User_ID = ?", 'i', [$user['user_id']]);
+    } catch (Throwable $e) {
+        return $url;   
+    }
+    $candidate = (string)($row['Profile_Picture'] ?? '');
+    return $url = (is_profile_picture_url($candidate) ? $candidate : '');
+}
+
+/* ========================================================================== */
+/* 8b. USER PREFERENCES                                                       */
+/* ========================================================================== */
+
+function user_preferences_cache(?int $clearUserId = null): array {
+    static $cache = [];
+    if ($clearUserId !== null) {
+        unset($cache[$clearUserId]);
+    }
+    return $cache;
+}
+
+function get_user_preferences(int $userId, bool $refresh = false): array {
+    static $cache = [];
+    if ($refresh) {
+        unset($cache[$userId]);
+    }
+    if (isset($cache[$userId])) {
+        return $cache[$userId];
+    }
+
+    $defaults = [
+        'contact_number'       => '',
+        'notify_due'           => true,
+        'notify_due_days'      => '1',
+        'notify_reservations'  => true,
+        'notify_announcements' => true,
+        'notify_activity'      => true,
+        'notify_email'         => false,
+        'theme'                => 'light',
+        'text_size'            => 'default',
+        'reduce_motion'        => false,
+        'library_view'         => 'grid',
+        'favorite_genres'      => [],
+        'track_reading'        => true,
+        'reading_seconds'      => 0,
+    ];
+
+    try {
+        $row = db_one("SELECT * FROM user_preferences WHERE User_ID = ?", 'i', [$userId]);
+        if (!$row) {
+            return $cache[$userId] = $defaults;
+        }
+
+        $genres = [];
+        if (!empty($row['Favorite_Genres'])) {
+            $decoded = json_decode((string)$row['Favorite_Genres'], true);
+            $genres = is_array($decoded)
+                ? $decoded
+                : array_filter(array_map('trim', explode(',', (string)$row['Favorite_Genres'])));
+        }
+
+        return $cache[$userId] = [
+            'contact_number'       => (string)($row['Contact_Number'] ?? ''),
+            'notify_due'           => (bool)$row['Notify_Due'],
+            'notify_due_days'      => (string)($row['Notify_Due_Days'] ?? '1'),
+            'notify_reservations'  => (bool)$row['Notify_Reservations'],
+            'notify_announcements' => (bool)$row['Notify_Announcements'],
+            'notify_activity'      => (bool)$row['Notify_Activity'],
+            'notify_email'         => (bool)$row['Notify_Email'],
+            'theme'                => in_array($row['Theme'] ?? '', ['light', 'dark', 'system'], true) ? $row['Theme'] : 'light',
+            'text_size'            => in_array($row['Text_Size'] ?? '', ['small', 'default', 'large', 'xlarge'], true) ? $row['Text_Size'] : 'default',
+            'reduce_motion'        => (bool)$row['Reduce_Motion'],
+            'library_view'         => in_array($row['Library_View'] ?? '', ['grid', 'list'], true) ? $row['Library_View'] : 'grid',
+            'favorite_genres'      => array_values($genres),
+            'track_reading'        => (bool)($row['Track_Reading'] ?? 1),
+            'reading_seconds'      => (int)($row['Reading_Seconds'] ?? 0),
+        ];
+    } catch (Throwable $e) {
+        return $defaults;
+    }
+}
+
+/** update user preferences in user_preferences connected to User_ID. */
+function save_user_preferences(int $userId, array $p): bool {
+    $contact = trim((string)($p['contact_number'] ?? ''));
+    $nDue    = !empty($p['notify_due']) ? 1 : 0;
+    $nDays   = in_array((string)($p['notify_due_days'] ?? '1'), ['1', '2', '3'], true) ? (int)$p['notify_due_days'] : 1;
+    $nRes    = !empty($p['notify_reservations']) ? 1 : 0;
+    $nAnn    = !empty($p['notify_announcements']) ? 1 : 0;
+    $nAct    = !empty($p['notify_activity']) ? 1 : 0;
+    $nEmail  = !empty($p['notify_email']) ? 1 : 0;
+
+    $theme   = in_array($p['theme'] ?? '', ['light', 'dark', 'system'], true) ? $p['theme'] : 'light';
+    $size    = in_array($p['text_size'] ?? '', ['small', 'default', 'large', 'xlarge'], true) ? $p['text_size'] : 'default';
+    $motion  = !empty($p['reduce_motion']) ? 1 : 0;
+    $view    = in_array($p['library_view'] ?? '', ['grid', 'list'], true) ? $p['library_view'] : 'grid';
+    $genres  = is_array($p['favorite_genres'] ?? null) ? json_encode(array_values($p['favorite_genres'])) : '[]';
+    $track   = isset($p['track_reading']) ? (!empty($p['track_reading']) ? 1 : 0) : 1;
+
+    db_exec(
+        "INSERT INTO user_preferences (
+            User_ID, Contact_Number, Notify_Due, Notify_Due_Days, Notify_Reservations,
+            Notify_Announcements, Notify_Activity, Notify_Email, Theme, Text_Size,
+            Reduce_Motion, Library_View, Favorite_Genres, Track_Reading
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE
+            Contact_Number       = VALUES(Contact_Number),
+            Notify_Due           = VALUES(Notify_Due),
+            Notify_Due_Days      = VALUES(Notify_Due_Days),
+            Notify_Reservations  = VALUES(Notify_Reservations),
+            Notify_Announcements = VALUES(Notify_Announcements),
+            Notify_Activity      = VALUES(Notify_Activity),
+            Notify_Email         = VALUES(Notify_Email),
+            Theme                = VALUES(Theme),
+            Text_Size            = VALUES(Text_Size),
+            Reduce_Motion        = VALUES(Reduce_Motion),
+            Library_View         = VALUES(Library_View),
+            Favorite_Genres      = VALUES(Favorite_Genres),
+            Track_Reading        = VALUES(Track_Reading)",
+        'isiiiiisssissi',
+        [$userId, $contact, $nDue, $nDays, $nRes, $nAnn, $nAct, $nEmail, $theme, $size, $motion, $view, $genres, $track]
+    );
+    get_user_preferences($userId, true);
+    return true;
+}
+
+function add_user_reading_seconds(int $userId, int $addSeconds): int {
+    if ($addSeconds <= 0) {
+        return 0;
+    }
+    try {
+        db_exec(
+            "INSERT INTO user_preferences (User_ID, Reading_Seconds)
+             VALUES (?, ?)
+             ON DUPLICATE KEY UPDATE Reading_Seconds = Reading_Seconds + VALUES(Reading_Seconds)",
+            'ii',
+            [$userId, $addSeconds]
+        );
+        $fresh = get_user_preferences($userId, true);
+        return (int)$fresh['reading_seconds'];
+    } catch (Throwable $e) {
+        return 0;
+    }
+}
+
 /* ========================================================================== */
 /* 9. NOTIFICATIONS & ACTIVITY LOG                                            */
 /* ========================================================================== */
@@ -487,7 +643,7 @@ function local_date(?string $utc, string $format = 'M d, Y'): string {
 }
 
 /* ========================================================================== */
-/* 10. GLOBAL SYSTEM SETTINGS (system_settings table, Admin-editable — A2)    */
+/* 10. GLOBAL SYSTEM SETTINGS (system_settings table, Can be Edited by Admins)    */
 /* ========================================================================== */
 
 const SETTINGS_SPEC = [

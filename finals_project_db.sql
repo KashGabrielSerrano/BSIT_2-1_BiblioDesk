@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Nov 12, 2026 at 02:50 PM
+-- Generation Time: Nov 14, 2026 at 06:27 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -232,8 +232,6 @@ CREATE TABLE `reservation_table` (
   `Loan_ID` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
--- --------------------------------------------------------
-
 --
 -- Table structure for table `system_settings`
 --
@@ -297,6 +295,31 @@ CREATE TABLE `user_favorites` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `user_preferences`
+--
+
+CREATE TABLE `user_preferences` (
+  `User_ID` int(11) NOT NULL,
+  `Contact_Number` varchar(30) DEFAULT NULL,
+  `Notify_Due` tinyint(1) NOT NULL DEFAULT 1,
+  `Notify_Due_Days` tinyint(4) NOT NULL DEFAULT 1,
+  `Notify_Reservations` tinyint(1) NOT NULL DEFAULT 1,
+  `Notify_Announcements` tinyint(1) NOT NULL DEFAULT 1,
+  `Notify_Activity` tinyint(1) NOT NULL DEFAULT 1,
+  `Notify_Email` tinyint(1) NOT NULL DEFAULT 0,
+  `Theme` varchar(20) NOT NULL DEFAULT 'light',
+  `Text_Size` varchar(20) NOT NULL DEFAULT 'default',
+  `Reduce_Motion` tinyint(1) NOT NULL DEFAULT 0,
+  `Library_View` varchar(20) NOT NULL DEFAULT 'grid',
+  `Favorite_Genres` text DEFAULT NULL,
+  `Track_Reading` tinyint(1) NOT NULL DEFAULT 1,
+  `Reading_Seconds` int(11) NOT NULL DEFAULT 0,
+  `Updated_At` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `user_reading_history`
 --
 
@@ -338,7 +361,8 @@ CREATE TABLE `user_table` (
   `Password` varchar(255) NOT NULL,
   `Role` enum('Student','Admin','Librarian') NOT NULL DEFAULT 'Student',
   `Account_Status` enum('Pending','Active','Suspended') NOT NULL DEFAULT 'Pending',
-  `Created_At` timestamp NOT NULL DEFAULT current_timestamp()
+  `Created_At` timestamp NOT NULL DEFAULT current_timestamp(),
+  `Profile_Picture` varchar(500) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -469,6 +493,12 @@ ALTER TABLE `reservation_table`
   ADD KEY `fk_res_loan` (`Loan_ID`);
 
 --
+-- Indexes for table `schema_migrations`
+--
+ALTER TABLE `schema_migrations`
+  ADD PRIMARY KEY (`Version`);
+
+--
 -- Indexes for table `system_settings`
 --
 ALTER TABLE `system_settings`
@@ -504,6 +534,12 @@ ALTER TABLE `user_favorites`
   ADD PRIMARY KEY (`User_ID`,`Book_ID`),
   ADD KEY `fk_favorites_book` (`Book_ID`),
   ADD KEY `idx_user_favorites` (`User_ID`,`Created_At`);
+
+--
+-- Indexes for table `user_preferences`
+--
+ALTER TABLE `user_preferences`
+  ADD PRIMARY KEY (`User_ID`);
 
 --
 -- Indexes for table `user_reading_history`
@@ -739,6 +775,12 @@ ALTER TABLE `user_collection_books`
 ALTER TABLE `user_favorites`
   ADD CONSTRAINT `fk_favorites_book` FOREIGN KEY (`Book_ID`) REFERENCES `book_table` (`Book_ID`) ON DELETE CASCADE,
   ADD CONSTRAINT `fk_favorites_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
+
+--
+-- Constraints for table `user_preferences`
+--
+ALTER TABLE `user_preferences`
+  ADD CONSTRAINT `fk_user_prefs_user` FOREIGN KEY (`User_ID`) REFERENCES `user_table` (`User_ID`) ON DELETE CASCADE;
 
 --
 -- Constraints for table `user_reading_history`

@@ -27,7 +27,7 @@ render_topbar($menu);
         <main>
             <div class="container-fluid px-0 py-5">
                 <header class="headerContain d-flex align-items-center gap-4 gap-md-5 px-lg-5">
-                    <img src="../frontend/assets/icons/pfp-icon.png" alt="Profile picture" class="accountAvatar rounded-circle object-fit-cover flex-shrink-0">
+                    <img src="<?= e(profile_avatar_url() ?: '../frontend/assets/icons/pfp-icon.png') ?>" alt="Profile picture" class="accountAvatar rounded-circle object-fit-cover flex-shrink-0">
 
                     <div class="headerText flex-grow-1">
                         <h1 id="displayName" class="fw-bold mb-1"><?= e($p['name']) ?></h1>

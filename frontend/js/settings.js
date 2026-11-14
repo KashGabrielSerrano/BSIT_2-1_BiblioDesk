@@ -1,31 +1,26 @@
 (function () {
     'use strict';
 
-    /*
-     * Set this to your PHP endpoint once it exists, e.g. 'save_settings.php'.
-     * While it is null the page runs in demo mode: settings are kept in this browser only.
-     *
-     * Every save is POSTed as JSON, and the endpoint should check the user is logged in:
-     *   { type: 'settings',      data: { profile, notify, prefs } }
-     *   { type: 'password',      current, new }
-     *   { type: 'close_account', reason }
-     */
-    const API_URL = null;
+    const CONTROLLER_URL = 'settings_controller.php';
+    const CSRF_TOKEN = document.querySelector('meta[name="csrf-token"]')?.content || '';
 
-    // Fill this from the server. While it is empty, "Download borrowing history" says there is nothing yet.
-    // Each item: { title, author, borrowed, due, returned }
-    const borrowHistory = [];
-
+    const serverProfile = window.bdProfile || {};
     const DEFAULTS = {
-        // the logged-in user's real details, rendered by settings.php (window.bdProfile)
-        profile: Object.assign({ name: '', email: '', phone: '', program: '', year: '1st Year', avatar: null }, window.bdProfile || {}),
-        notify:  { due: true, dueDays: '1', reservations: true, announcements: true, activity: true, email: false },
-        prefs:   { theme: 'light', textSize: 'default', reduceMotion: false, libraryView: 'grid', genres: [], trackReading: true }
+        profile: Object.assign(
+            { name: '', email: '', phone: '', program: '', year: '1st Year', avatar: null },
+            serverProfile
+        ),
+        notify: { due: true, dueDays: '1', reservations: true, announcements: true, activity: true, email: false },
+        prefs:  { theme: 'light', textSize: 'default', reduceMotion: false, libraryView: 'grid', genres: [], trackReading: true }
     };
 
     const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    const PHONE_RE = /^(\+63|63|0)9\d{9}$/;
-    const DEFAULT_AVATAR = '../frontend/assets/icons/pfp-icon.png';
+    const PHONE_RE = /^(09|\+639|639)\d{9}$/;
+    const DEFAULT_AVATAR = serverProfile.defaultAvatar || '../frontend/assets/icons/pfp-icon.png';
+
+    const MAX_AVATAR_BYTES = 100 * 1024; // 100 KB
+    const ALLOWED_MIMES    = ['image/jpeg', 'image/png'];
+    const ALLOWED_EXTS     = /\.(jpe?g|png)$/i;
 
     const $ = function (id) { return document.getElementById(id); };
     const P = window.BDPrefs;
@@ -34,10 +29,10 @@
     const panels   = Array.from(document.querySelectorAll('.settingsPanel'));
     const saveBar  = $('saveBar');
 
-    let avatar = null;     // data URL of the chosen photo, or null
-    let saved  = null;     // last saved settings
+    let avatar = serverProfile.avatar || null; // Supabase public URL, or null
+    let saved  = null;                         // last saved settings
 
-    /* ---------- storage ---------- */
+    /* ---------- storage & backend helper ---------- */
     function merge(base, extra) {
         const out = JSON.parse(JSON.stringify(base));
         Object.keys(extra || {}).forEach(function (section) {
@@ -51,7 +46,31 @@
     }
 
     function store(data) {
-        try { localStorage.setItem(P.KEY, JSON.stringify(data)); } catch (e) { /* storage may be blocked; page still works */ }
+        try {
+            if (P && typeof P.save === 'function') P.save(data);
+            else if (P && P.KEY) localStorage.setItem(P.KEY, JSON.stringify(data));
+        } catch (e) { /* storage may be blocked; page still works */ }
+    }
+
+    async function postController(formData, endpoint = CONTROLLER_URL) {
+        formData.append('csrf_token', CSRF_TOKEN);
+        const res = await fetch(endpoint, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: formData
+        });
+        let data = {};
+        try {
+            data = await res.json();
+        } catch (e) {
+            throw new Error('Unexpected server response.');
+        }
+        if (!res.ok || !data.success) {
+            const err = new Error(data.message || 'Request failed.');
+            err.errors = data.errors || {};
+            throw err;
+        }
+        return data;
     }
 
     /* ---------- reading / writing the form ---------- */
@@ -95,32 +114,33 @@
     }
 
     function fillForm(s) {
-        $('pfName').value = s.profile.name;
-        $('pfEmail').value = s.profile.email;
-        $('pfPhone').value = s.profile.phone;
-        $('pfProgram').value = s.profile.program;
-        $('pfYear').value = s.profile.year;
+        $('pfName').value = s.profile.name || '';
+        $('pfEmail').value = s.profile.email || '';
+        $('pfPhone').value = (s.profile && s.profile.phone) ? s.profile.phone : '';
+        $('pfProgram').value = s.profile.program || 'Other';
+        $('pfYear').value = s.profile.year || '1st Year';
         avatar = s.profile.avatar || null;
         showAvatar();
 
-        $('ntDue').checked = s.notify.due;
-        $('ntDueDays').value = s.notify.dueDays;
-        $('ntRes').checked = s.notify.reservations;
-        $('ntAnn').checked = s.notify.announcements;
-        $('ntAct').checked = s.notify.activity;
-        $('ntEmail').checked = s.notify.email;
+        $('ntDue').checked = !!s.notify.due;
+        $('ntDueDays').value = s.notify.dueDays || '1';
+        $('ntRes').checked = !!s.notify.reservations;
+        $('ntAnn').checked = !!s.notify.announcements;
+        $('ntAct').checked = !!s.notify.activity;
+        $('ntEmail').checked = !!s.notify.email;
         syncDueDays();
 
-        setRadio('theme', s.prefs.theme);
-        setRadio('textSize', s.prefs.textSize);
-        $('prMotion').checked = s.prefs.reduceMotion;
-        setRadio('libraryView', s.prefs.libraryView);
-        $('prTrack').checked = s.prefs.trackReading;
+        setRadio('theme', s.prefs.theme || 'light');
+        setRadio('textSize', s.prefs.textSize || 'default');
+        $('prMotion').checked = !!s.prefs.reduceMotion;
+        setRadio('libraryView', s.prefs.libraryView || 'grid');
+        $('prTrack').checked = s.prefs.trackReading !== false;
         document.querySelectorAll('input[name="genre"]').forEach(function (c) {
-            c.checked = s.prefs.genres.indexOf(c.value) !== -1;
+            c.checked = (s.prefs.genres || []).indexOf(c.value) !== -1;
         });
 
-        P.apply(s.prefs);
+        if (P && typeof P.apply === 'function') P.apply(s.prefs);
+        updateReadingPreview();
     }
 
     function refreshDirty() {
@@ -136,16 +156,7 @@
     /* ---------- toast ---------- */
     function showToast(text) {
         $('stToastText').textContent = text;
-        bootstrap.Toast.getOrCreateInstance($('stToast'), { delay: 6000 }).show();
-    }
-
-    function persist(payload) {
-        if (!API_URL) return Promise.resolve();
-        return fetch(API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(payload)
-        }).then(function (res) { if (!res.ok) throw new Error('Request failed'); });
+        bootstrap.Toast.getOrCreateInstance($('stToast'), { delay: 4500 }).show();
     }
 
     /* ---------- section list ---------- */
@@ -156,7 +167,6 @@
             const on = n.dataset.panel === id;
             n.classList.toggle('active', on);
             n.setAttribute('aria-selected', on ? 'true' : 'false');
-            // on phones the section list scrolls sideways: keep the chosen section in view
             if (on && n.scrollIntoView) {
                 try { n.scrollIntoView({ inline: 'center', block: 'nearest' }); } catch (e) { /* ignore */ }
             }
@@ -174,7 +184,9 @@
     /* ---------- profile: validation ---------- */
     function setErr(inputId, errId, msg) {
         const input = $(inputId);
-        $(errId).textContent = msg;
+        const errEl = $(errId);
+        if (!input || !errEl) return;
+        errEl.textContent = msg;
         input.classList.toggle('is-invalid', !!msg);
         if (msg) input.setAttribute('aria-invalid', 'true'); else input.removeAttribute('aria-invalid');
     }
@@ -193,7 +205,6 @@
             }
         }
 
-        check(v.name.length >= 2 && v.name.length <= 80, 'pfName', 'pfNameErr', 'Enter your full name (2 to 80 characters).');
         check(EMAIL_RE.test(v.email), 'pfEmail', 'pfEmailErr', 'Enter a valid email address.');
         check(v.phone === '' || PHONE_RE.test(v.phone.replace(/[\s\-()]/g, '')), 'pfPhone', 'pfPhoneErr', 'Use a PH mobile number like 09123456789 or +639123456789.');
 
@@ -201,69 +212,136 @@
         return ok;
     }
 
-    [['pfName', 'pfNameErr'], ['pfEmail', 'pfEmailErr'], ['pfPhone', 'pfPhoneErr']].forEach(function (pair) {
+    [['pfEmail', 'pfEmailErr'], ['pfPhone', 'pfPhoneErr']].forEach(function (pair) {
         const input = $(pair[0]);
+        if (!input) return;
         input.addEventListener('blur', function () { validateProfile(true, false); });
         input.addEventListener('input', function () {
             if (input.classList.contains('is-invalid')) validateProfile(true, false);
         });
     });
 
-    /* ---------- profile photo ---------- */
+    /* ---------- profile photo (Supabase Storage: JPG/JPEG/PNG, max 100 KB) ---------- */
     function showAvatar() {
-        $('avatarImg').src = avatar || DEFAULT_AVATAR;
+        const displayUrl = avatar || DEFAULT_AVATAR;
+        $('avatarImg').src = displayUrl;
         $('avatarRemove').disabled = !avatar;
+        document.querySelectorAll('img[data-bd-avatar]').forEach(function (img) {
+            img.src = displayUrl;
+        });
+        if (P && typeof P.applyAvatar === 'function') {
+            P.applyAvatar(avatar);
+        }
     }
 
-    $('avatarFile').addEventListener('change', function (e) {
+    $('avatarFile').addEventListener('change', async function (e) {
         const file = e.target.files[0];
         const err = $('avatarError');
+        const btnLabel = $('avatarUploadBtn');
         err.textContent = '';
         if (!file) return;
 
-        if (!/^image\/(png|jpe?g|webp|gif)$/.test(file.type)) {
-            err.textContent = 'Choose a PNG, JPG, WEBP or GIF image.';
+        if (!ALLOWED_MIMES.includes(file.type) || !ALLOWED_EXTS.test(file.name)) {
+            err.textContent = 'Only JPG, JPEG, and PNG images are allowed.';
             e.target.value = '';
             return;
         }
-        if (file.size > 5 * 1024 * 1024) {
-            err.textContent = 'The image must be under 5 MB.';
+        if (file.size > MAX_AVATAR_BYTES) {
+            err.textContent = 'The image must be 100 KB or smaller.';
             e.target.value = '';
             return;
         }
 
-        const url = URL.createObjectURL(file);
-        const img = new Image();
-        img.onload = function () {
-            // crop to a centred square and shrink, so it is small enough to store
-            const size = 256;
-            const c = document.createElement('canvas');
-            c.width = c.height = size;
-            const side = Math.min(img.width, img.height);
-            c.getContext('2d').drawImage(img, (img.width - side) / 2, (img.height - side) / 2, side, side, 0, 0, size, size);
-            avatar = c.toDataURL('image/jpeg', 0.85);
-            URL.revokeObjectURL(url);
+        if (btnLabel) btnLabel.textContent = 'Uploading...';
+        $('avatarFile').disabled = true;
+
+        try {
+            const fd = new FormData();
+            fd.append('action', 'upload_avatar');
+            fd.append('avatar', file);
+            const res = await postController(fd);
+
+            avatar = res.url || null;
+            if (saved && saved.profile) {
+                saved.profile.avatar = avatar;
+                store(saved);
+            }
             showAvatar();
-            refreshDirty();
-        };
-        img.onerror = function () {
-            URL.revokeObjectURL(url);
-            err.textContent = 'That file could not be read as an image.';
-        };
-        img.src = url;
-        e.target.value = '';
+            showToast(res.message || 'Profile photo updated.');
+        } catch (uploadErr) {
+            err.textContent = uploadErr.message || 'Could not upload profile photo.';
+        } finally {
+            if (btnLabel) btnLabel.textContent = 'Change photo';
+            $('avatarFile').disabled = false;
+            e.target.value = '';
+        }
     });
 
-    $('avatarRemove').addEventListener('click', function () {
-        avatar = null;
-        $('avatarError').textContent = '';
-        showAvatar();
-        refreshDirty();
+    $('avatarRemove').addEventListener('click', async function () {
+        const err = $('avatarError');
+        err.textContent = '';
+        $('avatarRemove').disabled = true;
+
+        try {
+            const fd = new FormData();
+            fd.append('action', 'remove_avatar');
+            const res = await postController(fd);
+
+            avatar = null;
+            if (saved && saved.profile) {
+                saved.profile.avatar = null;
+                store(saved);
+            }
+            showAvatar();
+            showToast(res.message || 'Profile photo removed.');
+        } catch (removeErr) {
+            err.textContent = removeErr.message || 'Could not remove profile photo.';
+            $('avatarRemove').disabled = !avatar;
+        }
     });
 
     /* ---------- live preview + dirty tracking ---------- */
-    document.querySelectorAll('input[name="theme"], input[name="textSize"], #prMotion').forEach(function (el) {
-        el.addEventListener('change', function () { P.apply(readForm().prefs); });
+    function updateReadingPreview() {
+        const form = readForm();
+        const p = form.prefs;
+        const themeBadge = $('previewThemeBadge');
+        const layoutBadge = $('previewLayoutBadge');
+        const genreTags = $('previewGenreTags');
+        const motionStatus = $('previewMotionStatus');
+        const trackStatus = $('previewTrackStatus');
+
+        if (themeBadge) {
+            themeBadge.textContent = p.theme === 'dark' ? 'Dark theme' : (p.theme === 'system' ? 'Match device' : 'Light theme');
+        }
+        if (layoutBadge) {
+            layoutBadge.textContent = p.libraryView === 'list' ? 'List View' : 'Grid View';
+        }
+        if (genreTags) {
+            if (p.genres && p.genres.length) {
+                genreTags.innerHTML = p.genres.map(function (g) {
+                    return '<span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">' + g + '</span>';
+                }).join(' ');
+            } else {
+                genreTags.innerHTML = '<span class="badge bg-secondary-subtle text-secondary-emphasis">No genres selected</span>';
+            }
+        }
+        if (motionStatus) {
+            motionStatus.innerHTML = p.reduceMotion
+                ? '<i class="bi bi-dash-circle me-1"></i>Animations: Reduced'
+                : '<i class="bi bi-activity me-1"></i>Animations: Enabled';
+        }
+        if (trackStatus) {
+            trackStatus.innerHTML = p.trackReading
+                ? '<i class="bi bi-stopwatch text-success me-1"></i>Reading tracking: Active'
+                : '<i class="bi bi-pause-circle text-muted me-1"></i>Reading tracking: Paused';
+        }
+    }
+
+    document.querySelectorAll('input[name="theme"], input[name="textSize"], #prMotion, input[name="libraryView"], #prTrack, input[name="genre"]').forEach(function (el) {
+        el.addEventListener('change', function () {
+            if (P && typeof P.apply === 'function') P.apply(readForm().prefs);
+            updateReadingPreview();
+        });
     });
 
     $('ntDue').addEventListener('change', syncDueDays);
@@ -274,29 +352,65 @@
         panel.addEventListener('change', refreshDirty);
     });
 
-    $('saveBtn').addEventListener('click', function () {
+    $('saveBtn').addEventListener('click', async function () {
         if (!validateProfile(true, true)) {
             showPanel('profile', true);
             validateProfile(true, true);
             return;
         }
         const data = readForm();
-        persist({ type: 'settings', data: data }).then(function () {
+        $('saveBtn').disabled = true;
+
+        try {
+            const fd = new FormData();
+            fd.append('action', 'save_preferences');
+            fd.append('email', data.profile.email);
+            fd.append('phone', data.profile.phone);
+            fd.append('notify', JSON.stringify(data.notify));
+            fd.append('prefs', JSON.stringify(data.prefs));
+
+            const res = await postController(fd);
+            if (res.email) {
+                data.profile.email = res.email;
+                $('pfEmail').value = res.email;
+            }
+
             saved = data;
             store(data);
-            P.apply(data.prefs);
-            P.applyAvatar(data.profile.avatar);
+            window.bdUserPreferences = {
+                profile: { phone: data.profile.phone },
+                notify: Object.assign({}, data.notify),
+                prefs: Object.assign({}, data.prefs)
+            };
+            if (P && typeof P.apply === 'function') P.apply(data.prefs);
+            updateReadingPreview();
             refreshDirty();
-            showToast(API_URL ? 'Settings saved.' : 'Settings saved on this device (demo mode).');
-        }).catch(function () {
-            showToast('Could not save your settings. Please try again.');
-        });
+            showToast('Settings saved to your account.');
+        } catch (saveErr) {
+            if (saveErr.errors && saveErr.errors.email) {
+                setErr('pfEmail', 'pfEmailErr', saveErr.errors.email);
+                showPanel('profile', true);
+            } else if (saveErr.errors && saveErr.errors.phone) {
+                setErr('pfPhone', 'pfPhoneErr', saveErr.errors.phone);
+                showPanel('profile', true);
+            } else {
+                showToast(saveErr.message || 'Could not save your settings. Please try again.');
+            }
+        } finally {
+            $('saveBtn').disabled = false;
+        }
     });
 
     $('discardBtn').addEventListener('click', function () {
         fillForm(saved);
-        ['pfName', 'pfEmail', 'pfPhone'].forEach(function (id) { $(id).classList.remove('is-invalid'); $(id).removeAttribute('aria-invalid'); });
-        ['pfNameErr', 'pfEmailErr', 'pfPhoneErr', 'avatarError'].forEach(function (id) { $(id).textContent = ''; });
+        ['pfEmail', 'pfPhone'].forEach(function (id) {
+            const el = $(id);
+            if (el) { el.classList.remove('is-invalid'); el.removeAttribute('aria-invalid'); }
+        });
+        ['pfEmailErr', 'pfPhoneErr', 'avatarError'].forEach(function (id) {
+            const el = $(id);
+            if (el) el.textContent = '';
+        });
         refreshDirty();
     });
 
@@ -352,28 +466,29 @@
         });
     });
 
-    $('pwForm').addEventListener('submit', function (e) {
+    $('pwForm').addEventListener('submit', async function (e) {
         e.preventDefault();
         if (!evalPassword()) return;
-        persist({ type: 'password', current: pwCur.value, new: pwNew.value }).then(function () {
-            // never keep passwords anywhere in the page or in storage
+        $('pwSave').disabled = true;
+
+        try {
+            const fd = new FormData();
+            fd.append('action', 'change_password');
+            fd.append('current_password', pwCur.value);
+            fd.append('new_password', pwNew.value);
+            fd.append('confirm_password', pwCon.value);
+            const res = await postController(fd);
+
             pwCur.value = pwNew.value = pwCon.value = '';
             evalPassword();
-            showToast(API_URL
-                ? 'Password updated.'
-                : 'Password checks passed. Nothing was changed because the server is not connected yet (demo mode).');
-        }).catch(function () {
-            showToast('Could not update your password. Check your current password and try again.');
-        });
+            showToast(res.message || 'Password updated.');
+        } catch (pwErr) {
+            showToast(pwErr.message || 'Could not update your password. Check your current password and try again.');
+            evalPassword();
+        }
     });
 
     /* ---------- downloads ---------- */
-    function csvCell(value) {
-        let s = String(value == null ? '' : value);
-        if (/^[=+\-@]/.test(s)) s = "'" + s;   // stop spreadsheets reading text as a formula
-        return '"' + s.replace(/"/g, '""') + '"';
-    }
-
     function download(filename, text, type) {
         const blob = new Blob([text], { type: type });
         const url = URL.createObjectURL(blob);
@@ -386,17 +501,23 @@
         URL.revokeObjectURL(url);
     }
 
-    // Real borrowing history from the server (Stage 8): a CSV download of the user's own loans.
     $('dlHistory').addEventListener('click', function () {
         window.location.href = 'circulation_controller.php?action=export_csv';
     });
 
     $('dlSettings').addEventListener('click', function () {
-        const copy = JSON.parse(JSON.stringify(saved));
+        const currentData = readForm();
+        const copy = JSON.parse(JSON.stringify(currentData));
         copy.profile.avatar = copy.profile.avatar ? '(photo not included)' : null;
         download('bibliodesk-my-settings.json',
-            JSON.stringify({ exportedAt: new Date().toISOString(), profile: copy.profile, notifications: copy.notify, preferences: copy.prefs }, null, 2),
+            JSON.stringify({
+                exportedAt: new Date().toISOString(),
+                profile: copy.profile,
+                notifications: copy.notify,
+                preferences: copy.prefs
+            }, null, 2),
             'application/json');
+        showToast('Settings snapshot downloaded.');
     });
 
     /* ---------- close account ---------- */
@@ -406,6 +527,7 @@
         closeInput.value = '';
         $('closeReason').value = '';
         $('closeConfirmBtn').disabled = true;
+        $('closeConfirmBtn').textContent = 'Send request';
         bootstrap.Modal.getOrCreateInstance($('closeModal')).show();
     });
 
@@ -413,24 +535,54 @@
         $('closeConfirmBtn').disabled = closeInput.value.trim() !== 'CLOSE';
     });
 
-    $('closeConfirmBtn').addEventListener('click', function () {
+    closeInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && closeInput.value.trim() === 'CLOSE') {
+            e.preventDefault();
+            $('closeConfirmBtn').click();
+        }
+    });
+
+    $('closeConfirmBtn').addEventListener('click', async function () {
         if (closeInput.value.trim() !== 'CLOSE') return;
         const reason = $('closeReason').value.trim();
-        bootstrap.Modal.getOrCreateInstance($('closeModal')).hide();
-        persist({ type: 'close_account', reason: reason }).then(function () {
-            showToast(API_URL
-                ? 'Your request was sent. A librarian will review it.'
-                : 'Demo mode: no request was sent because the server is not connected yet.');
-        }).catch(function () {
-            showToast('Could not send your request. Please try again.');
-        });
+        $('closeConfirmBtn').disabled = true;
+        $('closeConfirmBtn').textContent = 'Sending...';
+
+        try {
+            const fd = new FormData();
+            fd.append('action', 'submit');
+            fd.append('subject', 'Account / Login');
+            fd.append('message', 'Account closure request.' + (reason ? ' Reason: ' + reason : ''));
+            const res = await postController(fd, 'helpdesk_controller.php');
+            bootstrap.Modal.getOrCreateInstance($('closeModal')).hide();
+            showToast(res.message || 'Your request was sent. A librarian will review it.');
+        } catch (closeErr) {
+            showToast(closeErr.message || 'Could not send your request. Please try again.');
+        } finally {
+            $('closeConfirmBtn').disabled = closeInput.value.trim() !== 'CLOSE';
+            $('closeConfirmBtn').textContent = 'Send request';
+        }
     });
 
     /* ---------- start ---------- */
-    $('demoNote').hidden = !!API_URL;
-    saved = merge(DEFAULTS, P.load());
+    if ($('demoNote')) $('demoNote').hidden = true;
+    const dbData = window.bdDatabasePreferences || null;
+    const localData = (P && typeof P.load === 'function') ? P.load() : {};
+    saved = merge(DEFAULTS, localData);
+    if (dbData) {
+        saved = merge(saved, dbData);
+    }
+
+    // Server DB values always override cached localStorage for locked/synced profile fields
+    if (serverProfile.name) saved.profile.name = serverProfile.name;
+    if (serverProfile.email) saved.profile.email = serverProfile.email;
+    if (serverProfile.phone !== undefined) saved.profile.phone = serverProfile.phone;
+    if (serverProfile.program) saved.profile.program = serverProfile.program;
+    saved.profile.avatar = serverProfile.avatar || null;
+
     fillForm(saved);
-    saved = readForm();            // normalise so "unsaved" compares like with like
+    store(saved);
+    saved = readForm(); // normalise so "unsaved" compares like with like
     evalPassword();
     showPanel(location.hash.slice(1), false);
     refreshDirty();

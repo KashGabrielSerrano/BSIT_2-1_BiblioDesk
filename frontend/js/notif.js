@@ -97,8 +97,28 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (!data || !data.success) return;
-                items = data.items || [];
-                unread = data.unread || 0;
+                var rawItems = data.items || [];
+                var prefs = (window.BDPrefs && typeof window.BDPrefs.load === 'function') ? window.BDPrefs.load() : {};
+                var notifyPrefs = prefs.notify || {};
+
+                items = rawItems.filter(function (n) {
+                    var type = String(n.type || '').toLowerCase();
+                    if (notifyPrefs.announcements === false && (type.indexOf('announcement') === 0 || n.category)) {
+                        return false;
+                    }
+                    if (notifyPrefs.reservations === false && type.indexOf('reservation') !== -1) {
+                        return false;
+                    }
+                    if (notifyPrefs.due === false && (type.indexOf('due') !== -1 || type.indexOf('loan') !== -1)) {
+                        return false;
+                    }
+                    if (notifyPrefs.activity === false && (type.indexOf('account') !== -1 || type.indexOf('profile') !== -1 || type.indexOf('password') !== -1 || type.indexOf('ticket') !== -1)) {
+                        return false;
+                    }
+                    return true;
+                });
+
+                unread = items.filter(function (n) { return !n.read; }).length;
                 render();
             })
             .catch(function () { render(); });

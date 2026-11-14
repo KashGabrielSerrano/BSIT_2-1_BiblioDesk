@@ -554,7 +554,7 @@ try {
                     </ul>
                     <p class="small text-white-50 mb-0">
                         <i class="bi bi-envelope me-1" aria-hidden="true"></i> bibliodesk@gmail.com<br>
-                        <i class="bi bi-headset me-1" aria-hidden="true"></i> bibliodesk.help@gmail.com
+                        <i class="bi bi-headset me-1" aria-hidden="true"></i> bibliodesk.portal@gmail.com
                     </p>
                 </div>
             </div>

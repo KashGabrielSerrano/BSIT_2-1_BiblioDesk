@@ -1,13 +1,16 @@
 <?php
 require_once __DIR__ . '/core/bootstrap.php';
 require_once __DIR__ . '/partials/layout.php';
-$user = require_login_page();
-$menu = menu_for_role($user['role']);
-$profile = current_profile();
-render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css'],
-    '    <script src="../frontend/js/prefs.js"></script>');
+
+$user      = require_login_page();
+$menu      = menu_for_role($user['role']);
+$profile   = current_profile();
+$userPrefs = get_user_preferences((int)$user['user_id']);
+$avatarUrl = profile_avatar_url() ?: '../frontend/assets/icons/pfp-icon.png';
+
+render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']);
 ?>
-        <!-- SIDEBAR For Admin -->
+        <!-- SIDEBAR -->
         <?php render_sidebar($menu); ?>
 
         <!-- LOGOUT CONFIRMATION MODAL -->
@@ -17,10 +20,6 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
 
         <main class="container-fluid px-3 px-md-5 py-4">
             <h1 class="pageTitle mt-4 mb-3">Settings</h1>
-
-            <p class="demoNote" id="demoNote" hidden>
-                <strong>Demo mode:</strong> your settings are saved in this browser only until the server is connected.
-            </p>
 
             <div class="row g-4 mt-1">
                 <!--Section list-->
@@ -46,13 +45,14 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                         </div>
 
                         <div class="d-flex align-items-center flex-wrap gap-3 mb-4">
-                            <img id="avatarImg" src="../frontend/assets/icons/pfp-icon.png" alt="Your profile photo" class="avatarBig rounded-circle">
+                            <img id="avatarImg" src="<?= e($avatarUrl) ?>" alt="Your profile photo" class="avatarBig rounded-circle object-fit-cover">
                             <div>
                                 <div class="d-flex gap-2 flex-wrap">
-                                    <input type="file" id="avatarFile" accept="image/png,image/jpeg,image/webp,image/gif" class="visually-hidden">
-                                    <label for="avatarFile" class="btn stBtn mb-0">Change photo</label>
-                                    <button type="button" id="avatarRemove" class="btn stBtn">Remove</button>
+                                    <input type="file" id="avatarFile" accept="image/jpeg,image/png,.jpg,.jpeg,.png" class="visually-hidden">
+                                    <label for="avatarFile" id="avatarUploadBtn" class="btn stBtn mb-0">Change photo</label>
+                                    <button type="button" id="avatarRemove" class="btn stBtn"<?= profile_avatar_url() === '' ? ' disabled' : '' ?>>Remove</button>
                                 </div>
+                                <p class="helpText mt-1 mb-0">JPG, JPEG, or PNG only. Maximum file size: 100 KB.</p>
                                 <p class="fieldError" id="avatarError" role="alert"></p>
                             </div>
                         </div>
@@ -60,12 +60,12 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                         <div class="row g-3">
                             <div class="col-12">
                                 <label for="pfName" class="fieldLabel">Full name</label>
-                                <input type="text" id="pfName" class="form-control stField" maxlength="80" autocomplete="name" aria-describedby="pfNameErr">
-                                <p class="fieldError" id="pfNameErr" role="alert"></p>
+                                <input type="text" id="pfName" class="form-control stField" value="<?= e($profile['full_name']) ?>" disabled aria-describedby="pfNameHelp">
+                                <p class="helpText" id="pfNameHelp">Only the library can change this.</p>
                             </div>
                             <div class="col-md-6">
                                 <label for="pfEmail" class="fieldLabel">Email</label>
-                                <input type="email" id="pfEmail" class="form-control stField" autocomplete="email" aria-describedby="pfEmailErr">
+                                <input type="email" id="pfEmail" class="form-control stField" value="<?= e($profile['email']) ?>" autocomplete="email" aria-describedby="pfEmailErr">
                                 <p class="fieldError" id="pfEmailErr" role="alert"></p>
                             </div>
                             <div class="col-md-6">
@@ -75,27 +75,32 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="col-md-6">
                                 <label for="pfStudentNo" class="fieldLabel">Student No.</label>
-                                <input type="text" id="pfStudentNo" class="form-control stField" value="<?= e($profile['student_id'] ?: '—') ?>" disabled aria-describedby="pfStudentNoHelp">
+                                <input type="text" id="pfStudentNo" class="form-control stField" value="<?= e($profile['student_id'] ?: ' ') ?>" disabled aria-describedby="pfStudentNoHelp">
                                 <p class="helpText" id="pfStudentNoHelp">Only the library can change this.</p>
                             </div>
                             <div class="col-md-6">
                                 <label for="pfProgram" class="fieldLabel">Program</label>
-                                <select id="pfProgram" class="form-select stField">
-<?php foreach (DEPARTMENT_LABELS as $label): ?>
-                                    <option><?= e($label) ?></option>
+                                <select id="pfProgram" class="form-select stField" disabled aria-describedby="pfProgramHelp">
+<?php
+$currentProgram = $profile['department_label'] ?: 'Other';
+foreach (DEPARTMENT_LABELS as $label):
+?>
+                                    <option value="<?= e($label) ?>"<?= $currentProgram === $label ? ' selected' : '' ?>><?= e($label) ?></option>
 <?php endforeach; ?>
-                                    <option>Other</option>
+                                    <option value="Other"<?= $currentProgram === 'Other' ? ' selected' : '' ?>>Other</option>
                                 </select>
+                                <p class="helpText" id="pfProgramHelp">Only the library can change this.</p>
                             </div>
                             <div class="col-md-6">
                                 <label for="pfYear" class="fieldLabel">Year level</label>
-                                <select id="pfYear" class="form-select stField">
-                                    <option>1st Year</option>
-                                    <option>2nd Year</option>
-                                    <option>3rd Year</option>
-                                    <option>4th Year</option>
-                                    <option>5th Year</option>
+                                <select id="pfYear" class="form-select stField" disabled aria-describedby="pfYearHelp">
+                                    <option value="1st Year">1st Year</option>
+                                    <option value="2nd Year">2nd Year</option>
+                                    <option value="3rd Year">3rd Year</option>
+                                    <option value="4th Year">4th Year</option>
+                                    <option value="5th Year">5th Year</option>
                                 </select>
+                                <p class="helpText" id="pfYearHelp">Only the library can change this.</p>
                             </div>
                         </div>
                     </section>
@@ -165,6 +170,7 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="ntDue"></div>
                         </div>
+
                         <div class="switchRow">
                             <div>
                                 <label for="ntRes" class="switchTitle">Reservation updates</label>
@@ -172,6 +178,7 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="ntRes"></div>
                         </div>
+
                         <div class="switchRow">
                             <div>
                                 <label for="ntAnn" class="switchTitle">Library announcements &amp; events</label>
@@ -179,6 +186,7 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="ntAnn"></div>
                         </div>
+
                         <div class="switchRow">
                             <div>
                                 <label for="ntAct" class="switchTitle">Account activity</label>
@@ -208,7 +216,33 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                     <section class="settingsPanel" id="panel-reading" role="tabpanel" aria-labelledby="tab-reading" tabindex="-1">
                         <div class="panelHead">
                             <h2>Reading &amp; appearance</h2>
-                            <p>Changes to theme, text size and motion preview right away.</p>
+                            <p>Changes to theme, text size, motion, catalog layout, and favorite genres preview live below.</p>
+                        </div>
+
+                        <!-- LIVE PREVIEW BOX -->
+                        <div class="readingPreviewBox mb-4 p-3 rounded-4 border" id="readingLivePreview" style="background: var(--st-field); border-color: var(--st-border);">
+                            <div class="d-flex align-items-center justify-content-between mb-2">
+                                <span class="fw-bold small text-uppercase" style="letter-spacing: .05em;"><i class="bi bi-eye me-1"></i>Live Preview</span>
+                                <span class="badge rounded-pill bg-success-subtle text-success-emphasis border border-success-subtle" id="previewThemeBadge">Light theme</span>
+                            </div>
+                            <div class="p-3 rounded-3 border previewCard" id="previewSampleCard" style="background: var(--st-panel); border-color: var(--st-border);">
+                                <div class="d-flex gap-3 align-items-center">
+                                    <div class="previewThumbnail rounded overflow-hidden shadow-sm flex-shrink-0" id="previewThumb" style="width: 52px; height: 72px; background: var(--main-color); display: flex; align-items: center; justify-content: center; color: white;">
+                                        <i class="bi bi-book fs-3"></i>
+                                    </div>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <h4 class="h6 fw-bold mb-1 text-truncate" id="previewSampleTitle">Sample Book: The Art of Computing</h4>
+                                        <p class="small text-muted mb-2 text-truncate" id="previewSampleAuthor">By BiblioDesk Authors · <span id="previewLayoutBadge" class="fw-semibold">Grid View</span></p>
+                                        <div class="d-flex flex-wrap gap-1" id="previewGenreTags">
+                                            <span class="badge bg-secondary-subtle text-secondary-emphasis">No genres selected</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-2 pt-2 border-top d-flex flex-wrap align-items-center justify-content-between small text-muted">
+                                    <span id="previewMotionStatus"><i class="bi bi-activity me-1"></i>Animations: Enabled</span>
+                                    <span id="previewTrackStatus"><i class="bi bi-stopwatch text-success me-1"></i>Reading tracking: Active</span>
+                                </div>
+                            </div>
                         </div>
 
                         <fieldset class="mb-4">
@@ -237,6 +271,7 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                             </div>
                             <div class="form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" id="prMotion"></div>
                         </div>
+
                         <div class="switchRow">
                             <div>
                                 <label for="prTrack" class="switchTitle">Track my reading time</label>
@@ -290,12 +325,13 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
                     </section>
 
 <?php if ($user['role'] === 'Admin'): $sys = settings_all(); $group = ''; ?>
-                    <!--SYSTEM (Admin only, A2): global settings in the system_settings table - frontend/js/admin_settings.js -->
+                    <!--SYSTEM (Admin only)-->
                     <section class="settingsPanel" id="panel-system" role="tabpanel" aria-labelledby="tab-system" tabindex="-1">
                         <div class="panelHead">
                             <h2>System settings</h2>
                             <p>Library-wide rules for borrowing, reservations and fines. Changes apply to everyone right away and are recorded in the activity log.</p>
                         </div>
+
                         <form id="systemSettingsForm" novalidate>
                             <div class="row g-3">
 <?php foreach (SETTINGS_SPEC as $key => [$label, $type, $min, $max, $default, $help, $grp]):
@@ -326,6 +362,7 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
 <?php   endif;
       endforeach; ?>
                             </div>
+
                             <div class="d-flex flex-wrap align-items-center gap-3 mt-4">
                                 <button type="submit" id="systemSave" class="btn stBtn primary">Save system settings</button>
                                 <span id="systemResult" class="small" role="status"></span>
@@ -380,9 +417,39 @@ render_head('Settings | BiblioDesk', ['root.css', 'settings.css', 'admindb.css']
         </div>
 
     <script>
-        // Real details of the logged-in user for the Profile panel defaults (frontend/js/settings.js)
-        window.bdProfile = <?= json_encode(['name' => $profile['full_name'], 'email' => $profile['email'],
-                                            'program' => $profile['department_label'] ?: 'Other'],
-                                           JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+        window.bdProfile = <?= json_encode([
+            'name'          => $profile['full_name'],
+            'email'         => $profile['email'],
+            'phone'         => $userPrefs['contact_number'],
+            'program'       => $currentProgram,
+            'avatar'        => profile_avatar_url(),
+            'defaultAvatar' => '../frontend/assets/icons/pfp-icon.png',
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+        window.bdDatabasePreferences = <?= json_encode([
+            'profile' => [
+                'name'    => $profile['full_name'],
+                'email'   => $profile['email'],
+                'phone'   => $userPrefs['contact_number'],
+                'program' => $currentProgram,
+                'year'    => '1st Year',
+                'avatar'  => profile_avatar_url(),
+            ],
+            'notify' => [
+                'due'           => $userPrefs['notify_due'],
+                'dueDays'       => (string)$userPrefs['notify_due_days'],
+                'reservations'  => $userPrefs['notify_reservations'],
+                'announcements' => $userPrefs['notify_announcements'],
+                'activity'      => $userPrefs['notify_activity'],
+                'email'         => $userPrefs['notify_email'],
+            ],
+            'prefs' => [
+                'theme'        => $userPrefs['theme'],
+                'textSize'     => $userPrefs['text_size'],
+                'reduceMotion' => $userPrefs['reduce_motion'],
+                'libraryView'  => $userPrefs['library_view'],
+                'genres'       => $userPrefs['favorite_genres'],
+                'trackReading' => $userPrefs['track_reading'],
+            ],
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
     </script>
 <?php render_scripts($user['role'] === 'Admin' ? ['settings.js', 'admin_settings.js'] : ['settings.js']); ?>

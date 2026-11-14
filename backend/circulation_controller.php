@@ -142,12 +142,15 @@ switch ($action) {
         ]);
 
     case 'export_csv':
+        if (ob_get_length()) {
+            ob_clean();
+        }
         $rows = db_all(db(), "SELECT l.*, b.Title, b.Author FROM loan_table l JOIN book_table b ON b.Book_ID = l.Book_ID
-                               WHERE l.User_ID = ? AND l.Status IN ('Borrowed','Returned') ORDER BY l.Borrowed_At DESC", 'i', [$uid]);
+                               WHERE l.User_ID = ? AND l.Status IN ('Borrowed','Returned') ORDER BY COALESCE(l.Borrowed_At, l.Requested_At) DESC", 'i', [$uid]);
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="bibliodesk-borrowing-history-' . gmdate('Y-m-d') . '.csv"');
         $out = fopen('php://output', 'w');
-        fwrite($out, "\xEF\xBB\xBF");   // BOM so Excel reads UTF-8
+        fwrite($out, "\xEF\xBB\xBF");   
         fputcsv($out, ['Title', 'Author', 'Borrowed', 'Due', 'Returned', 'Status', 'Note']);
         foreach ($rows as $r) {
             $i = loan_item($r);

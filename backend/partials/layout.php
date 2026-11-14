@@ -31,9 +31,17 @@ function e(?string $s): string {
     return htmlspecialchars((string)$s, ENT_QUOTES, 'UTF-8');
 }
 
-function render_head(string $title, array $css = [], string $extra_head = ''): void { ?>
+function render_head(string $title, array $css = [], string $extra_head = ''): void {
+    $user = current_user();
+    $dbPrefs = $user ? get_user_preferences((int)$user['user_id']) : null;
+    $initialTheme = $dbPrefs ? $dbPrefs['theme'] : '';
+    $initialSize = $dbPrefs ? $dbPrefs['text_size'] : '';
+    $fontSizeMap = ['small' => 'font-size: 90%;', 'large' => 'font-size: 112.5%;', 'xlarge' => 'font-size: 125%;'];
+    $styleAttr = ($initialSize && isset($fontSizeMap[$initialSize])) ? ' style="' . $fontSizeMap[$initialSize] . '"' : '';
+    $themeAttr = ($initialTheme && $initialTheme !== 'system') ? ' data-theme="' . e($initialTheme) . '" data-bs-theme="' . e($initialTheme) . '"' : '';
+?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en"<?= $themeAttr ?><?= $styleAttr ?>>
 
 <head>
     <meta charset="UTF-8">
@@ -48,6 +56,33 @@ function render_head(string $title, array $css = [], string $extra_head = ''): v
 <?php foreach ($css as $file): ?>
     <link rel="stylesheet" href="../frontend/css/<?= e($file) ?>">
 <?php endforeach; ?>
+    <link rel="stylesheet" href="../frontend/css/darkmode.css">
+<?php if ($dbPrefs): ?>
+    <script>
+        window.bdUserPreferences = <?= json_encode([
+            'profile' => [
+                'phone' => $dbPrefs['contact_number'],
+            ],
+            'notify' => [
+                'due'           => $dbPrefs['notify_due'],
+                'dueDays'       => (string)$dbPrefs['notify_due_days'],
+                'reservations'  => $dbPrefs['notify_reservations'],
+                'announcements' => $dbPrefs['notify_announcements'],
+                'activity'      => $dbPrefs['notify_activity'],
+                'email'         => $dbPrefs['notify_email'],
+            ],
+            'prefs' => [
+                'theme'        => $dbPrefs['theme'],
+                'textSize'     => $dbPrefs['text_size'],
+                'reduceMotion' => $dbPrefs['reduce_motion'],
+                'libraryView'  => $dbPrefs['library_view'],
+                'genres'       => $dbPrefs['favorite_genres'],
+                'trackReading' => $dbPrefs['track_reading'],
+            ],
+        ], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_UNESCAPED_UNICODE) ?>;
+    </script>
+<?php endif; ?>
+    <script src="../frontend/js/prefs.js"></script>
 <?= $extra_head ?>
 </head>
 
@@ -210,7 +245,7 @@ function render_topbar(string $menu): void {
                 </a>
 
                 <a href="account.php" class="btn p-0 border-0" aria-label="Open Account Information">
-                    <img src="../frontend/assets/icons/pfp-icon.png" alt="Profile" class="rounded-circle" width="44" height="44">
+                    <img src="<?= e(profile_avatar_url() ?: '../frontend/assets/icons/pfp-icon.png') ?>" alt="Profile" class="rounded-circle object-fit-cover" width="44" height="44" data-bd-avatar>
                 </a>
             </div>
         </div>
@@ -248,7 +283,7 @@ function render_footer(string $menu, string $footer_attrs = 'class="text-light m
                 </div>
                 <div class="<?= $staff ? 'col-12 col-md-5 ps-4 ps-md-0' : 'col-md-5' ?>">
                     <h2 class="h4 text-uppercase">Contact Us</h2>
-                    <p class="lh-lg<?= $staff ? ' mb-0' : '' ?>">bibliodesk@gmail.com<br>bibliodesk.help@gmail.com</p>
+                    <p class="lh-lg<?= $staff ? ' mb-0' : '' ?>">bibliodesk@gmail.com<br>bibliodesk.portal@gmail.com</p>
                 </div>
             </div>
         </div>
@@ -257,7 +292,6 @@ function render_footer(string $menu, string $footer_attrs = 'class="text-light m
 
 /**
  * Bootstrap + the notification bell script, then the page scripts (file names inside frontend/js/,
- * or full https URLs). Closes </body></html> unless $close is false (for pages that add inline scripts).
  */
 function render_scripts(array $js = [], bool $close = true): void { ?>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
@@ -273,8 +307,8 @@ function render_scripts(array $js = [], bool $close = true): void { ?>
 }
 
 /**
- * "Preview mode" strip for staff viewing a student page. Only shown to Librarian/Admin users, not students. 
- * The strip is a warning that the page is being viewed as a staff member, and a link to return 
+ * "Preview mode" strip for staff viewing a student page. Only shown to Librarian/Admin users, NOT students. 
+ * There is a warning that the page is being viewed as a STAFF MEMBER, and a link to return 
  * to the staff library management page.
  */
 function render_preview_banner(): void {

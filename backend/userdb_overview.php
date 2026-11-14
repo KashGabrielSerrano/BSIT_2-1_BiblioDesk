@@ -6,6 +6,8 @@ require_once __DIR__ . '/core/circulation.php';
 require_once __DIR__ . '/core/dashboard.php';
 $user    = require_login_page();
 $profile = current_profile();
+$userPrefs = get_user_preferences((int)$user['user_id']);
+$readingSeconds = (int)$userPrefs['reading_seconds'];
 circulation_upkeep();                       
 $dash    = student_dashboard($user['user_id']);   
 $updates = published_announcements_for($user['role'], 3, 'Events', true);
@@ -91,7 +93,19 @@ render_head('User Dashboard', ['userdb.css']);
 
             <!--User quick stats section-->
             <section>
-                <h2 class="h1 fw-semibold mt-5 mb-3">Quick Stats</h2>
+                <div class="d-flex flex-wrap align-items-baseline justify-content-between mt-5 mb-3">
+                    <h2 class="h1 fw-semibold mb-0">Quick Stats</h2>
+                    <div id="activeReadingTimeStat" class="fs-6 text-muted d-flex align-items-center gap-2">
+                        <i class="bi bi-stopwatch text-success fs-5" aria-hidden="true"></i>
+                        <span>Active Reading Time: <strong id="readingTimeValue" class="text-reset"><?=
+                            !$userPrefs['track_reading'] ? 'Tracking paused in Settings' : (
+                                $readingSeconds < 60 ? ($readingSeconds > 0 ? $readingSeconds . 's' : '0 mins') : (
+                                    $readingSeconds < 3600 ? floor($readingSeconds / 60) . ' mins' : number_format($readingSeconds / 3600, 1) . ' hrs'
+                                )
+                            )
+                        ?></strong></span>
+                    </div>
+                </div>
                 <div class="row row-cols-1 row-cols-sm-2 row-cols-xl-4 g-4">
                     <!--Total books area-->
                     <div class="col">
@@ -185,9 +199,10 @@ render_head('User Dashboard', ['userdb.css']);
         (() => {
             const box = document.getElementById('libraryIdQr');
             const value = box && box.dataset.qr;
-            if (!value || typeof QRCode === 'undefined') return;   // keep the placeholder image
-            box.replaceChildren();
-            new QRCode(box, { text: value, width: 134, height: 134, correctLevel: QRCode.CorrectLevel.M });
+            if (value && typeof QRCode !== 'undefined') {
+                box.replaceChildren();
+                new QRCode(box, { text: value, width: 134, height: 134, correctLevel: QRCode.CorrectLevel.M });
+            }
         })();
     </script>
 </body>

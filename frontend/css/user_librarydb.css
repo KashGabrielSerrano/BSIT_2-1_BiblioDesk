@@ -880,3 +880,55 @@ hr {
     padding: 20px 16px 16px;
   }
 }
+
+.bookRow.is-list-view {
+  display: flex !important;
+  flex-direction: column !important;
+  flex-wrap: wrap !important;
+  gap: 0.75rem !important;
+}
+
+.bookRow.is-list-view > .col {
+  width: 100% !important;
+  max-width: 100% !important;
+  flex: 0 0 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  background: var(--st-field, #ffffff);
+  border: 1px solid var(--st-border, #d1ddd5);
+  border-radius: 12px;
+  padding: 0.75rem 1.25rem !important;
+  text-align: left !important;
+  gap: 1.25rem !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.bookRow.is-list-view > .col:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.bookRow.is-list-view .book-trigger.ratio {
+  width: 58px !important;
+  height: 82px !important;
+  flex-shrink: 0 !important;
+  padding-bottom: 0 !important;
+  border-radius: 6px !important;
+}
+
+.bookRow.is-list-view .textArea {
+  flex-grow: 1 !important;
+  margin-top: 0 !important;
+  min-width: 0 !important;
+}
+
+.bookRow.is-list-view .textArea h3 {
+  margin-top: 0 !important;
+  margin-bottom: 0.25rem !important;
+  font-size: 1.05rem !important;
+}
+
+.bookRow.is-list-view .textArea p {
+  margin-bottom: 0 !important;
+  font-size: 0.9rem !important;
+}

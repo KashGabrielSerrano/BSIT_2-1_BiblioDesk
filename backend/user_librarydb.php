@@ -201,14 +201,30 @@ if ($view === 'library') {
 
     $new_arrivals = array_slice($all_books, 0, 7);
 
-    // Recommendations: legacy keyword match, otherwise simply the newest books.
+    $userPrefs = get_user_preferences($user_id);
+    $userFavoriteGenres = $userPrefs['favorite_genres'] ?? [];
+
+    // Recommendations: prioritized by user's favorite genres saved in DB, otherwise legacy/newest
     $recommendations_arr = [];
-    foreach ($all_books as $book) {
-        if (count($recommendations_arr) < 6 && stripos($book['Category'] ?? '', 'Recommend') !== false) {
-            $recommendations_arr[] = $book;
+    if (!empty($userFavoriteGenres)) {
+        foreach ($all_books as $book) {
+            $cat = strtolower((string)($book['Category'] ?? ''));
+            foreach ($userFavoriteGenres as $fav) {
+                if (stripos($cat, strtolower($fav)) !== false) {
+                    $recommendations_arr[] = $book;
+                    break;
+                }
+            }
         }
     }
-    $recommendations = !empty($recommendations_arr) ? $recommendations_arr : array_slice($all_books, 0, 6);
+    if (empty($recommendations_arr)) {
+        foreach ($all_books as $book) {
+            if (count($recommendations_arr) < 6 && stripos($book['Category'] ?? '', 'Recommend') !== false) {
+                $recommendations_arr[] = $book;
+            }
+        }
+    }
+    $recommendations = !empty($recommendations_arr) ? array_slice($recommendations_arr, 0, 12) : array_slice($all_books, 0, 6);
 
     // Category shelves: exact match only. An empty shelf stays empty (no fallback to other categories).
     $educational     = fetchShelf($con, 'Educational');
@@ -390,12 +406,18 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                 <p class="lib-eyebrow mb-2"><i class="bi bi-collection me-2" aria-hidden="true"></i>BiblioDesk</p>
                 <h1 class="fw-bold display-5 mb-2">Digital Library</h1>
                 <p class="lib-hero-lead mb-4">Browse the newest arrivals, find your next read, and save books to your own shelves.</p>
-                <nav class="lib-jump-row" aria-label="Jump to a shelf">
-                    <a class="lib-jump" href="#lib-new"><i class="bi bi-stars me-1" aria-hidden="true"></i>New Arrivals</a>
-                    <a class="lib-jump" href="#lib-rec"><i class="bi bi-hand-thumbs-up me-1" aria-hidden="true"></i>Recommendations</a>
-                    <a class="lib-jump" href="#lib-edu"><i class="bi bi-mortarboard me-1" aria-hidden="true"></i>Educational</a>
-                    <a class="lib-jump" href="#lib-nonedu"><i class="bi bi-cup-hot me-1" aria-hidden="true"></i>Non-Educational</a>
-                    <a class="lib-jump" href="#lib-research"><i class="bi bi-journal-text me-1" aria-hidden="true"></i>Research</a>
+                <nav class="lib-jump-row d-flex flex-wrap align-items-center justify-content-between gap-2" aria-label="Jump to a shelf">
+                    <div class="d-flex flex-wrap gap-2">
+                        <a class="lib-jump" href="#lib-new"><i class="bi bi-stars me-1" aria-hidden="true"></i>New Arrivals</a>
+                        <a class="lib-jump" href="#lib-rec"><i class="bi bi-hand-thumbs-up me-1" aria-hidden="true"></i>Recommendations</a>
+                        <a class="lib-jump" href="#lib-edu"><i class="bi bi-mortarboard me-1" aria-hidden="true"></i>Educational</a>
+                        <a class="lib-jump" href="#lib-nonedu"><i class="bi bi-cup-hot me-1" aria-hidden="true"></i>Non-Educational</a>
+                        <a class="lib-jump" href="#lib-research"><i class="bi bi-journal-text me-1" aria-hidden="true"></i>Research</a>
+                    </div>
+                    <div class="btn-group btn-group-sm ms-auto" role="group" aria-label="Catalog layout view">
+                        <button type="button" class="btn btn-outline-success active" id="viewModeGrid" title="Grid View"><i class="bi bi-grid-fill me-1"></i>Grid</button>
+                        <button type="button" class="btn btn-outline-success" id="viewModeList" title="List View"><i class="bi bi-view-list me-1"></i>List</button>
+                    </div>
                 </nav>
             </header>
 
@@ -777,6 +799,95 @@ render_head('BiblioDesk - ' . ($view === 'mybooks' ? 'My Books' : 'Digital Libra
                     copyBtn.innerHTML = '<i class="bi bi-clipboard me-1" aria-hidden="true"></i>Copy';
                 }, 1500);
             });
+        })();
+    </script>
+
+    <script>
+        (() => {
+            try {
+                const prefs = (window.BDPrefs && typeof window.BDPrefs.load === 'function')
+                    ? window.BDPrefs.load()
+                    : JSON.parse(localStorage.getItem('bd_settings_v1') || '{}');
+                const userPrefs = prefs.prefs || {};
+                const gridBtn = document.getElementById('viewModeGrid');
+                const listBtn = document.getElementById('viewModeList');
+
+                function applyViewMode(mode) {
+                    const rows = document.querySelectorAll('.bookRow');
+                    rows.forEach(r => r.classList.toggle('is-list-view', mode === 'list'));
+                    if (gridBtn && listBtn) {
+                        gridBtn.classList.toggle('active', mode === 'grid');
+                        listBtn.classList.toggle('active', mode === 'list');
+                    }
+                }
+
+                function persistViewMode(mode) {
+                    userPrefs.libraryView = mode;
+                    prefs.prefs = userPrefs;
+                    if (window.BDPrefs && typeof window.BDPrefs.save === 'function') {
+                        window.BDPrefs.save(prefs);
+                    } else {
+                        localStorage.setItem('bd_settings_v1', JSON.stringify(prefs));
+                    }
+
+                    const fd = new FormData();
+                    fd.append('action', 'save_preferences');
+                    fd.append('csrf_token', window.csrfToken || '');
+                    fd.append('phone', (prefs.profile && prefs.profile.phone) || '');
+                    fd.append('notify', JSON.stringify(prefs.notify || {}));
+                    fd.append('prefs', JSON.stringify(userPrefs));
+                    fetch('settings_controller.php', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        body: fd
+                    }).catch(() => {});
+                }
+
+                if (gridBtn && listBtn) {
+                    gridBtn.addEventListener('click', () => {
+                        applyViewMode('grid');
+                        persistViewMode('grid');
+                    });
+                    listBtn.addEventListener('click', () => {
+                        applyViewMode('list');
+                        persistViewMode('list');
+                    });
+                }
+
+                const initialMode = userPrefs.libraryView === 'list' ? 'list' : 'grid';
+                applyViewMode(initialMode);
+
+                // Personalized Recommendations matching favorite genre chips
+                const favoriteGenres = userPrefs.genres || [];
+                if (favoriteGenres.length) {
+                    const recSection = document.getElementById('lib-rec');
+                    if (recSection) {
+                        const bookRow = recSection.querySelector('.bookRow');
+                        if (bookRow) {
+                            const cards = Array.from(bookRow.children);
+                            cards.sort((a, b) => {
+                                const genreA = (a.querySelector('[data-genre]')?.dataset.genre || '').toLowerCase();
+                                const genreB = (b.querySelector('[data-genre]')?.dataset.genre || '').toLowerCase();
+                                const matchA = favoriteGenres.some(g => genreA.includes(g.toLowerCase()));
+                                const matchB = favoriteGenres.some(g => genreB.includes(g.toLowerCase()));
+                                if (matchA && !matchB) return -1;
+                                if (!matchA && matchB) return 1;
+                                return 0;
+                            });
+                            cards.forEach(c => bookRow.appendChild(c));
+
+                            const descEl = recSection.querySelector('.lib-section-head p.text-muted');
+                            if (descEl) {
+                                const badge = document.createElement('span');
+                                badge.className = 'badge bg-success-subtle text-success-emphasis border border-success-subtle ms-2';
+                                badge.innerHTML = '<i class="bi bi-stars me-1"></i>Picks matching: ' +
+                                    favoriteGenres.map(g => g.replace(/[<>&"']/g, '')).join(', ');
+                                descEl.appendChild(badge);
+                            }
+                        }
+                    }
+                }
+            } catch (e) { /* preference application fallback */ }
         })();
     </script>
 </body>

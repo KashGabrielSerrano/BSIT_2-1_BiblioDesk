@@ -1,15 +1,3 @@
-/*
- * BiblioDesk shared preferences.
- * Include this in the <head> of EVERY page so saved Settings (theme, text size, reduced motion,
- * profile photo) apply everywhere, not just on the Settings page:
- *
- *   <script src="../frontend/js/prefs.js"></script>
- *
- * That one line is all a page needs. When the theme is Dark, this file also loads
- * ../frontend/css/darkmode.css by itself (it finds it next to prefs.js).
- *
- * To show the saved profile photo, add data-user-avatar to the topbar <img>.
- */
 (function () {
     'use strict';
 
@@ -28,6 +16,15 @@
 
     function load() {
         try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; }
+    }
+
+    function save(data) {
+        try {
+            localStorage.setItem(KEY, JSON.stringify(data));
+            return true;
+        } catch (e) {
+            return false;
+        }
     }
 
     function resolveTheme(theme) {
@@ -82,7 +79,7 @@
     }
 
     function applyAvatar(src) {
-        var imgs = document.querySelectorAll('[data-user-avatar]');
+        var imgs = document.querySelectorAll('[data-user-avatar], [data-bd-avatar]');
         for (var i = 0; i < imgs.length; i++) {
             if (!imgs[i].getAttribute('data-default-src')) {
                 imgs[i].setAttribute('data-default-src', imgs[i].getAttribute('src') || '');
@@ -98,11 +95,18 @@
         else if (media.addListener) media.addListener(onChange);
     }
 
+    var dbPrefs = window.bdUserPreferences;
     var saved = load();
+    if (dbPrefs && typeof dbPrefs === 'object') {
+        saved.prefs = Object.assign({}, saved.prefs || {}, dbPrefs.prefs || {});
+        saved.notify = Object.assign({}, saved.notify || {}, dbPrefs.notify || {});
+        saved.profile = Object.assign({}, saved.profile || {}, dbPrefs.profile || {});
+        save(saved);
+    }
     apply(saved.prefs, true);
     document.addEventListener('DOMContentLoaded', function () {
         applyAvatar((saved.profile || {}).avatar);
     });
 
-    window.BDPrefs = { KEY: KEY, SIZES: SIZES, load: load, apply: apply, applyAvatar: applyAvatar };
+    window.BDPrefs = { KEY: KEY, SIZES: SIZES, load: load, save: save, apply: apply, applyAvatar: applyAvatar };
 })();

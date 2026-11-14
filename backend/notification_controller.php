@@ -16,14 +16,32 @@ $action = gv($_POST, 'action') ?: gv($_GET, 'action');
 switch ($action) {
     case 'list':
         publish_due_announcements();
-        circulation_upkeep();   // due-soon / overdue reminders, expired holds (no cron)
+        circulation_upkeep();   
+        $userPrefs = get_user_preferences($user_id);
+
         $rows = db_all(db(),
             "SELECT Notification_ID, Type, Title, Message, Link, Is_Read, Created_At
                FROM notification_table WHERE User_ID = ? ORDER BY Created_At DESC, Notification_ID DESC LIMIT ?",
             'ii', [$user_id, NOTIF_LIMIT]);
-        $unread = (int)(db_one("SELECT COUNT(*) AS c FROM notification_table WHERE User_ID = ? AND Is_Read = 0",
-                               'i', [$user_id])['c'] ?? 0);
-        $items = array_map(fn($r) => [
+
+        $filteredRows = array_filter($rows, function ($r) use ($userPrefs) {
+            $type = strtolower((string)$r['Type']);
+            if (!$userPrefs['notify_announcements'] && str_starts_with($type, 'announcement')) {
+                return false;
+            }
+            if (!$userPrefs['notify_reservations'] && str_contains($type, 'reservation')) {
+                return false;
+            }
+            if (!$userPrefs['notify_due'] && (str_contains($type, 'due') || str_contains($type, 'loan'))) {
+                return false;
+            }
+            if (!$userPrefs['notify_activity'] && (str_contains($type, 'account') || str_contains($type, 'profile') || str_contains($type, 'password') || str_contains($type, 'ticket'))) {
+                return false;
+            }
+            return true;
+        });
+
+        $items = array_values(array_map(fn($r) => [
             'id'       => (int)$r['Notification_ID'],
             'type'     => $r['Type'],
             // announcements carry their category for the coloured dot: "announcement:Events"
@@ -33,7 +51,9 @@ switch ($action) {
             'link'     => $r['Link'],
             'read'     => (bool)$r['Is_Read'],
             'date'     => gmdate('c', strtotime($r['Created_At'] . ' UTC')),
-        ], $rows);
+        ], $filteredRows));
+
+        $unread = count(array_filter($items, fn($n) => !$n['read']));
         sendResponse(true, 'Notifications loaded.', ['items' => $items, 'unread' => $unread]);
 
     case 'mark_read':
