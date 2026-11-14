@@ -199,19 +199,22 @@ function handle_upload_avatar(int $userId): void {
         sendResponse(false, 'Could not upload profile photo to storage. Please try again.', [], 502);
     }
 
+    $so        = so();
     $publicUrl = rtrim(SUPABASE_URL, '/') . '/storage/v1/object/public/' . $bucket . '/' . $filename;
+    $encUrl    = enc($so, $publicUrl);
 
     $oldRow = db_one('SELECT Profile_Picture FROM user_table WHERE User_ID = ?', 'i', [$userId]);
-    $oldUrl = $oldRow['Profile_Picture'] ?? null;
+    $oldRaw = (string)($oldRow['Profile_Picture'] ?? '');
+    $oldUrl = is_profile_picture_url($oldRaw) ? $oldRaw : dec($so, $oldRaw);
 
     try {
-        db_exec('UPDATE user_table SET Profile_Picture = ? WHERE User_ID = ?', 'si', [$publicUrl, $userId]);
+        db_exec('UPDATE user_table SET Profile_Picture = ? WHERE User_ID = ?', 'si', [$encUrl, $userId]);
     } catch (Throwable $e) {
         delete_old_avatar($publicUrl);
         throw $e;
     }
 
-    if ($oldUrl && $oldUrl !== $publicUrl) {
+    if ($oldUrl !== '' && $oldUrl !== $publicUrl) {
         delete_old_avatar($oldUrl);
     }
 
@@ -220,8 +223,10 @@ function handle_upload_avatar(int $userId): void {
 }
 
 function handle_remove_avatar(int $userId): void {
+    $so     = so();
     $oldRow = db_one('SELECT Profile_Picture FROM user_table WHERE User_ID = ?', 'i', [$userId]);
-    $oldUrl = $oldRow['Profile_Picture'] ?? null;
+    $oldRaw = (string)($oldRow['Profile_Picture'] ?? '');
+    $oldUrl = is_profile_picture_url($oldRaw) ? $oldRaw : dec($so, $oldRaw);
 
     db_exec('UPDATE user_table SET Profile_Picture = NULL WHERE User_ID = ?', 'i', [$userId]);
     delete_old_avatar($oldUrl);

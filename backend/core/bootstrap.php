@@ -448,7 +448,8 @@ function profile_avatar_url(): string {
     } catch (Throwable $e) {
         return $url;   
     }
-    $candidate = (string)($row['Profile_Picture'] ?? '');
+    $raw       = (string)($row['Profile_Picture'] ?? '');
+    $candidate = is_profile_picture_url($raw) ? $raw : dec(so(), $raw);
     return $url = (is_profile_picture_url($candidate) ? $candidate : '');
 }
 

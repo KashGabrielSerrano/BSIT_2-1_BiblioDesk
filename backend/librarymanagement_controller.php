@@ -641,7 +641,7 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
 
     $rows = db_all(
         $con,
-        "SELECT User_ID, Full_Name, Student_ID, Email, Department, Role, Account_Status, Created_At
+        "SELECT User_ID, Full_Name, Student_ID, Email, Department, Profile_Picture, Role, Account_Status, Created_At
            FROM user_table
           WHERE {$roleSql} AND {$statusSql}
           ORDER BY Created_At DESC, User_ID DESC
@@ -650,15 +650,17 @@ function handle_get_accounts(mysqli $con, SystemOperators $so): void {
         $params
     );
 
-    // Sensitive columns are encrypted, so decrypt first and search
     $accounts = [];
     foreach ($rows as $r) {
+        $rawPic = (string)($r['Profile_Picture'] ?? '');
+        $pic    = is_profile_picture_url($rawPic) ? $rawPic : dec($so, $rawPic);
         $acct = [
             'user_id'    => (int)$r['User_ID'],
             'name'       => dec($so, $r['Full_Name']),
             'email'      => dec($so, $r['Email']),
             'student_id' => dec($so, $r['Student_ID']),
             'department' => dec($so, $r['Department']),
+            'avatar'     => is_profile_picture_url($pic) ? $pic : '',
             'status'     => $r['Account_Status'],
             'role'       => $r['Role'],
             'created_at' => $r['Created_At'],

@@ -4,6 +4,7 @@
     const API = 'librarymanagement_controller.php';
     const CSRF = window.csrfToken || '';
     const FALLBACK_COVER = '../frontend/assets/icons/library-default.png';
+    const FALLBACK_AVATAR = '../frontend/assets/icons/pfp-icon.png';
     const MAIN_TABS = ['catalog', 'accounts', 'reports', 'circulation'];
 
     const $ = (id) => document.getElementById(id);
@@ -34,6 +35,14 @@
         if (!v) return FALLBACK_COVER;
         if (/^https?:\/\//i.test(v)) return v;
         if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return FALLBACK_COVER; // any other scheme
+        return v.startsWith('/') ? v : '../' + v.replace(/^\/+/, '');
+    }
+
+    function avatarSrc(url) {
+        const v = String(url || '').trim();
+        if (!v) return FALLBACK_AVATAR;
+        if (/^https?:\/\//i.test(v)) return v;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(v)) return FALLBACK_AVATAR;
         return v.startsWith('/') ? v : '../' + v.replace(/^\/+/, '');
     }
 
@@ -538,7 +547,7 @@
         <tr data-id="${a.user_id}" title="${escapeHtml(title)}">
             <td class="cB">
                 <div class="d-flex align-items-center gap-4">
-                    <img src="../frontend/assets/icons/pfp-icon.png" alt="" class="userAvatar rounded-circle">
+                    <img src="${escapeHtml(avatarSrc(a.avatar))}" alt="" class="userAvatar rounded-circle">
                     <div class="text-start">
                         <p class="userName">${escapeHtml(a.name || 'Unnamed student')}</p>
                         <p class="userEmail">${escapeHtml(a.email)}</p>
@@ -804,6 +813,12 @@
         $('accountSearch').addEventListener('input', debounce(() => loadAccountTab()));
         $('accountStatusFilter').addEventListener('change', () => loadAccountTab());
         $('accountRows').addEventListener('click', handleAccountClick);
+        $('accountRows').addEventListener('error', (e) => {
+            if (e.target.tagName === 'IMG' && !e.target.dataset.fallback) {
+                e.target.dataset.fallback = '1';
+                e.target.src = FALLBACK_AVATAR;
+            }
+        }, true);
 
         // Reports
         $('reportSearch').addEventListener('input', debounce(() => loadReports(1)));
