@@ -1,0 +1,1348 @@
+@import url(root.css);
+
+
+/* =============================================================================
+   1. TOKENS
+   ============================================================================= */
+:root{
+    --am-border: #183828;
+    --am-row-a: #DDEBE1;          /* darker table cell tone (light sage) */
+    --am-row-b: #EDF5EF;          /* lighter table cell tone */
+    --am-pill-approved: var(--btn);
+    --am-pill-denied: #8a3a3f;
+    --am-pill-pending: #c68a3a;
+    --am-tab-line: var(--btn);
+}
+
+/* Notification bell aliases (only section 10 uses these).
+   They point at root.css colors, so there is nothing to edit here. */
+:root{
+    --color-red: var(--cc-qs-red);
+    --color-yellow: var(--cc-qs-yellow);
+    --color-green: var(--cc-qs-green);
+    --color-blue: var(--cc-book-ra);
+    --color-teal: var(--cc-dates);
+    --color-brown: var(--cc-book-ne);
+    --color-brown-light: var(--cc-nb-ne);
+
+    --text-light: var(--fcolor-secondary);
+    --text-main: var(--text);
+    --text-dark: var(--ink);
+    --text-muted: var(--muted);
+
+    --bg-main: var(--main-bg-color);
+    --border-main: var(--main-color);
+    --border-light: var(--line);
+}
+
+/* Bootstrap theme colors -> BiblioDesk palette.
+   text-warning / text-danger / text-success / text-secondary / bg-light (used all over
+   Library Management) read these variables, so overriding them here re-colors every one
+   of them without touching the markup. */
+:root{
+    --bs-warning-rgb: 194, 138, 61;      /* --cc-qs-yellow  */
+    --bs-danger-rgb: 194, 61, 61;        /* --cc-qs-red     */
+    --bs-success-rgb: 72, 140, 62;       /* --cc-qs-green   */
+    --bs-secondary-rgb: 111, 139, 123;   /* --cc-qs-neutral */
+    --bs-light-rgb: 251, 250, 248;       /* --input-bg      */
+}
+
+
+/* =============================================================================
+   2. BASE
+   ============================================================================= */
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body{
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background-color: var(--main-bg-color);
+    color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI",
+        Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+main{
+    flex: 1;
+    padding: 0 90px;
+}
+
+footer{
+    background-color: var(--main-color);
+}
+
+.footerLogo{
+    width: 100%;
+    max-width: 350px;
+}
+
+@media (min-width: 768px){
+    body{ padding-left: var(--sidebar-default); }   /* room for the fixed sidebar */
+    footer{ padding-left: var(--sidebar-default); }
+}
+
+@media (max-width: 768px){
+    main{ padding: 0 20px; }
+}
+
+@media (max-width: 576px){
+    main{ padding: 0 12px; }
+}
+
+
+/* =============================================================================
+   3. SIDEBAR
+   ============================================================================= */
+#sidebar{
+    --bs-offcanvas-width: var(--sidebar-expand);
+    background-color: var(--main-color) !important;
+    color: var(--main-bg-color);
+}
+
+.logoContain{
+    height: var(--topbar-height);
+    display: flex;
+    align-items: center;
+}
+
+.sideIcon{
+    width: 48px;
+    height: 48px;
+    flex: none;
+    transition: background .2s;
+}
+
+.sideIcon.bg-light img{
+    filter: invert(1);                              /* active icon: dark glyph on light circle */
+}
+
+.sideAct:hover .sideIcon:not(.bg-light){
+    background: rgba(255, 255, 255, .14);
+}
+
+.sideAct[data-main-tab]{
+    cursor: pointer;                                /* sidebar links switch SPA tabs */
+}
+
+/* Desktop: fixed 80px rail that expands to 250px on hover */
+@media (min-width: 768px){
+    #sidebar{
+        position: fixed;
+        top: 0; bottom: 0; left: 0;
+        z-index: 1045;
+        width: var(--sidebar-default);
+        overflow: hidden;
+        white-space: nowrap;
+        transition: width .25s ease, box-shadow .25s ease;
+    }
+
+    .sideText{
+        opacity: 0;
+        transition: opacity .15s;
+    }
+}
+
+@media (min-width: 768px) and (hover: hover){
+    #sidebar:hover{
+        width: var(--sidebar-expand);
+        box-shadow: 6px 0 18px rgba(0, 0, 0, .35);
+    }
+
+    #sidebar:hover .sideText{
+        opacity: 1;
+        transition-delay: .08s;
+    }
+}
+
+
+/* =============================================================================
+   4. TOPBAR
+   ============================================================================= */
+.topbar{
+    background-color: var(--main-color);
+    min-height: var(--topbar-height);
+}
+
+/* Phones: menu + logo on row 1, bell / settings / profile on row 2 (right-aligned) */
+@media (max-width: 767px){
+    .topbar > .container-fluid{
+        row-gap: .5rem;
+    }
+
+    .topbar > .container-fluid > div:last-child{
+        flex: 0 0 100%;
+        justify-content: flex-end;
+    }
+}
+
+
+/* =============================================================================
+   5. SHARED CONTROLS
+   ============================================================================= */
+
+/* ----- Form controls ----- */
+.form-control{
+    background-color: var(--input-bg);
+    border: 1px solid var(--line);
+    color: var(--ink);
+}
+
+.form-control:focus{
+    background-color: var(--input-bg);
+    border-color: var(--cc-qs-green);
+    box-shadow: 0 0 0 .25rem rgba(72, 140, 62, .2);
+}
+
+/* Inputs inside .form-group (the Add Book card) get a flat green focus instead */
+.form-select:focus,
+.form-group input:focus,
+.form-group textarea:focus{
+    border-color: var(--cc-qs-green);
+    box-shadow: none;
+}
+
+/* The Add Book outline */
+.form-group .form-control:focus-visible,
+.form-group .form-select:focus-visible{
+    outline: 3px solid rgba(72, 140, 62, .6);
+    outline-offset: 1px;
+}
+
+/* ----- Pills & badges (catalog, accounts and reports all use these) ----- */
+.issue-badge-red,
+.issue-badge-blue,
+.issue-badge-pink,
+.issue-badge-amber,
+.status-badge-green,
+.status-badge-red,
+.status-badge-amber,
+.status-badge-darkred,
+.action-badge-green,
+.action-btn{
+    display: inline-block;
+    border-radius: 50rem;
+    padding: .5rem 1.25rem;
+    font-size: .85rem;
+    white-space: nowrap;
+}
+
+.issue-badge-red{ background-color: var(--cc-book-ne); color: var(--fcolor-secondary); }
+.issue-badge-blue{ background-color: var(--cc-book-ra); color: var(--fcolor-secondary); }
+.issue-badge-pink{ background-color: var(--cc-qs-red); color: var(--fcolor-secondary); }
+.issue-badge-amber,
+.status-badge-amber{ background-color: var(--cc-qs-yellow); color: var(--fcolor-secondary); }
+
+.status-badge-green,
+.action-badge-green{
+    background-color: var(--cc-nb-ed);
+    color: var(--main-color);
+    font-weight: 600;
+}
+
+.status-badge-red{ background-color: var(--cc-qs-red); color: var(--fcolor-secondary); }
+.status-badge-darkred{ background-color: var(--danger); color: var(--fcolor-secondary); }
+
+/* Small action button used in the report table */
+.action-btn{
+    background-color: var(--cc-book-ra);
+    color: var(--fcolor-secondary);
+    border: none;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.action-btn:hover{
+    opacity: .9;
+    color: var(--fcolor-secondary);
+}
+
+.action-btn:disabled{
+    background-color: var(--disabled-bg);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+}
+
+/* ----- Toast (bottom-right feedback) ----- */
+.amToast{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    border: 0;
+    border-radius: 14px;
+}
+
+/* ----- Empty / loading / error message box ----- */
+.emptyState{
+    border: 1px dashed var(--hover);
+    border-radius: .75rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+    color: var(--muted);
+    margin-top: 14px;
+}
+
+
+/* =============================================================================
+   6. TABS
+   ============================================================================= */
+
+/* ----- Main tab strip (Digital Catalog / Account Management / Report Logs) ----- */
+.amTabs{
+    border-bottom: 1px solid rgba(var(--main-rgb), .6);
+}
+
+.amTabs .nav-link{
+    color: var(--fcolor-main);
+    font-weight: 600;
+    font-size: 1.15rem;
+    padding: .9rem 2.5rem;
+    border: 0;
+    border-bottom: 4px solid transparent;
+    border-radius: 0;
+    margin-bottom: -1px;
+}
+
+.amTabs .nav-link.active{
+    background: transparent;
+    color: var(--fcolor-main);
+    border-bottom-color: var(--am-tab-line);
+}
+
+.amTabs .nav-link:focus-visible{
+    outline: 3px solid var(--am-tab-line);
+    outline-offset: 2px;
+}
+
+/* ----- Account sub-tabs (Student Accounts / Pending Approvals) ----- */
+.subTabs .nav-link{
+    color: var(--fcolor-main);
+    font-weight: 600;
+    border: 2px solid var(--am-border);
+    border-radius: 50px;
+    padding: .4rem 1.1rem;
+}
+
+.subTabs .nav-link.active{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+/* ----- Count bubbles inside tabs ----- */
+.tabBadge{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--am-border);
+    color: #fff;
+    font-size: .75rem;
+    font-weight: 600;
+    margin-left: .5rem;
+}
+
+.subTabs .tabBadge{
+    width: 24px;
+    height: 24px;
+    font-size: .7rem;
+}
+
+.tabBadge.green{ background: var(--am-pill-approved); }
+.tabBadge.amber{ background: var(--am-pill-pending); }
+.tabBadge.red{ background: #9b2c2c; }   /* Circulation: overdue + unpaid fines */
+
+@media (max-width: 767.98px){
+    /* tabs scroll sideways instead of wrapping */
+    .amTabs{
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    .amTabs .nav-link{
+        padding: .75rem 1rem;
+        font-size: 1rem;
+    }
+}
+
+
+/* =============================================================================
+   7. PANEL: DIGITAL CATALOG
+   ============================================================================= */
+
+/* ----- Search box & Input groups ----- */
+.catalogSearchBox{
+    position: relative;
+    width: 380px;
+    max-width: 100%;
+}
+
+.catalogSearchBox i{
+    position: absolute;
+    top: 50%;
+    left: 14px;
+    transform: translateY(-50%);
+    color: var(--cc-qs-neutral);
+    pointer-events: none;
+}
+
+.catalogSearchBox .form-control{
+    padding-left: 40px;
+    border: 1px solid var(--main-color);
+    border-radius: 999px;
+    background-color: var(--fcolor-secondary);
+}
+
+.catalogSearchBox .form-control:focus{
+    border-color: var(--btn);
+    box-shadow: 0 0 0 3px rgba(var(--btn-rgb), .2);
+}
+
+/* ----- Sort button ----- */
+.filterBtn{
+    background-color: var(--btn);
+    color: var(--fcolor-secondary);
+    border-radius: 50rem;
+    padding: 8px 22px;
+    transition: background-color .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+
+.filterBtn:hover,
+.filterBtn:focus,
+.filterBtn.show{
+    background-color: var(--brown);
+    color: var(--fcolor-secondary);
+    transform: translateY(-1px);
+}
+
+/* ----- Catalog table ----- */
+.table-responsive{
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.catalogTable{
+    --bs-table-bg: var(--fcolor-secondary);
+    --bs-table-hover-bg: rgba(158, 123, 88, .07);
+}
+
+.catalogTable thead th{
+    font-weight: 600;
+    font-size: .88rem;
+    letter-spacing: .02em;
+    border-bottom: 2px solid rgba(43, 36, 30, .25);
+}
+
+.catalogTable tbody tr{
+    transition: background-color .15s ease;
+}
+
+.catalogTable th,
+.catalogTable td{
+    border-right: 1px solid rgba(192, 177, 157, .35);
+    vertical-align: middle;
+}
+
+.catalogTable th:last-child,
+.catalogTable td:last-child{
+    border-right: 0;
+}
+
+.catalogThumb{
+    width: 48px;
+    height: 64px;
+    object-fit: cover;
+    border-radius: 6px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, .18);
+    transition: transform .18s ease, box-shadow .18s ease;
+}
+
+.catalogThumb:hover{
+    transform: scale(1.08);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, .3);
+}
+
+@media (max-width: 768px){
+    .searchForm{ flex: 1; }
+
+    .catalogSearchBox{
+        width: 100% !important;
+        min-width: 140px;
+    }
+
+    .catalogSearchBox .form-control{
+        width: 100%;
+        display: block;
+    }
+
+    .catalog-container .d-flex.flex-wrap{ gap: 10px; }
+}
+
+@media (max-width: 576px){
+    .filterBtn{
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+
+/* =============================================================================
+   8. PANEL: ACCOUNT MANAGEMENT
+   ============================================================================= */
+
+/* ----- Search input ----- */
+.accountSearchBox{
+    flex: 1 1 320px;
+    max-width: 640px;
+    border: 2px solid var(--am-border);
+    border-radius: 14px;
+    background: #F3F9F5;
+    padding: .7rem 1.25rem;
+    font-size: 1.15rem;
+}
+
+.accountSearchBox:focus{
+    background: #F3F9F5;
+    border-color: var(--am-border);
+    box-shadow: 0 0 0 .2rem rgba(var(--main-rgb), .2);
+}
+
+#accountResultCount{
+    color: var(--fcolor-main);
+    opacity: .75;
+}
+
+/* ----- Table ----- */
+.scrollHint{
+    display: none;                                   /* shown on mobile only */
+    font-size: .8rem;
+    opacity: .7;
+    margin-bottom: .25rem;
+}
+
+.amTableWrap{
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 6px;
+}
+
+.amTable{
+    width: 100%;
+    min-width: 1000px;
+    border-collapse: separate;
+    border-spacing: 0 14px;
+    table-layout: fixed;
+}
+
+.amTable thead th{
+    background: var(--main-color);
+    color: var(--fcolor-secondary);
+    font-weight: 500;
+    text-align: center;
+    vertical-align: middle;
+    padding: 1.1rem .5rem;
+    line-height: 1.2;
+}
+
+.amTable thead th:first-child{
+    border-radius: 18px 0 0 18px;
+    text-align: left;
+    padding-left: 2.5rem;
+    width: 35%;
+}
+
+.amTable thead th:last-child{
+    border-radius: 0 18px 18px 0;
+}
+
+.amTable tbody td{
+    height: 124px;
+    vertical-align: middle;
+    text-align: center;
+    font-size: .8rem;
+    font-weight: 500;
+    border-top: 2px solid var(--am-border);
+    border-bottom: 2px solid var(--am-border);
+    border-left: 1px solid rgba(var(--main-rgb), .35);
+    background: var(--am-row-b);
+    color: var(--fcolor-main);
+}
+
+/* Cell shading is set per cell (cA = darker, cB = lighter) */
+.amTable tbody td.cA{ background: var(--am-row-a); }
+.amTable tbody td.cB{ background: var(--am-row-b); }
+
+.amTable tbody td:first-child{
+    border-left: 2px solid var(--am-border);
+    border-radius: 18px 0 0 18px;
+    text-align: left;
+    padding-left: 2.5rem;
+    font-size: 1rem;
+}
+
+.amTable tbody td:last-child{
+    border-right: 2px solid var(--am-border);
+    border-radius: 0 18px 18px 0;
+}
+
+/* "No accounts" / "No requests" / loading / error row (Accounts, Circulation, Catalog).
+   This has the Same look as the Report Logs empty state! (.emptyState): a dashed rounded box with centered, muted text.
+ */
+.amTable tbody .emptyRow td,
+.amTable tbody .emptyRow td:first-child,
+.amTable tbody .emptyRow td:last-child{
+    height: auto;
+    padding: 3rem 1.5rem;
+    border: 1px dashed var(--hover);
+    border-radius: .75rem;
+    background: transparent !important;
+    color: var(--muted);
+    font-size: .95rem;
+    font-weight: 400;
+    text-align: center;
+}
+
+/* ----- Name cell ----- */
+.userAvatar{
+    width: 54px;
+    height: 54px;
+    object-fit: cover;
+    flex: none;
+}
+
+.userName{
+    font-size: 1.3rem;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.userEmail{
+    font-size: 1.05rem;
+    margin: 0;
+}
+
+/* ----- Status pills ----- */
+.pill{
+    display: inline-block;
+    width: 100%;
+    max-width: 135px;
+    min-width: 0;
+    text-align: center;
+    white-space: nowrap;
+    padding: .55rem 1rem;
+    border: 2px solid var(--am-border);
+    border-radius: 50px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 600;
+}
+
+.pill.active{ background: var(--am-pill-approved); }
+.pill.pending{ background: var(--am-pill-pending); }
+.pill.suspended{ background: var(--am-pill-denied); }
+
+/* ----- Row action buttons (Approve / Deny / Suspend / Reactivate) ----- */
+.acctActions{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: .5rem;
+}
+
+.actBtn{
+    min-width: 104px;
+    padding: .45rem .95rem;
+    border: 2px solid rgba(0, 0, 0, .3);
+    border-radius: 50px;
+    color: #fff;
+    font-size: .8rem;
+    font-weight: 600;
+    line-height: 1.3;
+    letter-spacing: .02em;
+    box-shadow: 0 2px 0 rgba(0, 0, 0, .25);
+    transition: transform .15s ease, box-shadow .15s ease, filter .15s ease;
+}
+
+.actBtn.approve{ background: var(--am-pill-approved); }
+.actBtn.deny{ background: var(--am-pill-denied); }
+.actBtn.approve::before{ content: "\2713\00a0"; }     /* check mark */
+.actBtn.deny::before{ content: "\2715\00a0"; }        /* cross */
+
+.actBtn:hover{
+    filter: brightness(1.12);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, .3);
+}
+
+.actBtn:active{
+    transform: translateY(1px);
+    box-shadow: none;
+}
+
+.actBtn:focus-visible{
+    outline: 3px solid var(--am-tab-line);
+    outline-offset: 2px;
+}
+
+@media (max-width: 767.98px){
+    /* the table keeps fixed column widths and scrolls sideways */
+    .scrollHint{ display: block; }
+
+    .amTable{
+        min-width: 760px;
+        border-spacing: 0 10px;
+    }
+
+    .amTable thead th:nth-child(1){ width: 250px; padding-left: 1rem; }
+    .amTable thead th:nth-child(2){ width: 130px; }
+    .amTable thead th:nth-child(3){ width: 150px; }
+    .amTable thead th:nth-child(4){ width: 115px; }
+    .amTable thead th:nth-child(5){ width: 115px; }
+
+    .amTable tbody td{ height: 100px; }
+    .amTable tbody td:first-child{ padding-left: 1rem; }
+    .amTable tbody td:nth-child(4),
+    .amTable tbody td:nth-child(5){ padding: 0 .5rem; }
+
+    .userAvatar{ width: 44px; height: 44px; }
+    .userName{ font-size: 1.05rem; }
+    .userEmail{ font-size: .9rem; }
+
+    /* smaller pills and buttons so columns never overlap */
+    .pill{ padding: .4rem .5rem; font-size: .75rem; }
+    .actBtn{
+        min-width: 0;
+        width: 100%;
+        max-width: 95px;
+        padding: .3rem .5rem;
+        font-size: .72rem;
+    }
+}
+
+
+/* =============================================================================
+   9. PANEL: REPORT LOGS
+   ============================================================================= */
+
+/* ----- Quick stat cards ----- */
+.cardsColor{
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+.greenBox{ background-color: var(--cc-qs-green); }
+.yellowBox{ background-color: var(--cc-qs-yellow); }
+.redBox{ background-color: var(--cc-qs-red); }
+
+/* ----- Toolbar (search + filter button) ----- */
+.toolbar{
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin: 2rem 0 1.5rem;
+}
+
+.searchWrap{
+    flex: 1 1 320px;
+    max-width: 620px;
+    padding: 0;
+}
+
+.searchInput{
+    border-radius: .6rem;
+    padding: .75rem 1.25rem;
+}
+
+/* ----- Filter button + floating panel ----- */
+.filterDropdown{
+    position: relative;
+}
+
+.btnFilter{
+    width: 48px;
+    height: 48px;
+    border: 1px solid var(--main-color);
+    border-radius: .6rem;
+    background-color: var(--main-color);
+    display: grid;
+    place-items: center;
+    transition: .2s ease;
+}
+
+.btnFilter img{
+    filter: brightness(0) invert(1);
+}
+
+.btnFilter:hover{
+    background-color: var(--brown);
+    border-color: var(--brown);
+}
+
+.btnFilter[aria-expanded="true"]{
+    background-color: var(--main-color);
+    border-color: var(--main-color);
+}
+
+.filterPanel{
+    width: 320px;
+    max-width: calc(100vw - 30px);
+    padding: 20px;
+    margin-top: 12px !important;
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--main-color);
+    border-radius: 14px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, .18);
+    z-index: 1100;
+}
+
+.filterTitle{
+    color: var(--ink);
+    font-size: 1.15rem;
+    font-weight: 700;
+    margin-bottom: 20px;
+}
+
+.filterPanel label{
+    font-size: .8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+}
+
+.filterPanel .form-select{
+    background-color: var(--input-bg);
+    border: 1px solid var(--main-color);
+    color: var(--ink);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.filterPanel .form-select:focus{
+    border-color: var(--cc-qs-green);
+    box-shadow: 0 0 0 .2rem rgba(72, 140, 62, .2);
+}
+
+.btnApply{
+    flex: 1;
+    background-color: var(--cc-qs-green);
+    color: var(--fcolor-secondary);
+    border: none;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-weight: 600;
+    transition: .2s ease;
+}
+
+.btnApply:hover{
+    background-color: #2F6827;
+    color: var(--fcolor-secondary);
+}
+
+.btnReset{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 16px;
+    border: 1px solid var(--main-color);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text);
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btnReset:hover{
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+/* ----- Report table (6-column grid; header and rows share the same columns) ----- */
+.tableScroll{
+    overflow-x: auto;
+    padding-bottom: 4px;
+}
+
+.logTable{
+    min-width: 940px;
+}
+
+.tableHead,
+.reportRow{
+    display: grid;
+    grid-template-columns: 3.2fr 1.25fr 1.1fr 1fr 1.05fr 1fr;
+    align-items: center;
+}
+
+.tableHead{
+    background-color: var(--main-color);
+    color: var(--fcolor-secondary);
+    border-radius: .75rem;
+    padding: 1rem 0;
+}
+
+.tableHead span{
+    text-align: center;
+}
+
+.tableHead span:first-child{
+    text-align: left;
+    padding-left: 40px;
+}
+
+.reportRow{
+    background-color: rgba(var(--main-rgb), .1);
+    border: 1px solid var(--main-color);
+    border-radius: .75rem;
+    padding: .9rem 0;
+    margin-top: 14px;
+    transition: background-color .15s ease;
+}
+
+.reportRow:hover{
+    background-color: rgba(var(--main-rgb), .2);
+}
+
+.cell{
+    padding: 6px 10px;
+    text-align: center;
+    font-size: .92rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.cellName{
+    padding-left: 40px;
+    padding-right: 10px;
+    text-align: left;
+    border-right: 1px solid var(--main-color);
+    align-self: stretch;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.bookTitle{
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--fcolor-main);
+}
+
+.bookAuthor{
+    font-size: .9rem;
+    color: var(--brown);
+}
+
+/* ----- Pagination ----- */
+.pagination .page-link{
+    background-color: var(--main-bg-color);
+    color: var(--text);
+    border: 1px solid var(--line);
+}
+
+.pagination .page-item.active .page-link{
+    background-color: var(--main-color);
+    border-color: var(--main-color);
+    color: var(--fcolor-secondary);
+}
+
+.pageInfo{
+    margin: 1.2rem 0 .4rem;
+}
+
+.logPager{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.logPager .pagination{
+    margin: 0;
+}
+
+.perPage{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.perPage .form-select{
+    background-color: var(--input-bg);
+    border: 1px solid var(--main-color);
+    color: var(--ink);
+    width: auto;
+}
+
+@media (max-width: 992px){
+    .logTable{ min-width: 860px; }
+}
+
+@media (max-width: 576px){
+    .toolbar{ gap: 10px; }
+
+    .searchWrap{
+        flex-basis: 100%;
+        max-width: 100%;
+    }
+
+    /* filter panel pins to the screen edge so it never overflows */
+    .filterPanel{
+        position: fixed !important;
+        top: 135px !important;
+        right: 15px !important;
+        left: auto !important;
+        width: min(320px, calc(100vw - 30px));
+        margin: 0 !important;
+    }
+
+    .logPager{ align-items: flex-start; }
+}
+
+
+/* =============================================================================
+   10. NOTIFICATION BELL DROPDOWN
+   The bell on librarymanagement.php is a plain button for now, so nothing here
+   is rendered yet. It is kept so the dropdown is ready when the bell is wired
+   up. Colors come from the alias tokens in section 1.
+   ============================================================================= */
+
+.notifBadge{
+    background-color: var(--color-red);
+    color: var(--text-light);
+    font-size: .72rem;
+    padding: .3em .55em;
+}
+
+.notifMenu{
+    width: 360px;
+    max-width: 86vw;
+    padding: 0;
+    border: 1px solid var(--border-main);
+    border-radius: .75rem;
+    overflow: hidden;
+    background-color: var(--bg-main);
+}
+
+.notifHead{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--dark-header);
+    color: var(--text-light);
+    padding: .75rem 1rem;
+    font-weight: 600;
+    font-size: .95rem;
+}
+
+.notifHeadCount{
+    color: var(--color-brown-light);
+    font-size: .78rem;
+    font-weight: 400;
+}
+
+.notifItem{
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: .9rem 1rem;
+    border-bottom: 1px solid var(--border-light);
+    white-space: normal;
+    color: var(--text-main);
+}
+
+.notifItem:last-child{ border-bottom: 0; }
+
+.notifItem:hover,
+.notifItem:focus{
+    background-color: rgba(var(--main-rgb), .1);
+    color: var(--text-main);
+}
+
+.notifDot{
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex: none;
+    margin-top: 6px;
+}
+
+.dotRed{ background-color: var(--color-red); }
+.dotYellow{ background-color: var(--color-yellow); }
+.dotGreen{ background-color: var(--color-green); }
+.dotBlue{ background-color: var(--color-blue); }
+.dotTeal{ background-color: var(--color-teal); }
+.dotTan{ background-color: var(--color-brown); }
+
+.notifText{
+    display: block;
+    min-width: 0;
+}
+
+.notifTitle{
+    display: block;
+    font-weight: 600;
+    font-size: .92rem;
+    color: var(--text-dark);
+}
+
+.notifBody{
+    display: block;
+    font-size: .82rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+    line-height: 1.45;
+}
+
+.notifDate{
+    display: block;
+    font-size: .72rem;
+    color: var(--placeholder);
+    margin-top: 4px;
+}
+
+.notifEmpty{
+    display: block;
+    padding: 1.6rem 1rem;
+    text-align: center;
+    color: var(--text-muted);
+    white-space: normal;
+}
+
+@media (max-width: 767px){
+    /* dropdown centers under the top bar and always stays on screen */
+    .topbar .dropdown{ position: static; }
+
+    .topbar .notifMenu{
+        position: absolute !important;
+        top: 100% !important;
+        left: 50% !important;
+        right: auto !important;
+        bottom: auto !important;
+        transform: translateX(-50%) !important;
+        width: calc(100% - 24px) !important;
+        max-width: 420px !important;
+        margin: .5rem 0 0 !important;
+        max-height: calc(100vh - 160px);
+        overflow-y: auto !important;
+    }
+}
+
+
+/* =============================================================================
+   11. PANEL: CIRCULATION
+   ============================================================================= */
+
+/* ----- Cell text (Circulation: .circName / .circSub, Catalog: .rowName / .rowSub) ----- */
+.circName,
+.rowName{
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--fcolor-main);
+}
+
+.circSub,
+.rowSub{
+    margin: .15rem 0 0;
+    font-size: .8rem;
+    font-weight: 500;
+    color: var(--brown);
+}
+
+/* ----- More pill colors (.pill.active / .pending / .suspended are in section 8) ----- */
+.pill.ok{ background: var(--am-pill-approved); }
+.pill.warn{ background: var(--am-pill-pending); }
+.pill.bad{ background: var(--am-pill-denied); }
+.pill.neutral{ background: var(--cc-qs-neutral); }
+
+/* Shrink-to-fit pill for short counts and "3 day(s) late" notes */
+.pill.auto{
+    width: auto;
+    max-width: none;
+    min-width: 44px;
+    padding: .3rem .8rem;
+    font-size: .75rem;
+}
+
+.actBtn.neutral{ background: var(--main-color); }
+
+.actBtn:disabled{
+    opacity: .55;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    filter: none;
+}
+
+/* ----- Roomier row buttons (.rowTable = Circulation + Catalog): equal width, space around the stack ----- */
+.rowTable .acctActions{
+    gap: .6rem;
+    padding: 1.1rem 0;
+}
+
+.rowTable .actBtn{
+    min-width: 132px;
+    padding: .5rem 1.1rem;
+    font-size: .85rem;
+}
+
+@media (max-width: 767.98px){
+    .rowTable .acctActions{
+        gap: .45rem;
+        padding: .8rem 0;
+    }
+
+    .rowTable .actBtn{
+        min-width: 0;
+        width: 100%;
+        max-width: 95px;
+        padding: .3rem .5rem;
+        font-size: .72rem;
+    }
+}
+
+
+/* =============================================================================
+   12. PANEL: DIGITAL CATALOG (Catalog List + Edit Book modal)
+   ============================================================================= */
+
+/* Letter-spacing for the small uppercase section headings ("Book Information") */
+.tracking-wide{ letter-spacing: .08em; }
+
+/* ----- Catalog List header: icon chip on the light page ----- */
+.catChip{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border-radius: .75rem;
+    background: var(--main-color);
+    color: var(--button-yellow);
+    font-size: 1.4rem;
+}
+
+/* ----- Search box (same warm field + dark outline as the Accounts search) ----- */
+.catSearch{
+    border: 2px solid var(--am-border);
+    border-radius: 50rem;
+    overflow: hidden;
+    background: #F3F9F5;
+}
+
+.catSearch .input-group-text,
+.catSearch .form-control{
+    background: transparent;
+    border: 0;
+    box-shadow: none;
+}
+
+.catSearch:focus-within{
+    box-shadow: 0 0 0 .2rem rgba(var(--main-rgb), .2);
+}
+
+/* ----- Table rows ----- */
+.catTable tbody td{
+    height: 104px;
+}
+
+/* Long titles, ISBNs and publishers wrap instead of widening the column */
+.rowName,
+.rowSub{
+    overflow-wrap: anywhere;
+}
+
+.pill + .rowSub{
+    margin-top: .4rem;
+}
+
+/* Category pills use the same colors as the book cover color coding (root.css) */
+.pill.catEd{ background: var(--cc-book-ed); }
+.pill.catNe{ background: var(--cc-book-ne); }
+.pill.catRa{ background: var(--cc-book-ra); }
+
+/* Delete: maroon like Deny, but without the cross (it carries its own trash icon) */
+.actBtn.remove{ background: var(--am-pill-denied); }
+
+/* ----- Edit Book modal: larger cover preview ----- */
+.catThumbLg{
+    width: 64px;
+    height: 88px;
+}
+
+/* ----- Edit Book modal */
+#editBookForm{
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+}
+
+/* ----- Add Book card ----- */
+#addBookForm button[type="submit"]{
+    background-color: var(--button-yellow) !important;
+    border-color: var(--button-yellow) !important;
+    color: var(--fcolor-main) !important;
+}
+
+#addBookForm button[type="submit"]:hover:not(:disabled){
+    background-color: var(--button-yellow-hover) !important;
+    border-color: var(--button-yellow-hover) !important;
+}
+
+/* ----- Edit Book modal: upload panels (soft green tint instead of white boxes) ----- */
+.uploadPanel{
+    height: 100%;
+    padding: 1rem;
+    border: 1px dashed var(--cc-qs-neutral);
+    border-radius: 1rem;
+    background: rgba(var(--main-rgb), .08);
+}
+
+/* ----- Catalog table: cell details ----- */
+/* Author cell: a little smaller than the book title in the first column */
+.catTable td:not(:first-child) .rowName{
+    font-size: .95rem;
+    font-weight: 600;
+}
+
+/* Category + access pills carry an icon, so they shrink to fit instead of using the fixed pill width */
+.catTable .pill.auto{
+    padding: .4rem .95rem;
+    font-size: .8rem;
+}
+
+/* ----- Sort dropdown menu: same panel as the Report filter ----- */
+.catalog-container .dropdown-menu{
+    background-color: var(--main-bg-color);
+    border: 1px solid var(--main-color);
+}
+
+.catalog-container .dropdown-item:hover,
+.catalog-container .dropdown-item:focus{
+    background-color: rgba(var(--main-rgb), .12);
+    color: var(--text);
+}
+
+@media (max-width: 767.98px){
+    /* five columns: keep the Digital Access pill ( "Physical · 15/15" ) on one line */
+    .catTable{ min-width: 820px; }
+    .catTable thead th:nth-child(1){ width: 270px; }
+    .catTable thead th:nth-child(2){ width: 140px; }
+    .catTable thead th:nth-child(3){ width: 150px; }
+    .catTable thead th:nth-child(4){ width: 160px; }
+    .catTable thead th:nth-child(5){ width: 115px; }
+    .catTable tbody td{ height: 96px; }
+}

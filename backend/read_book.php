@@ -1,55 +1,87 @@
 <?php
-session_start();
-require_once "connection/config.php";
-require_once "helpers/SystemOperators.php";
+require_once __DIR__ . "/core/bootstrap.php";
+require_once __DIR__ . "/core/booklink.php";
+header("Cache-Control: no-store, no-cache, must-revalidate, max-age=0");
+header("Pragma: no-cache");
 
-$con = connection();$so  = new SystemOperators();
+// Logged in and still Active (re-checked against the DB), otherwise -> login.php
+$auth = require_login_page();
 
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php");
-    exit();
+$con = db();
+$so  = so();
+
+try {
+    $raw_token  = $_GET[BOOK_LINK_PARAM] ?? '';
+    $book_id    = is_string($raw_token) ? (book_id_from_token($raw_token) ?? 0) : 0;
+    $book_token = $book_id > 0 ? book_token($book_id) : '';
+} catch (Throwable $e) {
+    error_log('read_book.php book link error: ' . $e->getMessage());
+    http_response_code(500);
+    exit("Book links are not set up on this server. Please contact the library.");
 }
+if ($book_id <= 0) {
+    http_response_code(404);
+    exit("This book link is invalid or outdated. Please open the book from the library.");
+}
+$user_id    = $auth['user_id'];   // 
+$user_role  = $auth['role'];
+$user_email = $_SESSION['email'] ?? '';
 
-$book_id   = isset($_GET['id']) ? intval($_GET['id']) : 0;
-$user_id   =$_SESSION['user_id'];
-$user_role =$_SESSION['role'] ?? 'Student';
-
-$stmt =$con->prepare("SELECT Title FROM book_table WHERE Book_ID = ?");
+// Fetch book details
+$stmt = $con->prepare("SELECT Title, Drive_Link FROM book_table WHERE Book_ID = ?");
 $stmt->bind_param("i", $book_id);
-$stmt->execute();$book = $stmt->get_result()->fetch_assoc();$stmt->close();
+$stmt->execute();
+$book = $stmt->get_result()->fetch_assoc();
+$stmt->close();
 
-if (!$book) {
-    exit("Book not found in system catalog.");
+if (!$book || empty($book['Drive_Link'])) {
+    exit("Book or digital file not found in system catalog.");
 }
 
-if ($user_role !== 'Admin') {
-    $auth_stmt =$con->prepare("SELECT Reservation_ID FROM reservation_table WHERE User_ID = ? AND Book_ID = ? AND Request_approval = 'Approved' UNION 
-                                SELECT Transaction_ID FROM transaction_table WHERE User_ID = ? AND Book_ID = ? AND Return_Date IS NULL
-                            ");
-    $auth_stmt->bind_param("iiii", $user_id,$book_id, $user_id,$book_id);
-    $auth_stmt->execute();$has_access = ($auth_stmt->get_result()->num_rows > 0);$auth_stmt->close();
+// Record Reading History (STEP #1)
+$hist_stmt = $con->prepare("INSERT INTO user_reading_history (User_ID, Book_ID, Last_Opened) VALUES (?, ?, NOW()) ON DUPLICATE KEY UPDATE Last_Opened = NOW()");
+$hist_stmt->bind_param("ii", $user_id, $book_id);
+$hist_stmt->execute();
+$hist_stmt->close();
 
-    if (!$has_access) {
-        header("Location: librarydb.php");
-        exit();
-    }
+// Fetch saved reading page progress if available (STEP #2)
+$prog_stmt = $con->prepare("SELECT Current_Page, Is_Finished FROM user_reading_progress WHERE User_ID = ? AND Book_ID = ?");
+$prog_stmt->bind_param("ii", $user_id, $book_id);
+$prog_stmt->execute();
+$prog_res = $prog_stmt->get_result()->fetch_assoc();
+$prog_stmt->close();
+
+$initial_page = 1;
+if ($prog_res && $prog_res['Is_Finished'] == 0 && $prog_res['Current_Page'] > 1) {
+    $initial_page = (int)$prog_res['Current_Page'];
 }
+
+// Generate single-use streaming token valid for 60 seconds
 $token = bin2hex(random_bytes(32));
-if (!isset($_SESSION['image_tokens'])) {$_SESSION['image_tokens'] = [];
+if (!isset($_SESSION['image_tokens'])) {
+    $_SESSION['image_tokens'] = [];
 }
+// Forget tokens that already expired (bug #11: they used to pile up in the session)
+$_SESSION['image_tokens'] = array_filter($_SESSION['image_tokens'], fn($t) => ($t['expires_at'] ?? 0) >= time());
 $_SESSION['image_tokens'][$token] = [
     'user_id'    => $user_id,
     'book_id'    => $book_id,
-    'expires_at' => time() + 10
+    'expires_at' => time() + 60
 ];
-?>
 
+// Session token for API & CSRF
+$csrf_token = $_SESSION['csrf_token'] ?? '';
+
+session_write_close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <title>BiblioDesk Document Reader - <?php echo htmlspecialchars($book['Title']); ?></title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- QR code for the Share panel is drawn in the browser (no third-party service sees the link) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
         body {
             margin: 0;
@@ -134,19 +166,55 @@ $_SESSION['image_tokens'][$token] = [
             color: #ccc;
             font-size: 14px;
         }
-
+        /* Share panel (link + QR back to this book) and staff preview badge */
+        #viewer-toolbar { flex-wrap: wrap; }
+        #share-panel {
+            display: none;
+            position: absolute;
+            top: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            width: min(360px, calc(100vw - 24px));
+            background: #1a1a1a;
+            border: 1px solid #555;
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        #share-panel.open { display: block; }
+        #report-panel {
+            position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%);
+            width: min(360px, calc(100vw - 24px)); background: #1a1a1a; border: 1px solid #555;
+            border-radius: 8px; padding: 14px; box-shadow: 0 6px 18px rgba(0,0,0,0.5); text-align: left;
+        }
+        #report-panel[hidden] { display: none; }
+        #report-panel label { font-size: 12px; color: #ccc; display: block; margin-bottom: 6px; }
+        #report-panel select, #report-panel textarea {
+            width: 100%; box-sizing: border-box; background: #333; color: #fff; border: 1px solid #555;
+            border-radius: 4px; padding: 6px 8px; font-size: 13px; margin-bottom: 8px; font-family: inherit;
+        }
+        .report-result { display: block; font-size: 12px; margin-top: 8px; }
+        .report-result.ok { color: #8fd18f; }
+        .report-result.error { color: #ff8a80; }
+        #share-qr { display: inline-block; background: #fff; padding: 8px; border-radius: 6px; }
+        #share-panel p { font-size: 12px; color: #ccc; margin: 10px 0 6px; }
+        #share-row { display: flex; gap: 6px; }
+        #share-link {
+            flex: 1; min-width: 0; background: #333; color: #fff; border: 1px solid #555;
+            border-radius: 4px; padding: 5px 8px; font-size: 12px; user-select: all;
+        }
+        .preview-badge {
+            background: #ffc107; color: #1a1a1a; border-radius: 999px; padding: 4px 10px;
+            font-size: 12px; font-weight: bold; text-decoration: none;
+        }
         @media print {
-            body {
-            display: none !important;
+            body { display: none !important; }
+            #viewer-container, #page-canvas { display: none !important; }
         }
-        #viewer-container, #page-canvas {
-        display: none !important;
-        }
-}
     </style>
 </head>
 <body>
-
 <div id="viewer-toolbar">
     <button id="prev-btn" disabled>Previous</button>
     <span>Page: 
@@ -154,6 +222,33 @@ $_SESSION['image_tokens'][$token] = [
         / <span id="total-pages">-</span>
     </span>
     <button id="next-btn" disabled>Next</button>
+    <button id="share-btn" type="button" aria-expanded="false" aria-controls="share-panel">Share</button>
+    <button id="report-btn" type="button" data-report-toggle="report-panel" aria-expanded="false" aria-controls="report-panel">Report issue</button>
+<?php if (in_array($user_role, ['Librarian', 'Admin'], true)): ?>
+    <a class="preview-badge" href="librarymanagement.php" title="Back to Library Management">Preview mode (<?php echo htmlspecialchars($user_role); ?>)</a>
+<?php endif; ?>
+    <form id="report-panel" hidden data-report-panel data-book-id="<?php echo htmlspecialchars($book_token); ?>" aria-label="Report an issue with this book">
+        <label for="report-issue">What is wrong with this book?</label>
+        <select id="report-issue" name="issue_type" required>
+            <option value="">Choose an issue…</option>
+            <option value="Broken Link">Broken Link</option>
+            <option value="Missing Page/s">Missing Page/s</option>
+            <option value="Wrong File">Wrong File</option>
+            <option value="License Concern">License Concern</option>
+            <option value="Other">Other</option>
+        </select>
+        <textarea name="description" rows="2" maxlength="1000" placeholder="Details (optional), e.g. which page"></textarea>
+        <button type="submit">Send report</button>
+        <span data-report-result hidden role="status"></span>
+    </form>
+    <div id="share-panel" role="dialog" aria-label="Share this book">
+        <div id="share-qr"></div>
+        <p>Link back to this book (readers need to be logged in)</p>
+        <div id="share-row">
+            <input type="text" id="share-link" readonly>
+            <button id="share-copy" type="button">Copy</button>
+        </div>
+    </div>
 </div>
 
 <div id="viewer-container">
@@ -165,15 +260,50 @@ $_SESSION['image_tokens'][$token] = [
 </div>
 
 <script>
-
 pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 const authToken = <?php echo json_encode($token); ?>;
-const userEmail = <?php echo json_encode($_SESSION['email'] ?? ''); ?>;
+const userEmail = <?php echo json_encode($user_email); ?>;
+const bookToken = <?php echo json_encode($book_token); ?>;      // the only book identifier the browser gets (share link, progress saving)
+const initialSavedPage = <?php echo json_encode($initial_page); ?>;
+const csrfToken = <?php echo json_encode($csrf_token); ?>;
+const appBaseUrl = <?php echo json_encode(APP_BASE_URL); ?>;
+
+(() => {
+    const btn = document.getElementById('share-btn');
+    const panel = document.getElementById('share-panel');
+    const qrBox = document.getElementById('share-qr');
+    const linkBox = document.getElementById('share-link');
+    const copyBtn = document.getElementById('share-copy');
+    btn.addEventListener('click', () => {
+        const open = !panel.classList.contains('open');
+        if (open) {
+            const url = new URL('read_book.php?b=' + encodeURIComponent(bookToken), appBaseUrl || window.location.href).href;
+            linkBox.value = url;
+            qrBox.replaceChildren();
+            if (typeof QRCode !== 'undefined') {
+                new QRCode(qrBox, { text: url, width: 128, height: 128, correctLevel: QRCode.CorrectLevel.M });
+                qrBox.style.display = '';
+            } else {
+                qrBox.style.display = 'none';   // QR library did not load: the link still works
+            }
+        }
+        panel.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', String(open));
+    });
+    copyBtn.addEventListener('click', async () => {
+        try { await navigator.clipboard.writeText(linkBox.value); }
+        catch { linkBox.select(); document.execCommand('copy'); }
+        copyBtn.textContent = 'Copied';
+        setTimeout(() => { copyBtn.textContent = 'Copy'; }, 1500);
+    });
+})();
 
 let pdfDoc = null;
-let currentPage = 1;
+let currentPage = initialSavedPage;
 let isRendering = false;
+let pendingPage = null;
+let progressSaveTimeout = null;
 
 const canvas = document.getElementById('page-canvas');
 const ctx = canvas.getContext('2d');
@@ -182,17 +312,6 @@ const prevBtn = document.getElementById('prev-btn');
 const nextBtn = document.getElementById('next-btn');
 const pageInput = document.getElementById('page-input');
 
-
-setInterval(() => {
-    const startTime = performance.now();
-    debugger; 
-    const endTime = performance.now();
-    if (endTime - startTime > 100) {
-        document.body.innerHTML = '<h1 style="color:red; text-align:center; margin-top:20%;">Developer Tools Detected. Session Interrupted.</h1>';
-        setTimeout(() => { window.location.href = 'librarydb.php'; }, 1500);
-    }
-}, 1000);
-
 document.addEventListener('contextmenu', e => e.preventDefault());
 document.addEventListener('keydown', e => {
     if (e.key === 'F12' || (e.ctrlKey && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) || (e.ctrlKey && e.key.toUpperCase() === 'U')) {
@@ -200,94 +319,122 @@ document.addEventListener('keydown', e => {
     }
 });
 
-document.addEventListener('keyup', (e) => {
-    if (e.key === 'PrintScreen') {
-        navigator.clipboard.writeText('Screenshots are restricted on BiblioDesk LMS.');
-        alert('Screenshots are restricted on this platform.');
-    }
-});
+function showLoadError(message) {
+    loadingOverlay.replaceChildren();
+    const p = document.createElement('p');
+    p.style.color = '#e70808';
+    p.textContent = message;
+    loadingOverlay.appendChild(p);
+}
+
+function saveReadingProgress(page, total) {
+    if (!pdfDoc) return;
+    clearTimeout(progressSaveTimeout);
+    progressSaveTimeout = setTimeout(() => {
+        const formData = new FormData();
+        formData.append('action', 'save_progress');
+        formData.append('book_id', bookToken);   // field name is historical; it carries the token
+        formData.append('current_page', page);
+        formData.append('total_pages', total);
+        formData.append('csrf_token', csrfToken);
+
+        fetch('../backend/user_librarydb_controller.php', {
+            method: 'POST',
+            body: formData
+        }).catch(err => console.error("Failed to save progress:", err));
+    }, 1000); // 1-second debounce
+}
 
 async function loadDocument() {
     try {
-        const pdfUrl = `stream_pdf.php?token=${authToken}`;
-        
-        pdfDoc = await pdfjsLib.getDocument(pdfUrl).promise;
+        const res = await fetch('stream_pdf.php', {
+            method: 'POST',
+            credentials: 'same-origin',
+            cache: 'no-store',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-Requested-With': 'BiblioDeskReader'
+            },
+            body: new URLSearchParams({ token: authToken })
+        });
+        if (!res.ok) {
+            throw new Error((await res.text()) || ('HTTP ' + res.status));
+        }
+        const bin = atob((await res.text()).trim());
+        const data = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) {
+            data[i] = bin.charCodeAt(i);
+        }
+        pdfDoc = await pdfjsLib.getDocument({ data: data }).promise;
         document.getElementById('total-pages').textContent = pdfDoc.numPages;
         pageInput.max = pdfDoc.numPages;
 
-        // Render first page and remove loading overlay
+        if (currentPage > pdfDoc.numPages) currentPage = 1;
+
         await renderPage(currentPage);
-        
         loadingOverlay.style.display = 'none';
         canvas.style.display = 'block';
-        
         prevBtn.disabled = false;
         nextBtn.disabled = false;
         pageInput.disabled = false;
     } catch (err) {
         console.error("Failed to load PDF document stream:", err);
-        loadingOverlay.innerHTML = '<p style="color:#e70808;">Failed to load document stream. Access token may be expired.</p>';
+        showLoadError('Failed to load document stream. Please go back and reopen the book.');
     }
 }
 
 async function renderPage(pageNum) {
-    if (isRendering || !pdfDoc) return;
+    if (!pdfDoc) return;
+    if (isRendering) {
+        pendingPage = pageNum;
+        return;
+    }
     isRendering = true;
-
     try {
         const page = await pdfDoc.getPage(pageNum);
         const viewport = page.getViewport({ scale: 1.5 });
-
         canvas.height = viewport.height;
         canvas.width = viewport.width;
-
-        const renderContext = {
-            canvasContext: ctx,
-            viewport: viewport
-        };
-
-        await page.render(renderContext).promise;
-
+        await page.render({ canvasContext: ctx, viewport: viewport }).promise;
         if (userEmail) {
             ctx.font = '18px Arial';
             ctx.fillStyle = 'rgba(150, 150, 150, 0.35)';
             ctx.fillText(`Licensed to: ${userEmail}`, 20, canvas.height - 20);
         }
-
+        currentPage = pageNum;
         pageInput.value = pageNum;
+        saveReadingProgress(pageNum, pdfDoc.numPages);
     } catch (err) {
         console.error("Render error:", err);
     } finally {
         isRendering = false;
+        if (pendingPage !== null) {
+            const next = pendingPage;
+            pendingPage = null;
+            renderPage(next);
+        }
     }
 }
 
 prevBtn.addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        renderPage(currentPage);
-    }
+    const target = pendingPage ?? currentPage;
+    if (target > 1) renderPage(target - 1);
 });
 
 nextBtn.addEventListener('click', () => {
-    if (pdfDoc && currentPage < pdfDoc.numPages) {
-        currentPage++;
-        renderPage(currentPage);
-    }
+    const target = pendingPage ?? currentPage;
+    if (pdfDoc && target < pdfDoc.numPages) renderPage(target + 1);
 });
 
 function handlePageInputChange() {
     if (!pdfDoc) return;
     let targetPage = parseInt(pageInput.value, 10);
-
     if (isNaN(targetPage) || targetPage < 1) {
         targetPage = 1;
     } else if (targetPage > pdfDoc.numPages) {
         targetPage = pdfDoc.numPages;
     }
-
-    currentPage = targetPage;
-    renderPage(currentPage);
+    renderPage(targetPage);
 }
 
 pageInput.addEventListener('keydown', (e) => {
@@ -297,8 +444,56 @@ pageInput.addEventListener('keydown', (e) => {
 });
 
 pageInput.addEventListener('change', handlePageInputChange);
+
 loadDocument();
 
+// Active Reading Time tracking (event-driven: flushes on tab hide/close + 5-min safety net)
+(() => {
+    const prefs = (window.bdUserPreferences && window.bdUserPreferences.prefs) || {};
+    if (prefs.trackReading === false || typeof csrfToken === 'undefined') return;
+
+    let unsentSeconds = 0;
+
+    function flushReadingTime() {
+        if (unsentSeconds <= 0) return;
+        const secondsToSend = unsentSeconds;
+        unsentSeconds = 0;
+
+        const fd = new FormData();
+        fd.append('action', 'track_reading_time');
+        fd.append('csrf_token', csrfToken);
+        fd.append('seconds', String(secondsToSend));
+
+        if (navigator.sendBeacon) {
+            navigator.sendBeacon('settings_controller.php', fd);
+            return;
+        }
+
+        fetch('settings_controller.php', {
+            method: 'POST',
+            body: fd,
+            credentials: 'same-origin',
+            keepalive: true
+        }).catch(() => {});
+    }
+
+    setInterval(() => {
+        if (!document.hidden) {
+            unsentSeconds++;
+            // 5-minute safety guard (Remove lines for 100% exit-only sync to reading time tracking)
+            if (unsentSeconds >= 300) {
+                flushReadingTime();
+            }
+        }
+    }, 1000);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) flushReadingTime();
+    });
+    window.addEventListener('pagehide', flushReadingTime);
+})();
+
 </script>
+<script src="../frontend/js/report_issue.js"></script>
 </body>
 </html>

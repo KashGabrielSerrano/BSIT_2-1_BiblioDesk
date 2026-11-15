@@ -1,240 +1,291 @@
 <?php
-require_once("connection/config.php");
-require_once("helpers/SystemOperators.php");
+require_once __DIR__ . "/core/bootstrap.php";
 
-$con = connection();$so = new SystemOperators();
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['btnRegister'])) {
-    $student_id = $so->encrypt(filter_input(INPUT_POST, 'student_id', FILTER_SANITIZE_SPECIAL_CHARS));
-    $email = $so->encrypt(filter_input(INPUT_POST, 'email', FILTER_SANITIZE_EMAIL));
-    $department = $so->encrypt(filter_input(INPUT_POST, 'department', FILTER_SANITIZE_SPECIAL_CHARS));
-    $raw_password = filter_input(INPUT_POST, 'password', FILTER_SANITIZE_SPECIAL_CHARS);
-    $hashed_password = password_hash($raw_password, PASSWORD_BCRYPT);
-
-    $role = 'Student';$select_query = "SELECT * FROM `user_table` WHERE `Student_ID` = ? OR `Email` = ?";
-    $select_stmt =$con->prepare($select_query);$select_stmt->bind_param('ss', $student_id,$email);
-
-    if ($select_stmt->execute()) {
-        $result =$select_stmt->get_result();
-        if ($result->num_rows > 0) {
-            echo "<script> alert('User already exists');</script>";
-        } else {
-            $insert_query = 'INSERT INTO `user_table` (`Student_ID`, `Email`, `Password`, `Role`, `Department`) VALUES (?, ?, ?, ?, ?)';
-            $insert_stmt =$con->prepare($insert_query);$insert_stmt->bind_param('sssss', $student_id,$email, $hashed_password,$role, $department);
-            
-            try {
-                $insert_stmt->execute();
-                echo "<script> alert('Registration successful!');
-                            window.location='login.php';
-                        </script>";
-            } catch (mysqli_sql_exception $e) {
-                echo $e->getMessage();
-            }
-        }
-    } else {
-        echo "Failed to execute query.";
-        $select_stmt->close();
-    }
+// Already logged in (and still Active): go to the right dashboard.
+if ($user = current_user()) {
+    header("Location: " . dashboard_for_role($user['role']));
+    exit();
 }
+$modal_message  = '';
+$modal_type     = 'error';
+$modal_redirect = '';
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
-
-    <link rel="stylesheet" href="../frontend/css/Registration.css">
+    <title>BiblioDesk LMS - Registration</title>
+    <link rel="icon" type="image/png" href="../frontend/assets/BiblioDesk_Icon.png">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.css">
+    <link rel="stylesheet" href="../frontend/css/root.css">
+    <link rel="stylesheet" href="../frontend/css/Registration.css?v=12">
 </head>
-
 <body>
-
-    <div class="registration-container">
-    <form action = "" method = "POST" id="registrationForm">
-
-        <!-- PAGE 1 -->
-        <div class="page active">
-
-            <h1>REGISTRATION</h1>
-
-            <div class="form-container">
-
-                <div>
-
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" name="first_name" placeholder="Fernando" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" name="last_name" placeholder="Bautista" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Middle Name (Optional)</label>
-                        <input type="text" name="middle_name" placeholder="Reyes">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Suffix (Optional)</label>
-                        <input type="text" name="suffix" placeholder="Jr. / Sr. / III">
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <div class="form-group">
-                        <label>Birthday (mm/dd/yy)</label>
-                        <input type="text" name="birthday" placeholder="01/01/2026" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Student ID</label>
-                        <input type="text" name="student_id" placeholder="R2XXXXXXXXX" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>School Email</label>
-                        <input type="email" name="email" placeholder="test.school.email@gmail.com" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Department</label>
-                        <input type="text" name="department" placeholder="BSIT" required>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="button-container">
-
-                <button type="button" onclick="nextPage()">NEXT</button>
-
-            </div>
-
-        </div>
-
-
-        <!-- PAGE 2 -->
-        <div class="page">
-
-            <h1>REGISTRATION</h1>
-
-            <div class="form-container">
-
-                <div>
-
-                    <div class="form-group">
-                        <label>Personal Email</label>
-                        <input type="email" name="personal_email" placeholder="test.email@gmail.com" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" name="phone_number" placeholder="09XXXXXXXXX" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>House / Unit Number</label>
-                        <input type="text" name="house_number" placeholder="01" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Street</label>
-                        <input type="text" name="street" placeholder="Street" required>
-                    </div>
-
-                </div>
-
-
-                <div>
-
-                    <div class="form-group">
-                        <label>Barangay</label>
-                        <input type="text" name="barangay" placeholder="Brgy" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>City / Town</label>
-                        <input type="text" name="city" placeholder="Marikina City" required>
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <div class="button-container">
-
-                <button
-                    type="button" class="back-button"
-                    onclick="previousPage()"> PREVIOUS
-                </button>
-
-                <button
-                    type="button" onclick="nextPage()"> NEXT
-                </button>
-
-            </div>
-
-        </div>
-
-
-        <!-- PAGE 3 -->
-        <div class="page">
-
-            <h1>REGISTRATION</h1>
-
-            <div class="security-form">
-
-                <div class="form-group">
-                    <label>Password</label>
-                    <input type="password" name="password" id="password" placeholder="XXXXXXXX" required>
-                </div>
-
-                <div class="form-group">
-                    <label>Confirm Password</label>
-                    <input
-                        type="password" name="confirm_password" id="confirmPassword" placeholder="XXXXXXXX" required>
-                </div>
-
-                <div class="form-group">
-                    <label>OTP</label>
-                    <input
-                        type="text" name="otp" id="otp" placeholder="XXXXXX" required>
-                </div>
-
-            </div>
-
-
-            <div class="button-container">
-
-                <button type="button" 
-                    class="back-button" onclick="previousPage()">BACK 
-                </button>
-                    
-                <button type="submit" name="btnRegister"
-                    onclick="register(event)">REGISTER
-                </button>
-
-            </div>
-
-        </div>
-
-    </form>
-
+<div class="registration-container">
+    <div class="logo-panel">
+        <img src="../frontend/assets/BiblioDesk_White.png" alt="BiblioDesk Logo" class="logo">
+        <p class="tagline">Read, Archive, Advance,<br>Knowledge.</p>
     </div>
 
+    <div class="form-wrapper">
+        <form id="registrationForm" novalidate>
+            <!-- Hidden CSRF Token Field -->
+            <input type="hidden" name="csrf_token" id="csrf_token" value="<?php echo htmlspecialchars($_SESSION['csrf_token'] ?? '', ENT_QUOTES, 'UTF-8'); ?>">
 
-    <script src="../frontend/js/Registration.js"></script>
+            <div class="form-fields">
+                <div class="text-center">
+                    <span class="reg-badge" aria-hidden="true"><i class="bi bi-person-plus-fill"></i></span>
+                    <h1>Registration</h1>
+                    <p class="reg-subtitle">Create your BiblioDesk account in three quick steps.</p>
+                </div>
 
+                <!-- Step indicator (updated by Registration.js) -->
+                <div class="reg-steps">
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="step-count" id="stepLabel">Step 1 of 3</span>
+                        <span class="step-name" id="stepTitle">Your name</span>
+                    </div>
+                    <div class="progress" id="stepProgress" role="progressbar" aria-label="Registration progress"
+                         aria-valuemin="1" aria-valuemax="3" aria-valuenow="1">
+                        <div class="progress-bar" style="width: 33.33%"></div>
+                    </div>
+                </div>
+
+                <!-- Page 1: Name -->
+                <div class="form-page active" id="page-1">
+                    <div class="row gx-3">
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="first_name">First Name</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-person-fill field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="first_name" name="first_name" placeholder="Fernando" autocomplete="given-name" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="last_name">Last Name</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-person-fill field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="last_name" name="last_name" placeholder="Bautista" autocomplete="family-name" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row gx-3">
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="middle_name">Middle Name (Optional)</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-person field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="middle_name" name="middle_name" placeholder="Reyes" autocomplete="additional-name">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="suffix">Suffix (Optional)</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-tag-fill field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="suffix" name="suffix" placeholder="Jr. / Sr. / III">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="step-actions">
+                        <button type="button" data-action="prev"><i class="bi bi-arrow-left" aria-hidden="true"></i> Back to login</button>
+                        <button type="button" data-action="next">Next <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+
+                <!-- Page 2: School details -->
+                <div class="form-page" id="page-2">
+                    <div class="row gx-3">
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="birthday">Birthday</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-calendar-event-fill field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="birthday" name="birthday" placeholder="Choose birthday" required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="form-items">
+                                <label for="student_id">Student ID</label>
+                                <div class="field-wrap">
+                                    <i class="bi bi-person-badge-fill field-icon" aria-hidden="true"></i>
+                                    <input type="text" id="student_id" name="student_id" placeholder="R2XXXXXXXXX" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-items">
+                        <label for="email">School Email</label>
+                        <div class="field-wrap">
+                            <i class="bi bi-envelope-fill field-icon" aria-hidden="true"></i>
+                            <input type="email" id="email" name="email" placeholder="test.school.email@gmail.com" autocomplete="email" required>
+                        </div>
+                    </div>
+                    <div class="form-items">
+                        <label for="department">Department</label>
+                        <div class="field-wrap">
+                            <i class="bi bi-mortarboard-fill field-icon" aria-hidden="true"></i>
+                            <select id="department" name="department" class="form-select" required>
+                                <option value="" selected disabled>Select department</option>
+                                <option value="BSIT">BSIT - Information Technology</option>
+                                <option value="BSCS">BSCS - Computer Science</option>
+                                <option value="BSIS">BSIS - Information Systems</option>
+                                <option value="BSBA">BSBA - Business Administration</option>
+                                <option value="BSA">BSA - Accountancy</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="step-actions">
+                        <button type="button" data-action="prev"><i class="bi bi-arrow-left" aria-hidden="true"></i> Previous</button>
+                        <button type="button" data-action="next">Next <i class="bi bi-arrow-right" aria-hidden="true"></i></button>
+                    </div>
+                </div>
+
+                <!-- Page 3: Password & submit -->
+                <div class="form-page" id="page-3">
+                    <div class="form-items">
+                        <label for="password">Password</label>
+                        <div class="password-container">
+                            <i class="bi bi-lock-fill field-icon" aria-hidden="true"></i>
+                            <input type="password" id="password" name="password" minlength="8" placeholder="At least 8 characters" autocomplete="new-password" required>
+                            <button type="button" class="password-toggle-icon" data-target="password" aria-label="Show or hide password"><i class="bi bi-eye-slash"></i></button>
+                        </div>
+                    </div>
+                    <div class="form-items">
+                        <label for="confirm_password">Confirm Password</label>
+                        <div class="password-container">
+                            <i class="bi bi-shield-lock-fill field-icon" aria-hidden="true"></i>
+                            <input type="password" id="confirm_password" name="confirm_password" minlength="8" placeholder="Re-enter password" autocomplete="new-password" required>
+                            <button type="button" class="password-toggle-icon" data-target="confirm_password" aria-label="Show or hide password"><i class="bi bi-eye-slash"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Mandatory Terms & Privacy Checkbox -->
+                    <div class="form-items">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="termsCheck" name="terms_accepted" required>
+                            <label class="form-check-label small" for="termsCheck">
+                                I have read and agree to the
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#termsPrivacyModal" data-view="terms" class="terms-link">Terms of Use</a>
+                                and
+                                <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#termsPrivacyModal" data-view="privacy" class="terms-link">Privacy Policy</a>.
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="step-actions">
+                        <button type="button" data-action="prev"><i class="bi bi-arrow-left" aria-hidden="true"></i> Previous</button>
+                        <button type="submit" name="btnRegister" id="btnSubmitRegister"><i class="bi bi-person-check-fill" aria-hidden="true"></i> Submit Registration</button>
+                    </div>
+                </div>
+
+                <hr>
+                <p class="register">Already have an account? <a href="login.php">LOG IN</a></p>
+                <p class="terms">By proceeding, you agree to our <a href="terms_privacy.php?view=terms">Terms of Use</a><br>
+                                 and confirm that you have read our <a href="terms_privacy.php?view=privacy">Privacy Policy</a>.</p>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Terms & Privacy Dynamic Modal -->
+<div class="modal fade" id="termsPrivacyModal" tabindex="-1" aria-labelledby="termsPrivacyModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+        <div class="modal-content border-0 shadow-lg rounded-3">
+            <div class="modal-header bibliodesk-modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="termsPrivacyModalTitle">
+                    <i class="bi bi-file-earmark-text-fill me-2 fs-4" aria-hidden="true"></i>
+                    <span id="tpModalTitleText">Terms of Use & Privacy Policy</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4" id="termsPrivacyModalBody">
+                <div class="text-center py-4">
+                    <div class="spinner-border text-success" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" class="btn btn-brand px-4 py-2 rounded-3" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Error modal -->
+<div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalTitle" aria-hidden="true"
+     data-message="<?= htmlspecialchars($modal_message, ENT_QUOTES, 'UTF-8') ?>"
+     data-type="<?= htmlspecialchars($modal_type, ENT_QUOTES, 'UTF-8') ?>"
+     data-redirect="<?= htmlspecialchars($modal_redirect, ENT_QUOTES, 'UTF-8') ?>">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title text-danger" id="errorModalTitle">
+                    <i class="bi bi-exclamation-circle-fill me-2"></i>Notice
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="errorModalMessage"></div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-brand px-4 py-2 rounded-3" data-bs-dismiss="modal">OK</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- OTP Verification Modal -->
+<div class="modal fade" id="otpModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="otpModalTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-3 overflow-hidden">
+            <div class="modal-header bibliodesk-modal-header">
+                <h5 class="modal-title d-flex align-items-center" id="otpModalTitle">
+                    <i class="bi bi-shield-lock-fill me-2 fs-4"></i>Email Verification
+                </h5>
+            </div>
+            <div class="modal-body p-4 text-center">
+                <p class="text-muted mb-1">A 6-digit verification code was sent to:</p>
+                <p class="fw-bold fs-6 text-dark mb-3" id="otpEmailDisplay">user@example.com</p>
+
+                <div id="otpAlert" class="alert d-none py-2 px-3 small rounded-3" role="alert"></div>
+
+                <div class="mb-3">
+                    <input type="text" id="otpCodeInput" inputmode="numeric" pattern="[0-9]*" class="form-control text-center font-monospace fs-2 py-2 bibliodesk-otp-input" maxlength="6" placeholder="000000" autocomplete="off">
+                </div>
+
+                <div class="mb-3 text-muted small">
+                    <i class="bi bi-clock-history me-1"></i>Code expires in <span id="otpExpiryTimer" class="fw-bold text-danger">05:00</span>
+                </div>
+
+                <div class="d-flex justify-content-between align-items-center mt-4 pt-3 border-top">
+                    <small class="text-muted">Didn't receive the code?</small>
+                    <button type="button" id="btnResendOtp" class="btn btn-link btn-sm p-0 text-decoration-none bibliodesk-resend-link" disabled>
+                        Resend code in <span id="resendTimer">60</span>s
+                    </button>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" id="btnVerifyOtp" class="btn bibliodesk-btn-primary w-100 py-2 rounded-3 shadow-sm">
+                    Verify & Complete Registration
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr@4.6.13/dist/flatpickr.min.js"></script>
+<script src="../frontend/js/Registration.js?v=2"></script>
 </body>
-
 </html>

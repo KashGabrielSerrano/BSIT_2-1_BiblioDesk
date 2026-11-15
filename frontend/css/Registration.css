@@ -1,84 +1,772 @@
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 body {
-    background-color: #8f9a78;
-    font-family: Arial, sans-serif;
-    min-height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  min-height: 100vh;
+  background-color: var(--main-color);
+  background-image: radial-gradient(circle at 25% 45%, rgba(169, 220, 192, .09), transparent 55%);
+  background-repeat: no-repeat;
 }
 
+/* Layout */
 .registration-container {
-    width: 83%;
-    height: 720px;
-    background-color: #f0e1ce;
-    border-radius: 12px;
-    padding: 40px 75px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 140px;
+  width: 100%;
+  min-height: 100vh;
+  padding: 16px;
 }
 
-.page {
-    display: none;
+.logo-panel {
+  flex: 0 1 480px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  padding: 20px;
 }
 
-.page.active {
-    display: block;
+.logo {
+  width: auto;
+  max-width: 450px;
+  max-height: 40vh;
+  height: auto;
+  object-fit: contain;
+}
+
+.tagline {
+  color: var(--fcolor-secondary);
+  font-size: 20px;
+  letter-spacing: 3px;
+  margin-top: 30px;
+  line-height: 1.4;
 }
 
 h1 {
-    text-align: center;
-    color: #193b1d;
-    font-size: 52px;
-    margin-bottom: 45px;
+  font-weight: 700;
+  font-size: 2rem;
+  color: var(--main-color);
+  margin-bottom: .35rem;
+  text-align: center;
 }
 
-.form-container {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 80px;
+.reg-badge {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 16px;
+  background-color: var(--main-color);
+  color: var(--button-yellow);
+  font-size: 1.6rem;
 }
 
-.form-group {
-    margin-bottom: 30px;
+.reg-subtitle {
+  margin-bottom: 1.25rem;
+  font-size: .95rem;
+  color: var(--muted);
+  text-align: center;
 }
 
-label {
-    display: block;
-    color: #303b2d;
-    font-size: 20px;
-    font-weight: bold;
-    margin-bottom: 7px;
+/* Step indicator: "Step 1 of 3" + progress bar (updated by Registration.js) */
+.reg-steps {
+  margin-bottom: 1.5rem;
 }
 
-input {
-    width: 100%;
-    height: 57px;
-    padding: 0 17px;
-    border: 1px solid #888;
-    border-radius: 12px;
-    font-size: 18px;
+.reg-steps .step-count {
+  font-size: .85rem;
+  font-weight: 700;
+  color: var(--brown);
 }
 
-.button-container {
-    display: flex;
-    justify-content: flex-end;
-    gap: 15px;
-    margin-top: 25px;
+.reg-steps .step-name {
+  font-size: .85rem;
+  color: var(--muted);
 }
 
-button {
-    width: 190px;
-    height: 58px;
-    background-color: #6f8555;
-    color: white;
-    border: none;
-    border-radius: 12px;
-    font-size: 18px;
-    font-weight: bold;
+.reg-steps .progress {
+  height: 6px;
+  background-color: var(--line);
+  border-radius: 50rem;
+}
+
+.reg-steps .progress-bar {
+  background-color: var(--btn);
+  transition: width .3s ease;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  opacity: 1;
+  margin: 1.5rem 0;
+}
+
+/* Card */
+.form-wrapper {
+  flex: 0 1 560px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+form {
+  background: var(--fcolor-secondary);
+  border-radius: 18px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  padding: 2.75rem 3rem;
+  text-align: left;
+}
+
+/* Inputs */
+.form-items {
+  width: 100%;
+  margin-bottom: 1.25rem;
+}
+
+.form-items label {
+  display: block;
+  font-size: .9rem;
+  font-weight: 600;
+  color: var(--brown);
+  margin-bottom: .4rem;
+}
+
+/* Icon inside a field */
+.field-wrap {
+  position: relative;
+  width: 100%;
+}
+
+.field-icon {
+  position: absolute;
+  top: 50%;
+  left: 1rem;
+  transform: translateY(-50%);
+  z-index: 5;
+  color: var(--cc-qs-neutral);
+  font-size: 1.05rem;
+  pointer-events: none;
+}
+
+/* The checkbox lives inside .form-items too, so the text-field look is scoped to everything but checkboxes */
+.form-items input:not([type="checkbox"]),
+.form-items select {
+  width: 100%;
+  padding: .8rem 1rem .8rem 2.85rem;
+  border: 1px solid var(--hover);
+  border-radius: 10px;
+  background-color: var(--input-bg);
+  color: var(--text);
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.form-items select {
+  padding-right: 2.5rem;
+}
+
+.form-items input::placeholder {
+  color: var(--placeholder);
+}
+
+.form-items select:invalid {
+  color: var(--placeholder);
+}
+
+.form-items select option {
+  color: var(--text);
+}
+
+.form-items input:not([type="checkbox"]):focus,
+.form-items select:focus {
+  border-color: var(--btn);
+  box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2);
+}
+
+.form-items input.is-invalid,
+.form-items select.is-invalid,
+.form-items input.is-invalid:focus,
+.form-items select.is-invalid:focus {
+  border-color: var(--danger);
+}
+
+.form-items input.is-invalid:focus,
+.form-items select.is-invalid:focus {
+  box-shadow: 0 0 0 .25rem rgba(192, 57, 43, .2);
+}
+
+.form-items input.flatpickr-input[readonly] {
+  background-color: var(--input-bg);
+  cursor: pointer;
+}
+
+/* Birthday calendar in the BiblioDesk colors */
+.flatpickr-day.selected,
+.flatpickr-day.selected:hover {
+  background: var(--btn);
+  border-color: var(--btn);
+  color: var(--fcolor-secondary);
+}
+
+.flatpickr-day.today {
+  border-color: var(--hover);
+}
+
+.flatpickr-day.today:hover {
+  background: var(--hover);
+  border-color: var(--hover);
+  color: var(--fcolor-secondary);
+}
+
+/* Password toggle */
+.password-container {
+  position: relative;
+  width: 100%;
+}
+
+.form-items .password-container input {
+  padding-right: 2.9rem;
+}
+
+.password-toggle-icon {
+  position: absolute;
+  top: 50%;
+  right: .9rem;
+  transform: translateY(-50%);
+  padding: .25rem;
+  background: none;
+  border: 0;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted);
+  font-size: 1.1rem;
+  z-index: 10;
+}
+
+.password-toggle-icon:hover,
+.password-toggle-icon:focus-visible {
+  color: var(--brown);
+}
+
+/* Steps */
+.form-page {
+  display: none;
+}
+
+.form-page.active {
+  display: flex;
+  flex-direction: column;
+  min-height: 22rem;          /* same card height on every step, so the buttons stay put */
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.step-actions {
+  display: flex;
+  gap: .75rem;
+  margin-top: auto;           /* pushes the buttons to the bottom of the step */
+  padding-top: .5rem;
+}
+
+.step-actions button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .8rem;
+  background: var(--btn);
+  color: var(--fcolor-secondary);
+  border: 1px solid var(--btn);
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+.step-actions button:hover:not(:disabled) {
+  background: var(--hover);
+  border-color: var(--hover);
+}
+
+.step-actions button:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+.step-actions button:disabled {
+  opacity: .8;
+  cursor: not-allowed;
+}
+
+.step-actions button[data-action="prev"] {
+  background: transparent;
+  color: var(--brown);
+  border: 1px solid var(--hover);
+}
+
+.step-actions button[data-action="prev"]:hover:not(:disabled) {
+  background: var(--brown);
+  border-color: var(--brown);
+  color: var(--fcolor-secondary);
+}
+
+/* Footer text */
+.register {
+  font-size: .95rem;
+  color: var(--text);
+  text-align: center;
+  margin-bottom: .75rem;
+}
+
+.register a {
+  color: var(--btn);
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.register a:hover {
+  color: var(--hover);
+  text-decoration: underline;
+}
+
+.terms {
+  font-size: .8rem;
+  color: var(--gray);
+  text-align: center;
+  line-height: 1.5;
+  margin-top: 1rem;
+  margin-bottom: 0;
+}
+
+.terms a {
+  color: var(--brown);
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.terms a:hover {
+  color: var(--btn);
+}
+
+/* OTP Verification Modal */
+#otpModal {
+  z-index: 1060 !important;
+}
+
+#otpModal .modal-dialog {
+  position: relative;
+  z-index: 1061 !important;
+  max-width: 440px;
+}
+
+/* OTP Main Modal Card */
+#otpModal .modal-content {
+  background-color: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  border-radius: 14px !important;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+  overflow: hidden !important;
+  position: relative !important;
+  z-index: 1062 !important;
+}
+
+/* OTP Header */
+#otpModal .bibliodesk-modal-header {
+  background-color: var(--dark-header) !important;
+  color: var(--fcolor-secondary) !important;
+  border-bottom: 1px solid var(--dark-border) !important;
+  padding: 16px 24px !important;
+  border-top-left-radius: 13px !important;
+  border-top-right-radius: 13px !important;
+}
+
+#otpModal .bibliodesk-modal-header .modal-title {
+  color: var(--fcolor-secondary) !important;
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+#otpModal .bibliodesk-modal-header i {
+  color: var(--hover) !important;
+}
+
+/* OTP Modal Body & Footer */
+#otpModal .modal-body {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--text) !important;
+  position: relative !important;
+  z-index: 1063 !important;
+}
+
+#otpModal .modal-footer {
+  background-color: var(--fcolor-secondary) !important;
+  border-bottom-left-radius: 13px !important;
+  border-bottom-right-radius: 13px !important;
+}
+
+#otpModal .text-dark,
+#otpModal #otpEmailDisplay {
+  color: var(--ink) !important;
+  word-break: break-all;
+}
+
+#otpModal .text-muted {
+  color: var(--muted-alt) !important;
+}
+
+#otpModal .border-top {
+  border-color: var(--line) !important;
+}
+
+/*OTP Code Input */
+#otpModal .bibliodesk-otp-input {
+  background-color: var(--input-bg) !important;
+  color: var(--ink) !important;
+  border: 2px solid var(--hover) !important;
+  border-radius: 8px !important;
+  font-size: 1.8rem !important;
+  letter-spacing: 6px !important;
+  font-weight: bold;
+  caret-color: var(--ink);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+#otpModal .bibliodesk-otp-input:focus {
+  background-color: var(--fcolor-secondary) !important;
+  color: var(--ink) !important;
+  border-color: var(--btn) !important;
+  box-shadow: 0 0 0 0.25rem rgba(46, 78, 13, 0.2) !important;
+  outline: none !important;
+}
+
+#otpModal .bibliodesk-otp-input::placeholder {
+  color: var(--placeholder) !important;
+}
+
+/*Expiry Timer*/
+#otpModal #otpExpiryTimer {
+  color: var(--danger) !important;
+}
+
+/*Submit Button for OTP*/
+#otpModal .bibliodesk-btn-primary {
+  background-color: var(--btn) !important;
+  color: var(--fcolor-secondary) !important;
+  border: none !important;
+  font-size: 15px !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.5px;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+}
+
+#otpModal .bibliodesk-btn-primary:hover:not(:disabled) {
+  background-color: var(--hover) !important;
+  color: var(--fcolor-secondary) !important;
+}
+
+#otpModal .bibliodesk-btn-primary:active:not(:disabled) {
+  transform: scale(0.99);
+}
+
+#otpModal .bibliodesk-btn-primary:disabled {
+  background-color: var(--disabled-bg) !important;
+  color: var(--muted) !important;
+  cursor: not-allowed;
+  opacity: 0.85;
+}
+
+/* Resend Code */
+#otpModal .bibliodesk-resend-link {
+  color: var(--link) !important;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none !important;
+  transition: color 0.2s ease;
+}
+
+#otpModal .bibliodesk-resend-link:hover:not(:disabled) {
+  color: var(--link-hover) !important;
+  text-decoration: underline !important;
+}
+
+#otpModal .bibliodesk-resend-link:disabled {
+  color: var(--disabled-text) !important;
+  cursor: not-allowed;
+}
+
+#otpModal #otpAlert.alert-danger {
+  background-color: var(--alert-danger-bg) !important;
+  color: var(--alert-danger-text) !important;
+  border: 1px solid var(--alert-danger-border) !important;
+}
+
+#otpModal #otpAlert.alert-success {
+  background-color: var(--alert-success-bg) !important;
+  color: var(--alert-success-text) !important;
+  border: 1px solid var(--alert-success-border) !important;
+}
+
+.modal-backdrop.show {
+  opacity: 0.75 !important;
+  background-color: var(--backdrop) !important;
+}
+
+body.modal-open .logo-panel {
+  opacity: 0.15 !important;
+  transition: opacity 0.25s ease;
+}
+
+/* Terms checkbox: Bootstrap checkbox in the BiblioDesk green */
+.form-check-input {
+    border-color: var(--hover);
     cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--btn);
+    border-color: var(--btn);
+}
+
+.form-check-input:focus {
+    border-color: var(--btn);
+    box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2);
+}
+
+.form-items .form-check {
+    display: flex;
+    align-items: flex-start;
+    gap: .6rem;
+    padding-left: 0;
+    margin: 0;
+}
+
+.form-items .form-check .form-check-input {
+    float: none;
+    margin: .2rem 0 0;
+    flex-shrink: 0;
+}
+
+.form-items .form-check-label {
+    color: var(--brown);
+    line-height: 1.5;
+    cursor: pointer;
+    user-select: none;
+}
+
+.form-items .form-check-input.is-invalid ~ .form-check-label {
+    color: var(--brown);
+}
+
+.terms-link {
+    color: var(--btn);
+    font-weight: 600;
+    text-decoration: underline;
+}
+
+.terms-link:hover {
+    color: var(--hover);
+}
+
+/* Buttons in the Terms and Notice modals */
+.btn-brand {
+    background-color: var(--btn);
+    color: var(--fcolor-secondary);
+    border: 0;
+    font-weight: 600;
+}
+
+.btn-brand:hover,
+.btn-brand:focus-visible {
+    background-color: var(--hover);
+    color: var(--fcolor-secondary);
+}
+
+/* Terms of Use / Privacy Policy modal */
+#termsPrivacyModal .modal-content {
+    border-radius: 14px !important;
+    overflow: hidden;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5) !important;
+}
+
+#termsPrivacyModal .bibliodesk-modal-header {
+    background-color: var(--dark-header);
+    color: var(--fcolor-secondary);
+    border-bottom: 1px solid var(--dark-border);
+}
+
+#termsPrivacyModal .bibliodesk-modal-header .modal-title {
+    color: var(--fcolor-secondary);
+    font-size: 1.15rem;
+    font-weight: 600;
+}
+
+#termsPrivacyModal .bibliodesk-modal-header i {
+    color: var(--accent-soft);
+}
+
+#termsPrivacyModal .modal-body,
+#termsPrivacyModal .modal-footer {
+    background-color: var(--fcolor-secondary);
+    color: var(--text);
+}
+
+/* Green theme */
+body #otpModal .bibliodesk-modal-header .modal-title i {
+    color: var(--accent-soft) !important;
+}
+
+body #otpModal .bibliodesk-otp-input:focus {
+    box-shadow: 0 0 0 .25rem rgba(var(--btn-rgb), .2) !important;
+}
+
+/* Notice modal (validation and server messages) */
+#errorModal .modal-content {
+    border: 0;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 20px 45px rgba(0, 0, 0, 0.5);
+    background-color: var(--fcolor-secondary);
+    color: var(--text);
+}
+
+#errorModal .modal-header {
+    border-bottom: 1px solid var(--line);
+}
+
+#errorModal .modal-footer {
+    border-top: 0;
+}
+
+#errorModal .text-danger {
+    color: var(--danger) !important;
+}
+
+#errorModal .text-success {
+    color: var(--btn) !important;
+}
+
+/* Responsive */
+@media (max-height: 700px) {
+  .registration-container {
+    padding: 10px;
+  }
+  form {
+    padding: 24px 40px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+  .reg-badge {
+    display: none;           
+  }
+  .reg-subtitle {
+    margin-bottom: 1rem;
+  }
+  .reg-steps {
+    margin-bottom: 1rem;
+  }
+  .form-page.active {
+    min-height: 0;
+  }
+  .form-items {
+    margin-bottom: 12px;
+  }
+  .form-items label {
+    margin-bottom: 4px;
+  }
+  .form-items input:not([type="checkbox"]),
+  .form-items select {
+    padding-top: 10px;        
+    padding-bottom: 10px;
+  }
+  .step-actions button {
+    padding: 10px;
+  }
+  hr {
+    margin: 1.25rem 0;
+  }
+  .terms {
+    margin-top: 8px;
+  }
+  .logo {
+    max-height: 35vh;
+  }
+  .tagline {
+    margin-top: 16px;
+    font-size: 18px;
+  }
+}
+
+@media (max-width: 992px) {
+  .tagline {
+    font-size: 18px;
+  }
+  h1 {
+    font-size: 26px;
+  }
+}
+
+@media (max-width: 768px) {
+  .registration-container {
+    flex-direction: column;
+    height: auto;
+    padding: 10px;
+    gap: 20px;
+  }
+  .logo-panel {
+    flex: 0 0 auto;
+    width: 100%;
+    height: 180px;
+  }
+  .logo {
+    max-width: 160px;
+    max-height: 120px;
+  }
+  .tagline {
+    font-size: 15px;
+    margin-top: 10px;
+  }
+  form {
+    padding: 25px 20px;
+  }
+  h1 {
+    font-size: 1.6rem;
+  }
+  .form-wrapper {
+    flex: 0 0 auto;
+    max-width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-page.active {
+    animation: none;
+  }
 }

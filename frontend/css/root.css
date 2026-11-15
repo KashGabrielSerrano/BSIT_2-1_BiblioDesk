@@ -1,0 +1,97 @@
+/*
+cc = color coding
+qs = quick stats
+nb = no book
+ne = non-educational books
+ed = educational books
+ra = research articles
+rec = recommendations
+*/
+:root{
+    --main-color: #1F4735;          /* dominant green: sidebar, topbar, footer, table headers, dark cards (was brown #2C251D) */
+    --main-bg-color: #F4F0EA;
+    --secondary-color: #275A43;     /* slightly lighter green: contact card (was #352C21) */
+
+    /* The same greens as r, g, b, so tints can follow the theme: rgba(var(--main-rgb), .15) */
+    --main-rgb: 31, 71, 53;         /* = --main-color */
+    --btn-rgb: 35, 104, 69;         /* = --btn */
+    --accent-soft: #A9DCC0;         /* light mint: icons and text that sit on the dark green */
+
+    --button-yellow: #FFD94E;
+    --button-yellow-hover: #d1af33;
+
+    --cc-dates: #2F7F9E;
+    --cc-book-ne: #9E7B58;
+    --cc-book-ed: #488C3E;
+    --cc-book-ra: #3E7DA7;
+    --cc-book-rec:#7b522e;
+    --cc-nb-ne: #C0B19D;
+    --cc-nb-ed: #89C87F;
+    --cc-nb-ra: #82B5D6;
+    --cc-qs-neutral: #6F8B7B;
+    --cc-qs-red: #C23D3D;
+    --cc-qs-yellow: #C28A3D;
+    --cc-qs-green: #488C3E;
+
+    --cc-rec:#FFE4C4;
+    --cc-beige: #DDEBE1;           
+
+    --fcolor-main: #000000;
+    --fcolor-secondary: #ffffff;
+    --fcolor-placeholders: #6b6969;
+
+    --sidebar-default: 80px;
+    --sidebar-expand: 250px;
+    --topbar-height: 80px;
+
+/* Login, Registration, read, addto, bookmark */
+    --btn: #236845;
+    --btn-read: #236845;
+    --btn-addto: #b15024;
+    --btn-bookmark: #5b5a9e;
+    --btn-remove: #cf1818;
+
+/* OTP alerts */
+    --alert-danger-bg: #FEF2F2;
+    --alert-danger-text: #991B1B;
+    --alert-danger-border: #FECACA;
+    --alert-success-bg: #F0FDF4;
+    --alert-success-text: #166534;
+    --alert-success-border: #BBF7D0;
+
+/* OTP modal */
+    --dark-header: #153627;
+    --dark-border: #1D4733;
+    --ink: #14221A;
+    --muted-alt: #6C757D;
+    --line: #DDE5DF;
+    --input-bg: #FBFAF8;
+    --placeholder: #9AA79F;
+    --disabled-bg: #CFD8D2;
+    --disabled-text: #9CA3AF;
+    --backdrop: #0A1610;
+
+/* Text and base */
+    --brown: #325040;               /* label / secondary text (name kept: now a deep green-gray) */
+    --text: #333333;
+    --muted: #797575;
+    --gray: #626262;
+    --link: #1C6943;
+    --link-hover: #12472D;
+    --hover: #275E44;
+    --danger: #C0392B;
+}
+
+
+/* =============================================================================
+   Sidebar icons (Bootstrap Icons) This is just for the Circulation icon (cant find a good icon for it, so used boostrap icons)
+ */
+.sideIcon .bi{
+    font-size: 1.6rem;
+    line-height: 1;
+    color: inherit;                                 /* light, like the PNG icons (the link is .text-light) */
+}
+
+.sideIcon.bg-light .bi{
+    color: var(--main-color);                       /* active: dark glyph on the light circle */
+}
