@@ -12,7 +12,7 @@
 4. [Database Overview](#database-overview)
 5. [Security & Data Protection](#security--data-protection)
 6. [Local Setup & Installation (XAMPP)](#local-setup--installation-xampp)
-7. [Production Deployment Guide](#production-deployment-guide)
+7. [Production Deployment Guide](#production-deployment-guide-infinityfree-tutorial)
 8. [Role Promotion & Initial Admin Setup](#role-promotion--initial-admin-setup)
 9. [Development Team](#development-team)
 10. [License](#license)
@@ -62,7 +62,7 @@
 ## Project Directory Structure
 
 ```text
-BiblioDesk/
+BSIT_2-1_BiblioDesk/
 ├── assets/                     # Static CSS, JavaScript, and fallback images
 ├── controllers/                # Backend request handlers (auth, catalog, circulation, settings, helpdesk)
 ├── core/                       # Core application bootstrap, DB wrapper, security utilities, and storage client
@@ -114,8 +114,8 @@ BiblioDesk runs on a normalized 22-table relational schema (`finals_project_db.s
 ### 2. Clone the Repository
 ```bash
 cd C:\xampp\htdocs
-git clone https://github.com/KashGabrielSerrano/BiblioDesk.git
-cd BiblioDesk
+git clone https://github.com/KashGabrielSerrano/BSIT_2-1_BiblioDesk.git
+cd BSIT_2-1_BiblioDesk
 ```
 
 If `vendor/` is not present, install PHP dependencies:
@@ -151,7 +151,7 @@ DB_PASS=
 DB_NAME=finals_project_db
 
 # Application Base URL
-APP_URL=http://localhost/BiblioDesk
+APP_URL=http://localhost/BSIT_2-1_Bibliodesk
 
 # 32-Byte Symmetric Encryption Key
 APP_ENCRYPTION_KEY=replace_with_a_strong_random_key
@@ -200,7 +200,7 @@ InfinityFree's web-based File Manager frequently times out when uploading folder
 1. In your InfinityFree Client Area under **FTP Details**, copy your **FTP Hostname** (`ftpupload.net`), **FTP Username**, and **FTP Password**.
 2. Open **FileZilla**, connect using Port `21` or whatever is listed as the port, and open the **`htdocs`** folder on the remote server (right pane).
 3. Delete the default `index2.html` placeholder file inside `htdocs` if present.
-4. Upload all BiblioDesk project files and folders **directly into `htdocs/`** (not inside a nested `htdocs/BiblioDesk/` subfolder) so `index.php` sits at `htdocs/index.php`:
+4. Upload all BiblioDesk project files and folders **directly into `htdocs/`** (not inside a nested `htdocs/BSIT_2-1_BiblioDesk/` subfolder) so `index.php` sits at `htdocs/index.php`:
    * `assets/`
    * `controllers/`
    * `core/`
